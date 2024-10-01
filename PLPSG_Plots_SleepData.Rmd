@@ -1,0 +1,431 @@
+---
+title: "PLPSG Plots of Sleep Data"
+output: html_document
+date: '2022-10-05'
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+
+# filter out subjects who didn't learn (subjects 134, 141, 142)
+PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, subject != '134' & subject != '141' & subject != '142')
+PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & subject != '141' & subject != '142')
+
+```
+
+
+### visualize with histogram - amount of time spent in each stage of sleep 
+```{r}
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1),
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
+  geom_histogram() 
+
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2),
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
+  geom_histogram() 
+
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), 
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
+  geom_histogram() 
+
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), 
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
+  geom_histogram()
+
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
+### visualize with dot-plot - amount of time spent in each stage correlated with consolidation 
+```{r, message = FALSE}
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), y = consolidation,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+
+### visualize with dot-plot - percent of time spent in each stage correlated with consolidation 
+```{r, message = FALSE}
+plot_perN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN1), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("N1 (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN2), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N2 (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN3), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N3 (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perR), y = consolidation,
+      na.rm = TRUE) +
+  xlab("R (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_perN1, plot_perN2, plot_perN3, plot_perR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - latency to each stage correlated with consolidation 
+```{r, message = FALSE, warning = FALSE}
+plot_latN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN1), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN2), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN3), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latR), y = consolidation,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_latN1, plot_latN2, plot_latN3, plot_latR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - WASO (wake after sleep onset) correlated with consolidation
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(WASO), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("WASO (minutes)") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is definitely not what I would predict
+```
+
+### visualize with dot-plot - TST (total sleep time) correlated with consolidation
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(TST), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("TST (minutes)") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#this is also not what I would predict necessarily
+```
+
+### visualize with dot-plot - SE (sleep efficiency) correlated with consolidation
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(SE), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("SE (percent)") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is not what I would predict either
+```
+
+### visualize with dot-plot - spindles correlated with maintenance 
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(spindles), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("spindle count") + 
+  ylab("maintenance") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is not what I would predict either
+```
+
+### visualize with dot-plot - spindles correlated with consolidation 
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(spindles), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("spindle count") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is not what I would predict either
+```
+
+### visualize with dot-plot - amount of time spent in each stage correlated with maintenance
+```{r, message = FALSE}
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), y = maintenance,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - percent of time spent in each stage correlated with maintenance
+```{r, message = FALSE}
+plot_perN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN1), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("N1 (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN2), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N2 (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN3), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N3 (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perR), y = maintenance,
+      na.rm = TRUE) +
+  xlab("R (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_perN1, plot_perN2, plot_perN3, plot_perR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - latency to each stage correlated with maintenance
+```{r}
+plot_latN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN1), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN2), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN3), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latR), y = maintenance,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_latN1, plot_latN2, plot_latN3, plot_latR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
+### look at the correlation between block 1 and block 3
+```{r}
+#for both sleep and wake subjects together
+ggplot(data = PLPSG_sleep_stats_wider) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#for just sleep subjects
+plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  ggtitle("sleep") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#for just wake subjects
+plot_wake = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "wake")) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  ggtitle("wake") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_sleep, plot_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+

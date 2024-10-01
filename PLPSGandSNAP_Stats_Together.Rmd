@@ -1,0 +1,125 @@
+---
+title: "PLPSGandSNAP_Stats_Together"
+output: html_document
+date: '2022-10-24'
+---
+
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(pander)
+```
+
+
+#import data frame that has both datasets in it
+```{r}
+setwd("~/Documents/PLPSG_sleep_analysis/")
+PLPSGandSNAP_longer = read.csv("PLPSG_and_SNAP_behavioral_longer.csv")
+PLPSGandSNAP_wider = read.csv("PLPSG_and_SNAP_behavioral_wider.csv")
+
+```
+
+#add in info about immediate impact of sleep (test after sleep - first posttest)
+```{r}
+PLPSGandSNAP_wider = PLPSGandSNAP_wider %>% mutate(immediate = AfterSleepPostTest - AfterTrainingPostTest)
+
+
+```
+
+# linear regression for protection
+```{r}
+protective_model <-lm(protective ~ condition + learning + PreTest, 
+                           data=PLPSGandSNAP_wider)
+pander(summary(protective_model))
+summary(protective_model)
+
+Rsq = summary(protective_model)$r.squared
+cohens_f_protective = Rsq/(1-Rsq)
+protective_model$coefficients
+
+```
+
+PROTECTION
+A multiple linear regression was calculated to predict protection from condition, the amount that was learned, and pre-test performance. There was a significant model fit F(3, 103) = 12.13, p = 7.319e-07, with an adjusted \(R^2\) of 0.2395, with a large effect size, Cohen f^2 = 0.353.
+
+
+# linear regresison for immediate effect of sleep 
+```{r}
+immediate_model <-lm(immediate ~ condition + learning + PreTest, 
+                           data=PLPSGandSNAP_wider)
+pander(summary(immediate_model))
+summary(immediate_model)
+
+Rsq = summary(immediate_model)$r.squared
+cohens_f_immediate = Rsq/(1-Rsq)
+immediate_model$coefficients
+
+
+```
+A multiple linear regression was calculated to predict the immediate effect of sleep from condition, the amount that was learned, and pre-test performance. There was a significant model fit F(3, 103) = 14.76, p =4.6e-08, with an adjusted \(R^2\) of 0.3006, with a large effect size, Cohen f^2 = 0.430. However, condition was not a significant predictor of the immediate effect of sleep (β =0.0148, p = 0.2994).
+
+
+
+#make sure no differences between groups on learning - t test 
+```{r}
+t.test(PLPSGandSNAP_wider$learning[PLPSGandSNAP_wider$condition == "sleep"],
+       PLPSGandSNAP_wider$learning[PLPSGandSNAP_wider$condition == "wake"])
+
+t.test(PLPSGandSNAP_wider$learning)
+```
+
+#make sure no differences between groups on immediate effect - t test 
+```{r}
+t.test(PLPSGandSNAP_wider$immediate[PLPSGandSNAP_wider$condition == "sleep"],
+       PLPSGandSNAP_wider$immediate[PLPSGandSNAP_wider$condition == "wake"])
+
+t.test(PLPSGandSNAP_wider$immediate)
+```
+
+# make bar plot for immediate effect, protective effect and learning 
+```{r}
+learning = ggplot(PLPSGandSNAP_wider, aes(x = condition, y = learning, fill=condition)) +
+  stat_summary(geom='bar', position=position_dodge(width=0.5), width=0.5) +
+  stat_summary(geom='errorbar', position=position_dodge(width=0.5), width = 0.2) +   
+  ylab("Post I - Pre") +
+  scale_fill_manual(values = c("lightsteelblue4","#660000")) +
+  coord_cartesian(ylim = c(0, 0.2)) +
+  annotate("segment", x = 1, xend=2, y=0.19, yend = 0.19) +
+  annotate("text", label="ns", x = 1.5, y = 0.198)
+
+immediate = ggplot(PLPSGandSNAP_wider, aes(x = condition, y = immediate, fill=condition)) +
+  stat_summary(geom='bar', position=position_dodge(width=0.5), width=0.5) +
+  stat_summary(geom='errorbar', position=position_dodge(width=0.5), width = 0.2) + 
+  ylab("Post II - Post I") +
+  scale_fill_manual(values = c("lightsteelblue4","#660000")) +
+  coord_cartesian(ylim = c(-0.09, 0)) + 
+  annotate("segment", x = 1, xend=2, y=-0.081, yend = -0.081) +
+  annotate("text", label="ns", x = 1.5, y = -0.083)
+
+protect = ggplot(PLPSGandSNAP_wider, aes(x = condition, y = protective, fill=condition)) +
+  stat_summary(geom='bar', position=position_dodge(width=0.5), width=0.5) +
+  stat_summary(geom='errorbar', position=position_dodge(width=0.5), width = 0.2) + 
+  ylab("Post III - Post I") +
+  scale_fill_manual(values = c("lightsteelblue4", "#660000")) +
+  coord_cartesian(ylim = c(-0.09, 0)) +
+  annotate("segment", x = 1, xend=2, y=-0.084, yend = -0.084) +
+  annotate("text", label="*", x = 1.5, y = -0.086)
+
+figure <- ggarrange(learning, immediate, protect,
+                    labels = c("A", "B", "C"),
+                    ncol = 3, nrow = 1, common.legend = TRUE, legend = "right")
+figure
+
+```
+
+# find mean learning 
+```{r}
+mean(PLPSGandSNAP_wider$learning)
+sd(PLPSGandSNAP_wider$learning)
+
+```
+
+
+

@@ -1,0 +1,554 @@
+---
+title: "PLPSG_Plots_BehavioralData"
+output: html_document
+date: '2022-10-05'
+---
+
+Some notes about the study:
+This is a file that will read in (1) Perceptual learning behavioral data, (2) Sleep statistic data (including spindle data), (3) demographic data.
+This project was performed under Katie Reis in the APEX Lab at UChicago. 64 electrode slim-electrode EEG (BrainVision) was used to sleep score
+We followed AASM guidelines in sleep scoring and used Visbrain Sleep gui to score. 
+Pre-test was given at 9am, immediately followed by training and post-test 1. 
+Post-test 2 was given immediately prior to sleep at 2:30pm, sleep (or wake) occurred from 3-4:30pm, and then post-test 3 was performed at 5pm
+Post-test 4 was performed at 9pm. 
+80 words we used for each test, and 300 words were used for training. Words were randomized across tests for each subject. 
+Subjects did not leave the lab for the duration of the study. Wake subjects could not listen to audio for the 3-4:30pm block
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+```
+
+### import data files
+```{r, message = FALSE}
+source("PLPSG_ImportData.R")
+
+# filter out subjects who didn't learn (subjects 134, 141, 142)
+PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, subject != '134' & subject != '141' & subject != '142')
+PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & subject != '141' & subject != '142')
+
+```
+
+### visualize with a boxplot the PLPSG behavioral data all tests
+```{r}
+ggboxplot(PLPSG_sleep_stats_longer, x="block", y="score", color="condition", add = "jitter")  
+```
+
+### line plot of PLPSG performance across tests (sleep vs wake)
+```{r}
+plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "sleep" & block != "block4")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) + 
+  ylim(0.2,0.625) +
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Sleep") +
+  geom_line()
+
+plot_wake = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "wake" & block != "block4")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) +
+  ylim(0.2,0.625) +
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Wake") + 
+  geom_line()
+
+figure <- ggarrange(plot_sleep, plot_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### another way to look at this same data - plot learning, loss, recovery, retention on the x axis
+```{r}
+difference_scores = PLPSG_sleep_stats_wider %>% pivot_longer(cols = c("learning", "loss","recovery","maintenance"), 
+                                                      names_to = "phase",
+                                                      values_to = "performance_change")
+
+plot_sleep = ggplot(data = subset(difference_scores, condition == "sleep")) + 
+  aes(x = fct_inorder(phase), y = performance_change, na.rm = TRUE) +
+  xlab("phase") + 
+  ylab("performance change") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Sleep") +
+  geom_line(aes(group = subject)) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2) 
+
+plot_wake = ggplot(data = subset(difference_scores, condition == "wake")) + 
+  aes(x = fct_inorder(phase), y = performance_change, na.rm = TRUE) +
+  xlab("phase") + 
+  ylab("performance change") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Wake") + 
+  geom_line(aes(group = subject)) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2) 
+
+figure <- ggarrange(plot_sleep, plot_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### violin plots of learning
+```{r, message= FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("learning") +
+  geom_violin() + 
+    ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+```
+
+### violin plot of PLPSG loss (post-test2 - post-test1)
+```{r, message= FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = loss,
+      x = condition)) +
+  ggtitle("Loss") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### violin plot of PLPSG recovery (post-test3 - post-test2)
+```{r, message= FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = recovery,
+      x = condition)) +
+  ggtitle("Recovery") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### violin plot of PLPSG maintenance (post-test4 - post-test3)
+```{r, message= FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = maintenance,
+      x = condition)) +
+  ggtitle("Maintenance") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### violin plots of protective effect (last post-test - first post-test)
+```{r, message= FALSE, warning = FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("protective") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+```
+### violin plots of long term recovery effect (last post-test - second post-test)
+```{r, message= FALSE, warning = FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = longtermrecovery,
+      x = condition)) +
+  ggtitle("Long Term Recovery") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+```
+### violin plots of retention effect (last post-test - pretest)
+```{r, message= FALSE, warning = FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = retention,
+      x = condition)) +
+  ggtitle("Retention") +
+  geom_violin() + 
+  ylim(-.1,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+```
+
+
+### histogram of protective effect (sleep vs wake)
+```{r, message= FALSE}
+sleep_plot_protective = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(x = protective)) +
+  ggtitle("Protective Effect - sleep") +
+  geom_histogram() 
+
+wake_plot_protective = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(x = protective)) +
+  ggtitle("Protective Effect - wake") +
+  geom_histogram() 
+
+figure = ggarrange(sleep_plot_protective, wake_plot_protective,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+
+### violin plot of the difference between last post-test and pre-test ("retention"), next to learning plots
+```{r, message= FALSE}
+learning_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("post-test1  -  pre-test") +
+  geom_violin() + 
+  ylim(-.1,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+retention_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = retention, 
+      x = condition)) +
+  ggtitle("Last-post-test  -  pre-test") +
+  geom_violin() +
+  ylim(-.1,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_katie_collected, retention_katie_collected,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### median split plots 
+```{r, message= FALSE}
+#learning plot
+learning_median_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = learning,
+      x = above_median)) +
+  ggtitle("learning sleep") +
+  geom_violin() + 
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_median_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = learning, 
+      x = above_median)) +
+  ggtitle("learning wake") +
+  geom_violin() +
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_median_sleep, learning_median_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#protective plot 
+protective_median_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = protective,
+      x = above_median)) +
+  ggtitle("protective sleep") +
+  geom_violin() + 
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_median_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = protective, 
+      x = above_median)) +
+  ggtitle("protective wake") +
+  geom_violin() +
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(protective_median_sleep, protective_median_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#consolidation plot
+consolidation_median_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = consolidation,
+      x = above_median)) +
+  ggtitle("consolidation sleep") +
+  geom_violin() + 
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_median_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = consolidation, 
+      x = above_median)) +
+  ggtitle("consolidation wake") +
+  geom_violin() +
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(consolidation_median_sleep, consolidation_median_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### undergrad vs non-undergrad plots 
+```{r, message= FALSE}
+#for learning
+learning_undergrads_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = learning,
+      x = undergrad)) +
+  ggtitle("learning sleep") +
+  geom_violin() + 
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_undergrads_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = learning, 
+      x = undergrad)) +
+  ggtitle("learning wake") +
+  geom_violin() +
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_undergrads_sleep, learning_undergrads_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#protective plot
+protective_undergrads_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = protective,
+      x = undergrad)) +
+  ggtitle("protective sleep") +
+  geom_violin() + 
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_undergrads_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = protective, 
+      x = undergrad)) +
+  ggtitle("protective wake") +
+  geom_violin() +
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(protective_undergrads_sleep, protective_undergrads_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#consolidation plot 
+consolidation_undergrads_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = consolidation,
+      x = undergrad)) +
+  ggtitle("consolidation sleep") +
+  geom_violin() + 
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_undergrads_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = consolidation, 
+      x = undergrad)) +
+  ggtitle("consolidation wake") +
+  geom_violin() +
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(consolidation_undergrads_sleep, consolidation_undergrads_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### use a violin plot to see if sleep and wake subjects differ in block 3 performance
+```{r}
+#violin plot - block3
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = block3,
+      x = condition)) +
+  ggtitle("block3") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### Use a violin plot to see if sleep and wake subjects they differ in block 6 performance
+```{r}
+#violin plot - block6
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = block6,
+      x = condition)) +
+  ggtitle("block6") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### Use violin plots for consolidation2 (has learning as the denominator instead)
+```{r}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = consolidation2,
+      x = condition)) +
+  ggtitle("Our consolidation") +
+  geom_violin() +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### remaking plots from the SNAP paper for the PLPSG dataset 
+```{r}
+temp = PLPSG_sleep_stats_longer %>% filter(
+ block == "block1" | block == "block3"
+  )
+
+temp["block"][temp["block"] == "block1"] <- "pretest"
+temp["block"][temp["block"] == "block3"] <- "posttest1"
+
+temp$condition <- factor(temp$condition)
+
+ggline(temp, x="block",y="score",
+       color = "condition", add = "mean_se", 
+       position=position_dodge(width = 0.7)) + 
+  ylab("Proportion Correct") +
+  xlab("Test") +
+  labs(colour="Condition") +
+  theme(legend.position="right", axis.title = element_text(size = 14)) +
+  scale_color_manual(breaks = c("sleep", "wake"),values=c("deepskyblue4", "indianred3"), labels = c("nap", "wake")) +
+  scale_x_discrete(labels=c("pretest" = "Pretest", "posttest1" = "Posttest1")) +
+  geom_point(aes(x=block, y=score, colour=condition), 
+             size=0.7, alpha = 0.5, 
+             position=position_jitterdodge(jitter.width = 0.3, dodge.width = 0.7))
+
+```
+
+```{r}
+temp = PLPSG_sleep_stats_longer %>% filter(
+ block == "block1" | block == "block3" | block == "block4" | block == "block5" | block == "block6"
+  )
+
+ggline(temp, x="block",y="score",
+       color = "condition", add = "mean_se", 
+       position=position_dodge(width = 0.7)) + 
+  ylab("Proportion Correct") +
+  xlab("Test") +
+  labs(colour="Condition") +
+  theme(legend.position="right", axis.title = element_text(size = 14)) +
+  scale_color_manual(breaks = c("sleep", "wake"),values=c("deepskyblue4", "indianred3"), labels = c("nap", "wake")) +
+  scale_x_discrete(labels=c("block1" = "Pretest", "block3" = "Posttest1", "block4" = "Posttest2", "block5" = "Posttest3", "block6" = "Posttest4")) +
+  geom_point(aes(x=block, y=score, colour=condition), 
+             size=0.7, alpha = 0.5, 
+             position=position_jitterdodge(jitter.width = 0.3, dodge.width = 0.7)) 
+
+```
+```{r}
+
+temp = PLPSG_sleep_stats_wider 
+  
+
+ggviolin(temp, x="condition",y="protective") + 
+  ylab("Posttest3 - Posttest1") +
+  xlab("Condition") +
+  theme(axis.title = element_text(size = 14)) +
+  geom_point(aes( y=protective), 
+             size=0.5, alpha = 0.5, 
+             position=position_jitter(width = 0.07)) + 
+  coord_fixed(ratio = 3) + 
+  scale_x_discrete(labels=c('nap', 'wake'))
+
+
+```
+
+
+
+
+

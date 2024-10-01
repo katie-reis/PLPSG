@@ -1,0 +1,2044 @@
+---
+title: "PLPSG_Sleep_Statistics"
+author: "Katie Reis"
+date: "4/27/2022"
+output: html_document
+---
+
+Some notes about the study:
+This is a file that will read in (1) Perceptual learning behavioral data, (2) Sleep statistic data (including spindle data), (3) demographic data.
+This project was performed under Katie Reis in the APEX Lab at UChicago. 64 electrode slim-electrode EEG (BrainVision) was used to sleep score
+We followed AASM guidelines in sleep scoring and used Visbrain Sleep gui to score. 
+Pre-test was given at 9am, immediately followed by training and post-test 1. 
+Post-test 2 was given immediately prior to sleep at 2:30pm, sleep (or wake) occurred from 3-4:30pm, and then post-test 3 was performed at 5pm
+Post-test 4 was performed at 9pm. 
+80 words we used for each test, and 300 words were used for training. Words were randomized across tests for each subject. 
+Subjects did not leave the lab for the duration of the study. Wake subjects could not listen to audio for the 3-4:30pm block
+
+# Import packages 
+```{r, message=FALSE}
+#knitr::opts_knit$set(root.dir = "/Users/katiereis/Documents/")
+library(dplyr) #needed for data manipulation
+library(kableExtra)
+library(tidyverse) #needed for tidying data
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(pander) #needed to render tables
+library(lme4)
+library(rstatix) #needed for identifying outliers
+library(ggExtra)
+library(stargazer)
+library(data.table) #for reading in spindles 
+library(gridExtra) #needed for making pretty table
+```
+
+# Import data
+
+### Import PLPSG data
+```{r}
+# import Katie scoring
+setwd("~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/")
+filelist = list.files(pattern = "*.txt")
+
+#import behavioral data that was scored in python using scripts "perceptual-learning-scoring.ipynb" and "Perceptual_Learning_Scoring_AfterCheck.ipynb"
+setwd("~/Documents/PLPSG_sleep_analysis/PLPSG_behavioral_results/Scored_Final/")
+PLPSG_sleep_stats_longer = read.csv("data.csv")
+PLPSG_sleep_stats_longer$subject = gsub("subj","",as.character(PLPSG_sleep_stats_longer$subject))
+PLPSG_sleep_stats_longer = PLPSG_sleep_stats_longer %>% arrange(subject, block)
+PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, select = -X)
+PLPSG_sleep_stats_longer$block = as.factor(PLPSG_sleep_stats_longer$block)
+
+PLPSG_sleep_stats_wider = PLPSG_sleep_stats_longer %>% 
+  select(c(subject,block,score)) %>%
+  pivot_wider(names_from = block,
+              values_from = score) %>% 
+  mutate(learning = (block3-block1),
+         loss = -1*(block4-block3),
+         recovery = (block5-block4),
+         maintenance = (block6-block5),
+         protective = (block6-block3),
+         consolidation = ((block3-block6)/block3)*100,
+         consolidation2 = ((block3-block6)/(block3-block1))*100,
+         retention = (block6-block1),
+         fasting = factor(rep(c("yes", "no"),each=16)),
+         condition = "",
+         lightsoff = "",
+         lightson = "",
+         TRT = "",
+         TST = "",
+         SL = "",
+         SE = "",
+         WASO = "",
+         W = "",
+         N1 = "",
+         N2 = "",
+         N3 = "",
+         R = "",
+         perW = "",
+         perN1 = "",
+         perN2 = "",
+         perN3 = "",
+         perR = "",
+         latN1 = "",
+         latN2 = "",
+         latN3 = "",
+         latR = "") %>%
+  relocate(c(condition, fasting), .after = subject)
+
+for (i in 1:length(filelist)){
+  #read in the file
+  setwd("~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/")
+  file_hypno = read.delim(filelist[i], header = FALSE, col.names = "stage")
+  
+  #identify when lights off (lights out clock time)
+  recording_time_info = read.csv("PLPSG_lightson_lightsoff.csv", header = TRUE)
+    
+  #extract the subject ID
+  PLPSG_sleep_stats_wider$subject[i] = substr(filelist[i], start = 5, stop = 7)
+  
+  #extract what group/condition they were in (sleep or wake)
+  PLPSG_sleep_stats_wider$condition[i] = recording_time_info$condition[i]
+  
+  lightsoff = recording_time_info$lightsoff[i]
+  PLPSG_sleep_stats_wider$lightsoff[i] = lightsoff
+  
+  #identify when lights on (lights on clock time)
+  lightson = recording_time_info$lightson[i]
+  PLPSG_sleep_stats_wider$lightson[i] = lightson
+  
+  #select only the rows (epochs) that are between lights off and lights on (inclusive)
+  file_hypno = file_hypno[lightsoff:lightson,]
+  
+  ###now perform the following calculations: 
+  #calculate number of epochs between lights off and on (total recording time = TRT, in minutes)
+  TRT = length(file_hypno) / 60
+  PLPSG_sleep_stats_wider$TRT[i] = TRT
+    
+  #time spent in W (in minutes)
+  W = sum(file_hypno == 0) / 60  
+  PLPSG_sleep_stats_wider$W[i] = W
+    
+  #time spent in N1 (in minutes)
+  N1 = sum(file_hypno == 1) / 60
+  PLPSG_sleep_stats_wider$N1[i] = N1
+
+  #time spent in N2 (in minutes)
+  N2 = sum(file_hypno == 2) / 60
+  PLPSG_sleep_stats_wider$N2[i] = N2
+    
+  #time spent in N3 (in minutes)
+  N3 = sum(file_hypno == 3) / 60
+  PLPSG_sleep_stats_wider$N3[i] = N3
+    
+  #time spent in R (in minutes)
+  R = sum(file_hypno == 4) / 60
+  PLPSG_sleep_stats_wider$R[i] = R
+    
+  #total sleep time (TST; time spent in N1, N2, N3, or R, in minutes)
+  TST = N1 + N2 + N3 + R 
+  PLPSG_sleep_stats_wider$TST[i] = TST
+  
+  #sleep latency (SL; lights out to first epoch of sleep, in minutes)
+  SL = (which(file_hypno!=0)[1]) / 60
+  PLPSG_sleep_stats_wider$SL[i] = SL
+    
+  #percent sleep efficiency (TST/TRT * 100)
+  PLPSG_sleep_stats_wider$SE[i] = (TST/TRT) * 100
+  
+  #wake after sleep onset (WASO; TRT - SL - TST, in minutes)
+  PLPSG_sleep_stats_wider$WASO[i] = TRT - SL - TST
+  
+  ###now calculate percent of TST in each stage 
+  #% spent in W (W/TST * 100)
+  PLPSG_sleep_stats_wider$perW[i] = (W/TST) * 100
+  
+  #% spent in N1 (N1/TST * 100)
+  PLPSG_sleep_stats_wider$perN1[i] = (N1/TST) * 100
+
+  #% spent in N2 (N2/TST * 100)
+  PLPSG_sleep_stats_wider$perN2[i] = (N2/TST) * 100
+  
+  #% spent in N3 (N3/TST * 100)
+  PLPSG_sleep_stats_wider$perN3[i] = (N3/TST) * 100
+  
+  #% spent in R (R/TST * 100)
+  PLPSG_sleep_stats_wider$perR[i] = (R/TST) * 100
+  
+  #latency in minutes to first epoch of N1
+  PLPSG_sleep_stats_wider$latN1[i] = (which(file_hypno == 1)[1]) / 60
+  
+  #latency in minutes to first epoch of N2
+  PLPSG_sleep_stats_wider$latN2[i] = (which(file_hypno == 2)[1]) / 60
+  
+  #latency in minutes to first epoch of N3
+  PLPSG_sleep_stats_wider$latN3[i] = (which(file_hypno == 3)[1]) / 60
+  
+  #latency in minutes to first epoch of R
+  PLPSG_sleep_stats_wider$latR[i] = (which(file_hypno == 4)[1]) / 60
+}
+
+PLPSG_sleep_stats_wider$condition = factor(PLPSG_sleep_stats_wider$condition)
+
+#add demographic info
+setwd("~/Documents/PLPSG_sleep_analysis/")
+demographics = read.csv("Demographics.csv")
+demographics = rename(demographics, subject = Subject)
+demographics$subject = as.character(demographics$subject)
+PLPSG_sleep_stats_wider = left_join(PLPSG_sleep_stats_wider, demographics, by = "subject")
+
+#add spindle information
+spindles<- fread("PLPSG_Spindle_Counts.csv", select = c("subject","Spindles_Avg_11-16Hz"))
+PLPSG_sleep_stats_wider <- merge(PLPSG_sleep_stats_wider, spindles, by="subject")
+
+#rename spindle column so that there isn't a dash
+PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% rename(spindles = 'Spindles_Avg_11-16Hz')
+
+PLPSG_sleep_stats_longer = PLPSG_sleep_stats_wider %>%
+  pivot_longer(cols = c("block1", "block3","block4","block5", "block6"),
+               names_to = "block",
+               values_to = "score") 
+
+PLPSG_sleep_stats_longer = PLPSG_sleep_stats_longer %>% mutate(test= ifelse(block == "block1", "PreTest",
+                                                                            ifelse(block == "block3", "AfterTrainingPostTest",
+                                                                                   ifelse(block == "block4", "BeforeSleepPostTest", 
+                                                                                          ifelse(block == "block5", "AfterSleepPostTest","NightPostTest")))))
+                           
+
+#calculate median of pre-test score 
+#median_sleep = median(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"])
+#median_wake = median(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"])
+
+#create column that dictates whether folks are above the median (inclusive) for pre-test score
+#PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% mutate(above_median = ifelse((block1 >= median_sleep & condition == "sleep") | (block1 >= median_wake & condition == "wake"), "yes", "no"))
+
+#export datasets
+write.csv(PLPSG_sleep_stats_wider,"~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/PLPSG_sleep_stats_wider.csv", row.names = FALSE)
+write.csv(PLPSG_sleep_stats_longer,"~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/PLPSG_sleep_stats_longer.csv", row.names = FALSE)
+
+#clear environment
+rm(list=ls()[-match(c("PLPSG_sleep_stats_wider", "PLPSG_sleep_stats_longer"), ls())])
+```
+
+
+### Import SNAP data
+```{r}
+setwd("~/Documents/PLPSG_sleep_analysis/")
+SNAP_behavioral_wider <- read.csv("SNAP-both-final.csv")
+
+SNAP_behavioral_wider = SNAP_behavioral_wider %>%
+  select(c(subject,experiment,condition,block1,block3,block4,block5)) %>%
+  mutate(block1 = block1/100,
+         block3 = block3/100,
+         fillerblock = "",
+         block4 = block4/100,
+         block5 = block5/100,
+         learning = block3-block1,
+         protective = block5-block3,
+         maintenance = block5-block4,
+         consolidation = ((block3-block5)/block3)*100,
+         consolidation2 = ((block3-block5)/(block3-block1))*100,
+         retention = (block5-block1),
+         condition = factor(SNAP_behavioral_wider$condition),
+         subject = as.character(subject),
+         experiment = factor(experiment))
+
+SNAP_behavioral_wider$fillerblock = as.numeric(SNAP_behavioral_wider$fillerblock)
+
+write.csv(SNAP_behavioral_wider,"~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/SNAP_behavioral_wider.csv", row.names = FALSE)
+
+#SNAP_behavioral_wider$subject = as.character(SNAP_behavioral_wider$subject)
+
+SNAP_behavioral_longer = SNAP_behavioral_wider %>% 
+  pivot_longer(!c(subject,experiment,condition, learning, protective, maintenance, retention, consolidation, consolidation2), 
+               names_to = "block", 
+               values_to = "score")
+
+SNAP_behavioral_longer = SNAP_behavioral_longer %>% mutate(test= ifelse(block == "block1", "PreTest",
+                                                                            ifelse(block == "block3", "AfterTrainingPostTest",
+                                                                                   ifelse(block == "fillerblock", "BeforeSleepPostTest", 
+                                                                                          ifelse(block == "block4", "AfterSleepPostTest","NightPostTest")))))
+
+write.csv(SNAP_behavioral_wider,"~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/SNAP_behavioral_wider.csv", row.names = FALSE)
+write.csv(SNAP_behavioral_longer,"~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/SNAP_behavioral_longer.csv", row.names = FALSE)
+```
+
+# PLOTS - BEHAVIORAL DATA
+
+### visualize with a boxplot the PLPSG behavioral data all tests
+```{r}
+ggboxplot(PLPSG_sleep_stats_longer, x="block", y="score", color="condition", add = "jitter")  
+```
+
+### line plot of PLPSG performance across tests (sleep vs wake)
+```{r}
+plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "sleep")) + 
+  aes(x = block, y = score, group = subject,
+      na.rm = TRUE) + 
+  ylim(0.2,0.625) +
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Sleep") +
+  geom_line()
+
+plot_wake = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "wake")) + 
+  aes(x = block, y = score, group = subject,
+      na.rm = TRUE) +
+  ylim(0.2,0.625) +
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Wake") + 
+  geom_line()
+
+figure <- ggarrange(plot_sleep, plot_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### another way to look at this same data - plot learning, loss, recovery, retention on the x axis
+```{r}
+difference_scores = PLPSG_sleep_stats_wider %>% pivot_longer(cols = c("learning", "loss","recovery","maintenance"), 
+                                                      names_to = "phase",
+                                                      values_to = "performance_change")
+
+plot_sleep = ggplot(data = subset(difference_scores, condition == "sleep")) + 
+  aes(x = fct_inorder(phase), y = performance_change, na.rm = TRUE) +
+  xlab("phase") + 
+  ylab("performance change") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Sleep") +
+  geom_line(aes(group = subject)) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2) 
+
+plot_wake = ggplot(data = subset(difference_scores, condition == "wake")) + 
+  aes(x = fct_inorder(phase), y = performance_change, na.rm = TRUE) +
+  xlab("phase") + 
+  ylab("performance change") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Wake") + 
+  geom_line(aes(group = subject)) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2) 
+
+figure <- ggarrange(plot_sleep, plot_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### violin plots of learning for PLPSG and SNAP datasets
+```{r, message= FALSE}
+learning_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("Our learning") +
+  geom_violin() + 
+    ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_SNAP_all <- ggplot(SNAP_behavioral_wider,
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("SNAP learning both") +
+  geom_violin() + 
+  ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_SNAP_exp1 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "one"),
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("SNAP learning exp1") +
+  geom_violin() + 
+    ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_SNAP_exp2 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "two"),
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("SNAP learning exp2") +
+  geom_violin() + 
+    ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_katie_collected, learning_SNAP_all,learning_SNAP_exp1, learning_SNAP_exp2,
+                    labels = c("A", "B", "C","D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### violin plot of PLPSG loss (post-test2 - post-test1)
+```{r, message= FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = loss,
+      x = condition)) +
+  ggtitle("Loss") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### violin plot of PLPSG recovery (post-test3 - post-test2)
+```{r, message= FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = recovery,
+      x = condition)) +
+  ggtitle("Recovery") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### violin plot of PLPSG maintenance (post-test4 - post-test3)
+```{r, message= FALSE}
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = maintenance,
+      x = condition)) +
+  ggtitle("Maintenance") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+```
+
+### violin plots of protective effect for SNAP and PLPSG datasets (last post-test - first post-test)
+```{r, message= FALSE, warning = FALSE}
+protective_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("Our protective") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_SNAP_all <- ggplot(SNAP_behavioral_wider,
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("SNAP protective both") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_SNAP_exp1 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "one"),
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("SNAP protective exp1") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_SNAP_exp2 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "two"),
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("SNAP protective exp2") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(protective_katie_collected, protective_SNAP_all, protective_SNAP_exp1, protective_SNAP_exp2,
+                    labels = c("A", "B", "C","D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### histogram of protective effect for PLPSG dataset (sleep vs wake)
+```{r, message= FALSE}
+sleep_plot_protective = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(x = protective)) +
+  ggtitle("Protective Effect - sleep") +
+  geom_histogram() 
+
+wake_plot_protective = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(x = protective)) +
+  ggtitle("Protective Effect - wake") +
+  geom_histogram() 
+
+figure = ggarrange(sleep_plot_protective, wake_plot_protective,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### violin plots of consolidation for SNAP and PLPSG datasets 
+```{r, message= FALSE, warning = FALSE}
+consolidation_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("Our consolidation") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_SNAP_all <- ggplot(SNAP_behavioral_wider,
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("SNAP consolidation both") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_SNAP_exp1 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "one"),
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("SNAP consolidation exp1") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_SNAP_exp2 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "two"),
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("SNAP consolidation exp2") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(consolidation_katie_collected, consolidation_SNAP_all, consolidation_SNAP_exp1, consolidation_SNAP_exp2,
+                    labels = c("A", "B", "C","D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### violin plot of the difference between last post-test and pre-test ("retention"), next to learning plots, for PLPSG dataset
+```{r, message= FALSE}
+learning_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("post-test1  -  pre-test") +
+  geom_violin() + 
+  ylim(-.1,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+retention_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = retention, 
+      x = condition)) +
+  ggtitle("Last-post-test  -  pre-test") +
+  geom_violin() +
+  ylim(-.1,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_katie_collected, retention_katie_collected,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### median split plots (PLPSG dataset)
+```{r, message= FALSE}
+#learning plot
+learning_median_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = learning,
+      x = above_median)) +
+  ggtitle("learning sleep") +
+  geom_violin() + 
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_median_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = learning, 
+      x = above_median)) +
+  ggtitle("learning wake") +
+  geom_violin() +
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_median_sleep, learning_median_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#protective plot 
+protective_median_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = protective,
+      x = above_median)) +
+  ggtitle("protective sleep") +
+  geom_violin() + 
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_median_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = protective, 
+      x = above_median)) +
+  ggtitle("protective wake") +
+  geom_violin() +
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(protective_median_sleep, protective_median_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#consolidation plot
+consolidation_median_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = consolidation,
+      x = above_median)) +
+  ggtitle("consolidation sleep") +
+  geom_violin() + 
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_median_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = consolidation, 
+      x = above_median)) +
+  ggtitle("consolidation wake") +
+  geom_violin() +
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(consolidation_median_sleep, consolidation_median_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+### undergrad vs non-undergrad plots (PLPSG dataset)
+```{r, message= FALSE}
+#for learning
+learning_undergrads_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = learning,
+      x = undergrad)) +
+  ggtitle("learning sleep") +
+  geom_violin() + 
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_undergrads_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = learning, 
+      x = undergrad)) +
+  ggtitle("learning wake") +
+  geom_violin() +
+  ylim(0.0,.3) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_undergrads_sleep, learning_undergrads_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#protective plot
+protective_undergrads_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = protective,
+      x = undergrad)) +
+  ggtitle("protective sleep") +
+  geom_violin() + 
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_undergrads_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = protective, 
+      x = undergrad)) +
+  ggtitle("protective wake") +
+  geom_violin() +
+  ylim(-.225,0.05) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(protective_undergrads_sleep, protective_undergrads_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#consolidation plot 
+consolidation_undergrads_sleep <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"),
+  aes(y = consolidation,
+      x = undergrad)) +
+  ggtitle("consolidation sleep") +
+  geom_violin() + 
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_undergrads_wake <- ggplot(subset(PLPSG_sleep_stats_wider, condition == "wake"),
+  aes(y = consolidation, 
+      x = undergrad)) +
+  ggtitle("consolidation wake") +
+  geom_violin() +
+  ylim(-15,40) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(consolidation_undergrads_sleep, consolidation_undergrads_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+# STATISTICS - BEHAVIORAL DATA
+
+## Calculate means and standard deviations for sleep and wake subjects
+```{r}
+PLPSG_means = data.frame (score = c("block1","block3","block4","block5","block6",
+                                 "learning", "loss","recovery","maintenance","protective","consolidation", "retention"),
+                          mean_sleep = c(mean(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "sleep"]), 
+                                         mean(PLPSG_sleep_stats_wider$consolidation2[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                          sd_sleep = c(sd(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$consolidation2[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                          mean_wake = c(mean(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$consolidation2[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "wake"])),
+                          sd_wake = c(sd(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$consolidation2[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "wake"]))
+)
+                          
+kable(head(PLPSG_means))
+```
+
+## Calculate means and standard deviations for SNAP datasets TOGETHER
+```{r}
+SNAP_means_all = data.frame (score = c("block1","block3","block4","block5",
+                                 "learning", "maintenance","protective","consolidation", "retention"),
+                          mean_sleep = c(mean(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep"]),
+                                         mean(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "sleep"])),
+                          sd_sleep = c(sd(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep"]),
+                                         sd(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "sleep"])),
+                          mean_wake = c(mean(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake"]),
+                                         mean(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "wake"])),
+                          sd_wake = c(sd(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake"]),
+                                         sd(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "wake"]))
+                                      )
+                          
+kable(SNAP_means_all)
+```
+
+
+## Calculate means and standard deviations for SNAP dataset experiment 1
+```{r}
+SNAP_means_exp1 = data.frame (score = c("block1","block3","block4","block5",
+                                 "learning", "maintenance","protective","consolidation", "retention"),
+                          mean_sleep = c(mean(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "sleep" 
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "sleep"
+                                                                             & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep"
+                                                                                & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "sleep"
+                                                                               & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep"
+                                                                                  & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "sleep"
+                                                                              & SNAP_behavioral_wider$experiment == "one"])),
+                          sd_sleep = c(sd(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "sleep"
+                                                                       & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "sleep"
+                                                                         & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "sleep"
+                                                                         & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "sleep"
+                                                                         & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep"
+                                                                              & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "sleep"
+                                                                             & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep"
+                                                                                & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "sleep"
+                                                                            & SNAP_behavioral_wider$experiment == "one"])),
+                          mean_wake = c(mean(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "wake"
+                                                                          & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "wake"
+                                                                             & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake"
+                                                                                & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "wake"
+                                                                               & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake"
+                                                                                  & SNAP_behavioral_wider$experiment == "one"]),
+                                         mean(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "wake"
+                                                                              & SNAP_behavioral_wider$experiment == "one"])),
+                          sd_wake = c(sd(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "wake"
+                                                                      & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "wake"
+                                                                         & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "wake"
+                                                                         & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "wake"
+                                                                         & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake"
+                                                                              & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "wake"
+                                                                             & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake"
+                                                                                & SNAP_behavioral_wider$experiment == "one"]),
+                                         sd(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "wake"
+                                                                            & SNAP_behavioral_wider$experiment == "one"]))
+                                      )
+                          
+                          
+kable(SNAP_means_exp1)
+```
+
+## Calculate means and standard deviations for SNAP dataset experiment 2
+```{r}
+SNAP_means_exp2 = data.frame (score = c("block1","block3","block4","block5",
+                                 "learning", "maintenance","protective","consolidation", "retention"),
+                          mean_sleep = c(mean(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "sleep" 
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "sleep"
+                                                                             & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep"
+                                                                                & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "sleep"
+                                                                               & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep"
+                                                                                  & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "sleep"
+                                                                              & SNAP_behavioral_wider$experiment == "two"])),
+                          sd_sleep = c(sd(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "sleep"
+                                                                       & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "sleep"
+                                                                         & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "sleep"
+                                                                         & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "sleep"
+                                                                         & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "sleep"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep"
+                                                                              & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "sleep"
+                                                                             & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep"
+                                                                                & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "sleep"
+                                                                            & SNAP_behavioral_wider$experiment == "two"])),
+                          mean_wake = c(mean(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "wake"
+                                                                          & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "wake"
+                                                                             & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake"
+                                                                                & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "wake"
+                                                                               & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake"
+                                                                                  & SNAP_behavioral_wider$experiment == "two"]),
+                                         mean(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "wake"
+                                                                              & SNAP_behavioral_wider$experiment == "two"])),
+                          sd_wake = c(sd(SNAP_behavioral_wider$block1[SNAP_behavioral_wider$condition == "wake"
+                                                                      & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$block3[SNAP_behavioral_wider$condition == "wake"
+                                                                         & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$block4[SNAP_behavioral_wider$condition == "wake"
+                                                                         & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$block5[SNAP_behavioral_wider$condition == "wake"
+                                                                         & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$condition == "wake"
+                                                                           & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake"
+                                                                              & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$condition == "wake"
+                                                                             & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake"
+                                                                                & SNAP_behavioral_wider$experiment == "two"]),
+                                         sd(SNAP_behavioral_wider$retention[SNAP_behavioral_wider$condition == "wake"
+                                                                            & SNAP_behavioral_wider$experiment == "two"]))
+                                      )
+                          
+kable(SNAP_means_exp2)
+```
+
+## Check statistics done on the SNAP datasets
+
+### double check first analysis for SNAP dataset - learning effect (analysis 1)
+```{r}
+#What Kim and Soph did for SNAP datasets (analysis 1): "We first assessed initial performance gains from training to ensure that there were no learning differences between groups. We conducted a repeated measures ANOVA with the dependent variable of word recognition accuracy (score), test (block1, block3) as a repeated measure, and condition (sleep, Wake) as a between-subjects factor."
+
+#ANOVA - for both experiments together
+fit_learning = aov(score ~ condition * block + Error(subject/block), 
+                        data = subset(SNAP_behavioral_longer, block == "block1" | block == "block3"))
+pander(summary(fit_learning), style = "rmarkdown")
+
+#ANOVA - for just experiment 1 
+fit_learning = aov(score ~ condition * block + Error(subject/block), 
+                        data = subset(SNAP_behavioral_longer, experiment == "one" & block == "block1" |
+                                        experiment == "one" & block == "block3"))
+pander(summary(fit_learning), style = "rmarkdown")
+
+#ANOVA - for just experiment 2 
+fit_learning = aov(score ~ condition * block + Error(subject/block), 
+                        data = subset(SNAP_behavioral_longer, experiment == "two" & block == "block1" |
+                                        experiment == "two" & block == "block3"))
+pander(summary(fit_learning), style = "rmarkdown")
+
+#calculate average improvement and standard errors 
+
+#experiment 1 - average improvement
+mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$experiment == "one"])
+
+#experiment 1 - standard error (includes function needed to calculate standard error)
+std_mean <- function(x) sd(x)/sqrt(length(x))
+std_mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$experiment == "one"])
+
+#experiment 2 - average improvement 
+mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$experiment == "two"])
+
+#experiment 2 - standard error
+std_mean(SNAP_behavioral_wider$learning[SNAP_behavioral_wider$experiment == "two"])
+```
+
+### double check second analysis for SNAP dataset - protective effect
+```{r}
+#What Kim and Soph did for SNAP datasets (analysis 2): "Our primary hypothesis was that napping would have a protective effect on perceptual learning. To test this, we performed a repeated measures ANOVA on word recognition accuracy with test (posttest1, posttest3) as a within subjects factor and condition (Nap, Wake) as a between subjects factor."
+
+#ANOVA - for both experiments together
+fit_protective = aov(score ~ condition * block + Error(subject/block), 
+                        data = subset(SNAP_behavioral_longer, block == "block5" | block == "block3"))
+pander(summary(fit_protective), style = "rmarkdown")
+
+#another way to do this 
+fit_protective = aov(protective ~ condition, data = SNAP_behavioral_wider)
+pander(summary(fit_protective), styke = "rmarkdown")
+
+#ANOVA - for just experiment 1 
+fit_protective = aov(score ~ condition * block + Error(subject/block), 
+                        data = subset(SNAP_behavioral_longer, experiment == "one" & block == "block3" |
+                                        experiment == "one" & block == "block5"))
+pander(summary(fit_protective), style = "rmarkdown")
+
+#ANOVA - for just experiment 2 
+fit_protective = aov(score ~ condition * block + Error(subject/block), 
+                        data = subset(SNAP_behavioral_longer, experiment == "two" & block == "block3" |
+                                        experiment == "two" & block == "block5"))
+pander(summary(fit_protective), style = "rmarkdown")
+
+#calculate average improvement and standard errors 
+
+#experiment 1 - average for the sleep group
+mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "one" & SNAP_behavioral_wider$condition == "sleep"])
+
+#experiment 1 - standard error for the sleep group
+std_mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "one" & SNAP_behavioral_wider$condition == "sleep"])
+
+#experiment 1 - average for the wake group
+mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "one" & SNAP_behavioral_wider$condition == "wake"])
+
+#experiment 1 - standard error for the wake group 
+std_mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "one" & SNAP_behavioral_wider$condition == "wake"])
+
+#experiment 2 - average for sleep group
+mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "two" & SNAP_behavioral_wider$condition == "sleep"])
+
+#experiment 2 - standard error for sleep group
+std_mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "two" & SNAP_behavioral_wider$condition == "sleep"])
+
+#experiment 2 - average for the wake group
+mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "two" & SNAP_behavioral_wider$condition == "wake"])
+
+#experiment 2 - standard error for the wake group
+std_mean(SNAP_behavioral_wider$protective[SNAP_behavioral_wider$experiment == "two" & SNAP_behavioral_wider$condition == "wake"])
+```
+
+### double check third analysis for SNAP datasets -- "loss" (what Kim/Soph call it)/"consolidation" (what Katie calls it)
+```{r}
+#What Kim and Soph did for SNAP datasets (analysis 3): "We then asked whether the loss in each group was statistically significant. If sleep-dependent consolidation during the nap led to full recovery of performance loss, we would expect significant loss only in the wake group. Use t-tests to see whether average loss in sleep group significantly greater than zero, or if average loss in wake group is significantly greater than zero"
+
+#for experiment 1
+pander(t.test(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep" & 
+                                               SNAP_behavioral_wider$experiment == "one"], alternative = "greater"))
+pander(t.test(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake" & 
+                                               SNAP_behavioral_wider$experiment == "one"], alternative = "greater"))
+
+#for experiment 2
+pander(t.test(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "sleep" & 
+                                               SNAP_behavioral_wider$experiment == "two"], alternative = "greater"))
+pander(t.test(SNAP_behavioral_wider$consolidation[SNAP_behavioral_wider$condition == "wake" & 
+                                               SNAP_behavioral_wider$experiment == "two"], alternative = "greater"))
+```
+
+### double check final analysis for SNAP datasets -- omnibus ANOVA on our primary dependent variable of percent performance loss, with factors of condition (Nap, Wake) and experiment (exp1/exp2)
+```{r}
+#What Kim and Soph did for SNAP datasets (analysis 4): "A statistical difference in percent loss, or an interaction between loss and nap condition, between Experiments 1 and 2 would support the interpretation that increased interference in the wake group is partially contributing to the difference between experiments"
+
+fit_interference = aov(consolidation ~ condition * experiment, data = SNAP_behavioral_wider)
+pander(summary(fit_interference), style = "rmarkdown")
+```
+
+## Doing the same statistics that Soph/Kim did in the SNAP paper draft 
+
+### Analysis 1 - learning effect on PLPSG dataset
+```{r}
+#filter data to just have block 1 and block 3 (pre-test and post-test 1)
+learning_check = PLPSG_sleep_stats_longer %>% filter(block == "block1" | block == "block3") %>% mutate(block = as.factor(block), condition = as.factor(condition))
+
+#CHECKING ASSUMPTIONS:
+
+#1. identify outliers. 
+#Don't want any extreme outliers.
+outliers = learning_check %>% group_by(block) %>% identify_outliers("score")
+outliers
+#there's one outlier, but it's not extreme. good to go
+
+#2. checking normality assumption. 
+#The normality assumption can be checked by computing Shapiro-Wilk test for each combinations of factor levels. If the data is normally distributed, the p-value should be greater than 0.05 (for each cell)
+learning_check %>% group_by(block, condition) %>% shapiro_test(score)
+#p values are all greater than 0.05. good to go
+
+#3. checking the homogeneity of variance assumption. 
+#homogeneity of variance assumption of the between-subject factor (condition) can be checked using the Levene’s test. The test is performed at each level of block variable. If there is homogeneity of variances, Levene’s test will have p > 0.05.
+learning_check %>% group_by(block) %>% levene_test(score ~ condition)
+#p values are all greater than 0.05. good to go
+
+#4. check the homogeneity of covariances assumption. 
+#The homogeneity of covariances of the between-subject factor (group) can be evaluated using the Box’s M-test implemented in the rstatix package. If this test is statistically significant (i.e., p < 0.001), you do not have equal covariances, but if the test is not statistically significant (i.e., p > 0.001), you have equal covariances and you have not violated the assumption of homogeneity of covariances.
+box_m(learning_check[, "score", drop = FALSE], learning_check$condition)
+#p > 0.001. good to go
+
+#5. check the assumption of sphericity - anova doesn't work for whatever reason
+#the assumption of sphericity will be automatically checked during the computation of the ANOVA test using the R function anova_test(). The Mauchly’s test is internally used to assess the sphericity assumption. By using the function get_anova_table() to extract the ANOVA table, the Greenhouse-Geisser sphericity correction is automatically applied to factors violating the sphericity assumption.
+#res.aov <- anova_test(data = learning_check, dv = score, wid = subject, between = condition, within = block)
+#get_anova_table(res.aov)
+
+#anova another way as a result 
+fit_consolidation = aov(score ~ condition * block + Error(subject/block), data = learning_check)
+pander(summary(fit_consolidation), style = "rmarkdown")
+#only main effect of block
+```
+
+### Analysis 2 - protective effect on PLPSG dataset
+```{r}
+#filter data to just have block 3 and block 6 (post-test 1 and post-test 4)
+protective_check = PLPSG_sleep_stats_longer %>% 
+  filter(block == "block3" | block == "block6") %>% 
+  mutate(block = as.factor(block), condition = as.factor(condition))
+
+#CHECKING ASSUMPTIONS:
+
+#1. identify outliers. 
+outliers = protective_check %>% group_by(block) %>% identify_outliers("score")
+outliers
+#there's one outlier, but it's not extreme. good to go
+
+#2. checking normality assumption. 
+protective_check %>% group_by(block, condition) %>% shapiro_test(score)
+#p values are all greater than 0.05. good to go
+
+#3. checking the homogeneity of variance assumption. 
+protective_check %>% group_by(block) %>% levene_test(score ~ condition)
+#p values are all greater than 0.05. good to go
+
+#4. check the homogeneity of covariances assumption. 
+box_m(protective_check[, "score", drop = FALSE], learning_check$condition)
+#p > 0.001. good to go
+
+#5. check the assumption of sphericity (anova doesn't work for whatever reason)
+#res.aov <- anova_test(data = protective_check, dv = score, wid = subject, between = condition, within = block)
+#get_anova_table(res.aov)
+
+#anova another way as a result
+fit_consolidation = aov(score ~ condition * block, data = protective_check)
+pander(summary(fit_consolidation), style = "rmarkdown")
+#main effect of condition; main effect of block
+```
+
+### Analysis 3 - loss/consolidation effect on PLPSG dataset
+```{r}
+pander(t.test(PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "sleep"], alternative = "greater"))
+pander(t.test(PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "wake"], alternative = "greater"))
+#so...we don't find this. both are significantly greater than 0. Sleep-dependent consolidation during the nap did not lead to full recovery of performance loss. 
+```
+
+## ADDITIONAL STATISTICS ON SNAP DATASETS 
+
+### calculate consolidation ANOVA for SNAP dataset with learning and pre-test scores as separate covariates - DV is consolidation, between subject is condition
+```{r}
+#for both experiments together
+fit_consolidation = aov(consolidation ~ learning + condition, data = SNAP_behavioral_wider)
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+fit_consolidation = aov(consolidation ~ block1 + condition, data = SNAP_behavioral_wider)
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+#SNAP exp1 only
+fit_consolidation = aov(consolidation ~ learning + condition, data = subset(SNAP_behavioral_wider, experiment == "one"))
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+fit_consolidation = aov(consolidation ~ block1 + condition, data = subset(SNAP_behavioral_wider, experiment == "one"))
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+#SNAP exp2 only
+fit_consolidation = aov(consolidation ~ learning + condition, data = subset(SNAP_behavioral_wider, experiment == "two"))
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+fit_consolidation = aov(consolidation ~ block1 + condition, data = subset(SNAP_behavioral_wider, experiment == "two"))
+pander(summary(fit_consolidation), style = "rmarkdown")
+```
+
+
+## ADDITIONAL STATISTICS ON PLPSG DATASET
+
+### make sure no differences between pre tests between groups - check with t-test 
+```{r}
+pander(t.test(x = PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "sleep"], 
+       y = PLPSG_sleep_stats_wider$consolidation[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+#no difference between sleep and wake subjects
+```
+
+### check to see if loss is the same between both groups (post-test 2 - post-test 1)
+```{r}
+initialloss_check = PLPSG_sleep_stats_longer %>% filter(block == "block3" | block == "block4") %>% mutate(block = as.factor(block), condition = as.factor(condition))
+
+fit_consolidation = aov(score ~ condition * block + Error(subject/block), data = initialloss_check)
+pander(summary(fit_consolidation), style = "rmarkdown")
+#only main effect of block - this is good
+```
+
+### anovas including learning and pre-test score as covariates (in separate models) - DV is consolidation, between subject variable is condition
+```{r}
+#anova including learning as predictor
+fit_consolidation = aov(consolidation ~ learning + condition, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+#anova including pretest as predictor 
+fit_consolidation = aov(consolidation ~ block1 + condition, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_consolidation), style = "rmarkdown")
+```
+
+### including undergrad status as variable in ANOVA, DV is consolidation, between subject variable is condition
+```{r}
+#include undergrad
+fit_consolidation = aov(consolidation ~ condition * undergrad, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+#adding in learning as a covariate
+fit_consolidation = aov(consolidation ~ learning + condition * undergrad, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_consolidation), style = "rmarkdown")
+
+#adding in pre-test score as a covariate instead
+fit_consolidation = aov(consolidation ~ block1 + condition * undergrad, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_consolidation), style = "rmarkdown")
+```
+
+### perform an ANOVA with block (pre-test, post-test 1, and last post-test) as a within subjects factor, score as the DV, and condition as the between subjects factor. Perform a post-hoc test on this.
+```{r}
+#filter for just pre test, post test 1 and last post test, include as (block) - can use longer dataframe
+fit_score = aov(score ~ condition * block + Error(subject/block), data = subset(PLPSG_sleep_stats_longer, block == "block1" | 
+                                                           block == "block3" | block == "block6"))
+pander(summary(fit_score), style = "rmarkdown")
+
+#cannot perform tukey tests for post hoc analysis when including an error term, as a result we cannot do this:
+#TukeyHSD(fit_score, conf.level=.95)
+#instead we need to do individual t-tests for our comparisons - since the main effect of block is significant with our ANOVA, we can look at the following:
+
+#for block 1 vs 3
+pander(t.test(PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block1"],
+       PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block3"]))
+#for block 3 vs 6
+pander(t.test(PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block3"],
+       PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block6"]))
+#for block 1 vs 6
+pander(t.test(PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block1"],
+       PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block6"]))
+```
+
+### perform an ANOVA with phase (learning, retention) as a within subjects factor, differencescore as the DV, and condition as the between subjects factor. 
+```{r}
+#make new longer dataframe where differenceScore is the score for learning and retention - differenceScore will be our DV
+PLPSG_sleep_stats_longer_2 = PLPSG_sleep_stats_wider %>%
+  pivot_longer(cols = c("learning", "retention"),
+               names_to = "phase",
+               values_to = "differenceScore")
+
+#we want to include the covariate first in the model in order to control for it first. Want subject error term too 
+fit_differenceScore = aov(differenceScore ~ block1 + condition * phase + Error(subject/phase), data = PLPSG_sleep_stats_longer_2)
+pander(summary(fit_differenceScore), style = "rmarkdown")
+```
+
+
+# PLPSG - SLEEP DATA ANALYSIS
+
+## PLOTS 
+
+### visualize with dot-plot - amount of time spent in each stage correlated with consolidation 
+```{r, message = FALSE}
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), y = consolidation,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - percent of time spent in each stage correlated with consolidation 
+```{r, message = FALSE}
+plot_perN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN1), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("N1 (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN2), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N2 (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN3), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N3 (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perR), y = consolidation,
+      na.rm = TRUE) +
+  xlab("R (percent)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_perN1, plot_perN2, plot_perN3, plot_perR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - latency to each stage correlated with consolidation 
+```{r, message = FALSE, warning = FALSE}
+plot_latN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN1), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN2), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN3), y = consolidation,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latR), y = consolidation,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("consolidation") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_latN1, plot_latN2, plot_latN3, plot_latR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - WASO (wake after sleep onset) correlated with consolidation
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(WASO), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("WASO (minutes)") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is definitely not what I would predict
+```
+
+### visualize with dot-plot - TST (total sleep time) correlated with consolidation
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(TST), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("TST (minutes)") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#this is also not what I would predict necessarily
+```
+
+### visualize with dot-plot - SE (sleep efficiency) correlated with consolidation
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(SE), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("SE (percent)") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is not what I would predict either
+```
+
+### visualize with dot-plot - spindles correlated with maintenance 
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(spindles), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("spindle count") + 
+  ylab("maintenance") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is not what I would predict either
+```
+
+### visualize with dot-plot - spindles correlated with consolidation 
+```{r, message = FALSE}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(spindles), y = consolidation,
+      na.rm = TRUE) + 
+  xlab("spindle count") + 
+  ylab("consolidation") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+#yeah.. this is not what I would predict either
+```
+
+## STATISTICS
+
+### both directions stepwise selection regression, predicting consolidation from time spent in sleep stages
+```{r}
+#define intercept-only model
+intercept_only <- lm(consolidation ~ 1, data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+#define model with all predictors
+all <- lm(consolidation ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+#perform backward stepwise regression
+both <- step(intercept_only, direction='both', scope=formula(all), trace=0)
+
+#view results of backward stepwise regression
+pander(both$anova)
+
+#view final model
+pander(both$coefficients)
+
+step(lm(consolidation ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep")),direction="both")
+```
+
+### linear model predicting consolidation from duration of N2/N3
+```{r}
+n2n3_model = lm(consolidation ~ as.numeric(N2) + as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(n2n3_model))
+```
+
+### linear model predicting consolidation from percentage of time spent in N2/N3
+```{r}
+pern2n3_model = lm(consolidation ~ as.numeric(perN2) + as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(pern2n3_model))
+```
+
+### linear model predicting consolidation from latency of N3
+```{r}
+latn3_model = lm(consolidation ~ as.numeric(latN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(latn3_model))
+```
+
+### linear model predicting consolidation from WASO
+```{r}
+waso_model = lm(consolidation ~ as.numeric(WASO), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(waso_model))
+```
+
+### linear model predicting consolidation from TST
+```{r}
+tst_model = lm(consolidation ~ as.numeric(TST), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(tst_model))
+```
+
+### linear model predicting consolidation from SE
+```{r}
+se_model = lm(consolidation ~ as.numeric(SE), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(se_model))
+```
+
+### linear model predicting maintenance from spindle count 
+```{r}
+spindles_maintenance_model = lm(maintenance ~ as.numeric(spindles), 
+                                data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(spindles_maintenance_model))
+```
+
+### linear model predicting consolidation from spindle count 
+```{r}
+spindles_consolidation_model = lm(consolidation ~ as.numeric(spindles), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(spindles_consolidation_model))
+```
+
+### looking at distribution of maintenance across the two datasets 
+```{r}
+#overall - PLPSG dataset
+table(PLPSG_sleep_stats_wider$maintenance>=0)
+#those who maintain - PLPSG dataset
+table(PLPSG_sleep_stats_wider$condition[PLPSG_sleep_stats_wider$mainentance >= 0])
+#those who do not maintain - PLPSG dataset 
+table(PLPSG_sleep_stats_wider$condition[PLPSG_sleep_stats_wider$mainentance < 0])
+
+#overall - SNAP datasets
+table(SNAP_behavioral_wider$maintenance>=0)
+#those who maintain - SNAP datasets 
+table(SNAP_behavioral_wider$condition[SNAP_behavioral_wider$maintenance >= 0])
+#those who do not maintain - SNAP datasets 
+table(SNAP_behavioral_wider$condition[SNAP_behavioral_wider$maintenance < 0])
+```
+
+### plot maintenance - SNAP 
+```{r}
+ggplot(SNAP_behavioral_wider,
+       aes(y = maintenance,
+           x = condition)) +
+  ggtitle("SNAP maintenance both") +
+  geom_violin() +
+  ylim(-0.25, 0.25) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) 
+```
+
+### t-tests comparing sleep and wake group maintenance for PLPSG 
+```{r}
+t.test(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"])
+```
+
+### t-test comparing sleep and wake group maintenance for SNAP datasets
+```{r}
+#for both experiments together
+t.test(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep"],
+       SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake"])
+
+#for experiment 1
+t.test(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep" & SNAP_behavioral_wider$experiment == "one"],
+       SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake" & SNAP_behavioral_wider$experiment == "one"])
+
+#for experiment 2
+t.test(SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "sleep" & SNAP_behavioral_wider$experiment == "two"],
+       SNAP_behavioral_wider$maintenance[SNAP_behavioral_wider$condition == "wake" & SNAP_behavioral_wider$experiment == "two"])
+```
+
+### visualize with dot-plot - amount of time spent in each stage correlated with maintenance
+```{r, message = FALSE}
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), y = maintenance,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - percent of time spent in each stage correlated with maintenance
+```{r, message = FALSE}
+plot_perN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN1), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("N1 (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN2), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N2 (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN3), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N3 (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_perR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perR), y = maintenance,
+      na.rm = TRUE) +
+  xlab("R (percent)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_perN1, plot_perN2, plot_perN3, plot_perR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### visualize with dot-plot - latency to each stage correlated with maintenance
+```{r}
+plot_latN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN1), y = maintenance,
+      na.rm = TRUE) + 
+  xlab("N1 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN2), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N2 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latN3), y = maintenance,
+      na.rm = TRUE) +
+  xlab("N3 (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_latR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(latR), y = maintenance,
+      na.rm = TRUE) +
+  xlab("R (minutes)") + 
+  ylab("maintenance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_latN1, plot_latN2, plot_latN3, plot_latR,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
+#do sleep and wake subjects differ in block 3 performance? do they differ in block 6 performance (PLPSG)? 
+```{r}
+
+#violin plot - block3
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = block3,
+      x = condition)) +
+  ggtitle("block3") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+#violin plot - block6
+ggplot(PLPSG_sleep_stats_wider,
+  aes(y = block6,
+      x = condition)) +
+  ggtitle("block6") +
+  geom_violin() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+#t tests
+t.test(x = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(x = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+```
+
+#find correlation between block 1 and block 3
+```{r}
+
+#dot plots
+ggplot(data = PLPSG_sleep_stats_wider) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  ggtitle("sleep") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_wake = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "wake")) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  ggtitle("wake") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+figure <- ggarrange(plot_sleep, plot_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+
+#linear regressions
+block1block3modelALL <- lm(block1 ~ block3, 
+                           data=PLPSG_sleep_stats_wider)
+pander(summary(block1block3modelALL))
+
+block1block3modelSLEEP <- lm(block1 ~ block3, 
+                             data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(block1block3modelSLEEP))
+
+block1block3modelWAKE <- lm(block1 ~ block3, 
+                            data=subset(PLPSG_sleep_stats_wider, condition == "wake"))
+pander(summary(block1block3modelWAKE))
+
+```
+
+#plot PLPSG behavioral data on top of SNAP data sets (box plots)
+```{r}
+#plot exp1 and exp2 separately 
+plot_PLPSG = ggboxplot(PLPSG_sleep_stats_longer, x="test", y="score", color="condition", add = "jitter") +
+  scale_x_discrete(limits = c("PreTest","AfterTrainingPostTest","BeforeSleepPostTest","AfterSleepPostTest", "NightPostTest")) + theme(axis.text.x = element_text(angle = 0, vjust = 1, hjust=0.5, size = 10))
+
+plot_SNAP_exp1 = ggboxplot(subset(SNAP_behavioral_longer, experiment == "one"), x="test", y="score", color="condition", add = "jitter") +
+  scale_x_discrete(limits = c("PreTest","AfterTrainingPostTest","BeforeSleepPostTest","AfterSleepPostTest", "NightPostTest")) + theme(axis.text.x = element_text(angle = 0, vjust =1, hjust=0.5, size=10))
+
+plot_SNAP_exp2 = ggboxplot(subset(SNAP_behavioral_longer, experiment == "one"), x="test", y="score", color="condition", add = "jitter") +
+  scale_x_discrete(limits = c("PreTest","AfterTrainingPostTest","BeforeSleepPostTest","AfterSleepPostTest", "NightPostTest")) + theme(axis.text.x = element_text(angle = 0, vjust = 1, hjust=0.5, size = 10))
+
+figure <- ggarrange(plot_PLPSG, plot_SNAP_exp1, plot_SNAP_exp2,
+                    labels = c("A", "B", "C"),
+                    ncol = 1, nrow = 3)
+
+figure 
+
+#plot exp1 and exp2 together instead 
+plot_SNAP = ggboxplot(SNAP_behavioral_longer, x="test", y="score", color="condition", add = "jitter") +
+  scale_x_discrete(limits = c("PreTest","AfterTrainingPostTest","BeforeSleepPostTest","AfterSleepPostTest", "NightPostTest")) + theme(axis.text.x = element_text(angle = 0, vjust = 1, hjust=0.5, size = 10))
+
+figure <- ggarrange(plot_PLPSG, plot_SNAP,
+                    labels = c("A", "B"),
+                    ncol = 1, nrow = 2)
+figure
+
+```
+#plot a line plot of just the SNAP behavioral data - both experiments together
+```{r}
+plot_sleep = ggplot(data = subset(SNAP_behavioral_longer, condition == "sleep")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) + 
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("SNAP - Sleep") +
+  geom_line(show.legend = FALSE)
+
+plot_wake = ggplot(data = subset(SNAP_behavioral_longer, condition == "wake")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) + 
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("SNAP - Wake") +
+  geom_line(show.legend = FALSE)
+
+figure = ggarrange(plot_sleep, plot_wake,
+          ncol = 1, nrow = 2)
+
+figure
+```
+
+#plot a line plot of just the SNAP behavioral data - separately for the two experiments 
+```{r}
+plot_exp1_sleep = ggplot(data = subset(SNAP_behavioral_longer, experiment == "one" & condition == "sleep")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) + 
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Experiment One - Sleep") +
+  geom_line(show.legend = FALSE)
+
+plot_exp1_wake = ggplot(data = subset(SNAP_behavioral_longer, experiment == "one" & condition == "wake")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) + 
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Experiment One - Wake") +
+  geom_line(show.legend = FALSE)
+
+plot_exp2_sleep = ggplot(data = subset(SNAP_behavioral_longer, experiment == "two" & condition == "sleep")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) + 
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Experiment Two - Sleep") +
+  geom_line(show.legend = FALSE)
+
+plot_exp2_wake = ggplot(data = subset(SNAP_behavioral_longer, experiment == "two" & condition == "wake")) + 
+  aes(x = block, y = score, group = subject, color = subject,
+      na.rm = TRUE) + 
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Experiment Two - Wake") +
+  geom_line(show.legend = FALSE)
+
+figure = ggarrange(plot_exp1_sleep, plot_exp1_wake, plot_exp2_sleep, plot_exp2_wake,
+          ncol = 2, nrow = 2)
+
+figure
+```
+
+#plot PLPSG behavioral data on top of SNAP data sets (line graphs)
+```{r}
+plot_PLPSG = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "sleep")) + 
+  aes(x = block, y = score, group = subject,
+      na.rm = TRUE) + 
+  ylim(0.2,0.625) +
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Sleep") +
+  geom_line()
+
+plot_SNAP = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "wake")) + 
+  aes(x = block, y = score, group = subject,
+      na.rm = TRUE) +
+  ylim(0.2,0.625) +
+  xlab("block") + 
+  ylab("performance") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  ggtitle("Wake") + 
+  geom_line()
+
+figure <- ggarrange(plot_PLPSG, plot_SNAP,
+                    labels = c("PLPSG", "SNAP"),
+                    ncol = 1, nrow = 2)
+figure
+```
+
+
+#plot PLPSG and SNAP behavioral data on same box plot graph 
+```{r}
+#will need to upload a separate csv that I created in google drive because I couldn't emotionally handle manipulating the data more in R 
+
+PLPSG_and_SNAP = read.csv("PLPSG_and_SNAP_behavioral.csv")
+
+ggboxplot(PLPSG_and_SNAP, x="test", y="score", color="condition", fill = "study", add = "jitter") +
+  scale_x_discrete(limits = c("PreTest","AfterTrainingPostTest","BeforeSleepPostTest","AfterSleepPostTest", "NightPostTest")) +
+  theme(axis.text.x = element_text(angle = 0, vjust = 1, hjust=0.5, size = 8)) + 
+  scale_fill_manual(values = c("#e3ecff", "#ffbaba")) + 
+  scale_color_manual(values = c("#83adb5", "#5e3c58"))
+
+```

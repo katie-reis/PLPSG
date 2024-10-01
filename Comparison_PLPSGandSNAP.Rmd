@@ -1,0 +1,224 @@
+---
+title: "Comparison of PLPSG and SNAP datasets"
+output: html_document
+date: '2022-10-05'
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots 
+
+```
+
+### import data files for PLPSG dataset
+```{r}
+source("PLPSG_ImportData.R")
+```
+
+### import data files for SNAP datasets
+```{r}
+source("SNAP_ImportData.R")
+```
+
+### violin plots of learning for PLPSG and SNAP datasets
+```{r, message= FALSE}
+learning_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("Our learning") +
+  geom_violin() + 
+    ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_SNAP_all <- ggplot(SNAP_behavioral_wider,
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("SNAP learning both") +
+  geom_violin() + 
+  ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_SNAP_exp1 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "one"),
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("SNAP learning exp1") +
+  geom_violin() + 
+    ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+learning_SNAP_exp2 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "two"),
+  aes(y = learning,
+      x = condition)) +
+  ggtitle("SNAP learning exp2") +
+  geom_violin() + 
+    ylim(-0.15,.45) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(learning_katie_collected, learning_SNAP_all,learning_SNAP_exp1, learning_SNAP_exp2,
+                    labels = c("A", "B", "C","D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### violin plots of protective effect for SNAP and PLPSG datasets (last post-test - first post-test)
+```{r, message= FALSE, warning = FALSE}
+protective_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("Our protective") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_SNAP_all <- ggplot(SNAP_behavioral_wider,
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("SNAP protective both") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_SNAP_exp1 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "one"),
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("SNAP protective exp1") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+protective_SNAP_exp2 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "two"),
+  aes(y = protective,
+      x = condition)) +
+  ggtitle("SNAP protective exp2") +
+  geom_violin() + 
+  ylim(-.2,.175) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(protective_katie_collected, protective_SNAP_all, protective_SNAP_exp1, protective_SNAP_exp2,
+                    labels = c("A", "B", "C","D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### violin plots of consolidation for SNAP and PLPSG datasets 
+```{r, message= FALSE, warning = FALSE}
+consolidation_katie_collected <- ggplot(PLPSG_sleep_stats_wider,
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("Our consolidation") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_SNAP_all <- ggplot(SNAP_behavioral_wider,
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("SNAP consolidation both") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_SNAP_exp1 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "one"),
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("SNAP consolidation exp1") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+consolidation_SNAP_exp2 <- ggplot(data = subset(SNAP_behavioral_wider, experiment == "two"),
+  aes(y = consolidation,
+      x = condition)) +
+  ggtitle("SNAP consolidation exp2") +
+  geom_violin() + 
+  ylim(-55,55) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(consolidation_katie_collected, consolidation_SNAP_all, consolidation_SNAP_exp1, consolidation_SNAP_exp2,
+                    labels = c("A", "B", "C","D"),
+                    ncol = 2, nrow = 2)
+figure
+```
+
+### Use violin plots for consolidation2 (has learning as the denominator instead)
+```{r}
+plot_PLPSG_consolidation2 = ggplot(PLPSG_sleep_stats_wider,
+  aes(y = consolidation2,
+      x = condition)) +
+  ggtitle("PLPSG consolidation") +
+  geom_violin() +
+  ylim(-350,410) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+
+plot_SNAP_consolidation2 = ggplot(SNAP_behavioral_wider,
+  aes(y = consolidation2,
+      x = condition)) +
+  ggtitle("SNAP consolidation both") +
+  geom_violin() + 
+  ylim(-350,410) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "red",
+               width = 0.2)
+
+figure <- ggarrange(plot_PLPSG_consolidation2, plot_SNAP_consolidation2,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+

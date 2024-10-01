@@ -1,0 +1,116 @@
+---
+title: "PLPSG Stats Sleep and Behavioral"
+output: html_document
+date: '2022-10-05'
+---
+
+### import packages
+```{r, message=FALSE}
+library(pander)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+
+# filter out subjects who didn't learn (subjects 134, 141, 142)
+PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, subject != '134' & subject != '141' & subject != '142')
+PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & subject != '141' & subject != '142')
+
+```
+
+### both directions stepwise selection regression, predicting consolidation from time spent in sleep stages
+```{r}
+#define intercept-only model
+intercept_only <- lm(consolidation ~ 1, data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+#define model with all predictors
+all <- lm(consolidation ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+#perform backward stepwise regression
+both <- step(intercept_only, direction='both', scope=formula(all), trace=0)
+
+#view results of backward stepwise regression
+pander(both$anova)
+
+#view final model
+pander(both$coefficients)
+
+step(lm(consolidation ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep")),direction="both")
+```
+
+### linear model predicting consolidation from duration of N2/N3
+```{r}
+n2n3_model = lm(consolidation ~ as.numeric(N2) + as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(n2n3_model))
+```
+
+### linear model predicting consolidation from percentage of time spent in N2/N3
+```{r}
+pern2n3_model = lm(consolidation ~ as.numeric(perN2) + as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(pern2n3_model))
+```
+
+### linear model predicting consolidation from latency of N2 and N3
+```{r}
+latn3_model = lm(consolidation ~ as.numeric(latN2) + as.numeric(latN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(latn3_model))
+```
+
+### linear model predicting consolidation from WASO
+```{r}
+waso_model = lm(consolidation ~ as.numeric(WASO), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(waso_model))
+```
+
+### linear model predicting consolidation from TST
+```{r}
+tst_model = lm(consolidation ~ as.numeric(TST), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(tst_model))
+```
+
+### linear model predicting consolidation from SE
+```{r}
+se_model = lm(consolidation ~ as.numeric(SE), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(se_model))
+```
+
+### linear model predicting maintenance from spindle count 
+```{r}
+spindles_maintenance_model = lm(maintenance ~ as.numeric(spindles), 
+                                data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(spindles_maintenance_model))
+```
+
+### linear model predicting consolidation from spindle count 
+```{r}
+spindles_consolidation_model = lm(consolidation ~ as.numeric(spindles), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(spindles_consolidation_model))
+```
+
+# do the same thing but with protective measure as the DV 
+
+### linear model predicting protection from duration of N2/N3
+```{r}
+n2n3_model = lm(protective ~ as.numeric(N2) + as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(n2n3_model))
+```
+
+### linear model predicting protection from percentage of time spent in N2/N3
+```{r}
+pern2n3_model = lm(protective ~ as.numeric(perN2) + as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(pern2n3_model))
+```
+
+### linear model predicting protection from latency of N2 and N3
+```{r}
+latn3_model = lm(protective ~ as.numeric(latN2) + as.numeric(latN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(latn3_model))
+```
+### linear model predicting protection from spindle count 
+```{r}
+spindles_consolidation_model = lm(protective ~ as.numeric(spindles), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(spindles_consolidation_model))
+```

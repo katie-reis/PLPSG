@@ -1,0 +1,309 @@
+---
+title: "PLPSG Stats Behavioral Only"
+output: html_document
+date: '2022-10-05'
+---
+### import relevant packages 
+```{r, message=FALSE}
+library(dplyr) #needed for data manipulation
+library(gridExtra) #needed for making pretty table
+library(rstatix) #needed for identifying outliers
+library(pander) #needed to render tables
+library(knitr)
+library(tidyverse)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+
+# filter out subjects who didn't learn (subjects 134, 141, 142)
+PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, subject != '134' & subject != '141' & subject != '142')
+PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & subject != '141' & subject != '142')
+
+```
+
+## Calculate means and standard deviations for sleep and wake subjects
+```{r}
+PLPSG_means = data.frame (score = c("block1","block3","block4","block5","block6",
+                                 "learning", "loss","recovery","maintenance","protective","consolidation", "retention"),
+                          mean_sleep = c(mean(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                         mean(PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "sleep"]), 
+                                         mean(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                          sd_sleep = c(sd(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "sleep"]),
+                                       sd(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                          mean_wake = c(mean(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                        mean(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "wake"])),
+                          sd_wake = c(sd(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "wake"]),
+                                      sd(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "wake"]))
+)
+                          
+kable(head(PLPSG_means))
+```
+
+
+
+### Analysis 1 - learning effect on PLPSG dataset
+```{r}
+#filter data to just have block 1 and block 3 (pre-test and post-test 1)
+learning_check = PLPSG_sleep_stats_longer %>% filter(block == "block1" | block == "block3") %>% mutate(block = as.factor(block), condition = as.factor(condition))
+
+#CHECKING ASSUMPTIONS:
+
+#1. identify outliers. 
+#Don't want any extreme outliers.
+outliers = learning_check %>% group_by(block) %>% identify_outliers("score")
+outliers
+#there's one outlier, but it's not extreme. good to go
+
+#2. checking normality assumption. 
+#The normality assumption can be checked by computing Shapiro-Wilk test for each combinations of factor levels. If the data is normally distributed, the p-value should be greater than 0.05 (for each cell)
+learning_check %>% group_by(block, condition) %>% shapiro_test(score)
+#p values are all greater than 0.05. good to go
+
+#3. checking the homogeneity of variance assumption. 
+#homogeneity of variance assumption of the between-subject factor (condition) can be checked using the Levene’s test. The test is performed at each level of block variable. If there is homogeneity of variances, Levene’s test will have p > 0.05.
+learning_check %>% group_by(block) %>% levene_test(score ~ condition)
+#p values are all greater than 0.05. good to go
+
+#4. check the homogeneity of covariances assumption. 
+#The homogeneity of covariances of the between-subject factor (group) can be evaluated using the Box’s M-test implemented in the rstatix package. If this test is statistically significant (i.e., p < 0.001), you do not have equal covariances, but if the test is not statistically significant (i.e., p > 0.001), you have equal covariances and you have not violated the assumption of homogeneity of covariances.
+box_m(learning_check[, "score", drop = FALSE], learning_check$condition)
+#p > 0.001. good to go
+
+#5. check the assumption of sphericity - anova doesn't work for whatever reason
+#the assumption of sphericity will be automatically checked during the computation of the ANOVA test using the R function anova_test(). The Mauchly’s test is internally used to assess the sphericity assumption. By using the function get_anova_table() to extract the ANOVA table, the Greenhouse-Geisser sphericity correction is automatically applied to factors violating the sphericity assumption.
+#res.aov <- anova_test(data = learning_check, dv = score, wid = subject, between = condition, within = block)
+#get_anova_table(res.aov)
+
+#anova another way as a result 
+fit_learning = aov(score ~ condition * block + Error(subject/block), data = learning_check)
+pander(summary(fit_learning), style = "rmarkdown")
+#only main effect of block
+```
+
+### Analysis 2 - protective effect on PLPSG dataset
+```{r}
+#filter data to just have block 3 and block 6 (post-test 1 and post-test 4)
+protective_check = PLPSG_sleep_stats_longer %>% 
+  filter(block == "block3" | block == "block6") %>% 
+  mutate(block = as.factor(block), condition = as.factor(condition))
+
+#CHECKING ASSUMPTIONS:
+
+#1. identify outliers. 
+outliers = protective_check %>% group_by(block) %>% identify_outliers("score")
+outliers
+#there's one outlier, but it's not extreme. good to go
+
+#2. checking normality assumption. 
+protective_check %>% group_by(block, condition) %>% shapiro_test(score)
+#p values are all greater than 0.05. good to go
+
+#3. checking the homogeneity of variance assumption. 
+protective_check %>% group_by(block) %>% levene_test(score ~ condition)
+#p values are all greater than 0.05. good to go
+
+#4. check the homogeneity of covariances assumption. 
+box_m(protective_check[, "score", drop = FALSE], learning_check$condition)
+#p > 0.001. good to go
+
+#5. check the assumption of sphericity (anova doesn't work for whatever reason)
+#res.aov <- anova_test(data = protective_check, dv = score, wid = subject, between = condition, within = block)
+#get_anova_table(res.aov)
+
+#anova another way as a result
+fit_protective = aov(score ~ condition * block, data = protective_check)
+pander(summary(fit_protective), style = "rmarkdown")
+#main effect of condition; main effect of block
+```
+
+### Analysis 3 - long term recovery effect on PLPSG dataset
+```{r}
+pander(t.test(PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "sleep"], alternative = "greater"))
+pander(t.test(PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "wake"], alternative = "greater"))
+#so...we don't find this. both are significantly greater than 0. Sleep-dependent consolidation during the nap did not lead to full recovery of performance loss. 
+```
+
+## ADDITIONAL STATISTICS 
+
+### make sure no differences between pre tests between groups - check with t-test 
+```{r}
+pander(t.test(x = PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"], 
+       y = PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+#no difference between sleep and wake subjects
+```
+
+### make sure no differences in learning between the two groups - check with t-test 
+```{r}
+pander(t.test(x = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"], 
+       y = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+
+```
+
+
+### check to see if loss is the same between both groups (post-test 2 - post-test 1)
+```{r}
+pander(t.test(x = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"], 
+       y = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+```
+
+### anovas including learning and pre-test score as covariates (in separate models) - DV is protective, between subject variable is condition
+```{r}
+#anova including learning as predictor
+fit_protective_learningcov = aov(protective ~ learning + condition, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_protective_learningcov), style = "rmarkdown")
+
+#anova including pretest as predictor 
+fit_consolidation_pretestcov = aov(protective ~ block1 + condition, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_protective_pretestcov), style = "rmarkdown")
+```
+
+### including undergrad status as variable in ANOVA, DV is protective, between subject variable is condition
+```{r}
+#include undergrad
+fit_consolidation_studentcov = aov(protective ~ condition * undergrad, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_protective_studentcov), style = "rmarkdown")
+
+#adding in learning as a covariate
+fit_consolidation_learningstudentcov = aov(protective ~ learning + condition * undergrad, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_protective_learningstudentcov), style = "rmarkdown")
+
+#adding in pre-test score as a covariate instead
+fit_consolidation_preteststudentcov = aov(protective ~ block1 + condition * undergrad, data = PLPSG_sleep_stats_wider)
+pander(summary(fit_protective_preteststudentcov), style = "rmarkdown")
+```
+
+### perform an ANOVA with block (pre-test, post-test 1, and last post-test) as a within subjects factor, score as the DV, and condition as the between subjects factor. Perform a post-hoc test on this.
+```{r}
+#filter for just pre test, post test 1 and last post test, include as (block) - can use longer dataframe
+fit_score = aov(score ~ condition * block + Error(subject/block), data = subset(PLPSG_sleep_stats_longer, block == "block1" | 
+                                                           block == "block3" | block == "block6"))
+pander(summary(fit_score), style = "rmarkdown")
+
+#cannot perform tukey tests for post hoc analysis when including an error term, as a result we cannot do this:
+#TukeyHSD(fit_score, conf.level=.95)
+#instead we need to do individual t-tests for our comparisons - since the main effect of block is significant with our ANOVA, we can look at the following:
+
+#for block 1 vs 3
+pander(t.test(PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block1"],
+       PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block3"]))
+#for block 3 vs 6
+pander(t.test(PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block3"],
+       PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block6"]))
+#for block 1 vs 6
+pander(t.test(PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block1"],
+       PLPSG_sleep_stats_longer$score[PLPSG_sleep_stats_longer$block == "block6"]))
+```
+
+### perform an ANOVA with phase (learning, retention) as a within subjects factor, difference score as the DV, and condition as the between subjects factor. 
+```{r}
+#make new longer dataframe where differenceScore is the score for learning and retention - differenceScore will be our DV
+PLPSG_sleep_stats_longer_2 = PLPSG_sleep_stats_wider %>%
+  pivot_longer(cols = c("learning", "retention"),
+               names_to = "phase",
+               values_to = "differenceScore")
+
+#we want to include the covariate first in the model in order to control for it first. Want subject error term too 
+fit_differenceScore = aov(differenceScore ~ block1 + condition * phase + Error(subject/phase), data = PLPSG_sleep_stats_longer_2)
+pander(summary(fit_differenceScore), style = "rmarkdown")
+```
+
+### t-tests comparing sleep and wake group maintenance for PLPSG 
+```{r}
+t.test(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"])
+```
+
+#do sleep and wake subjects differ in block 3 performance? do they differ in block 6 performance (PLPSG)? 
+```{r}
+#t tests
+t.test(x = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(x = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"])
+```
+
+#find correlation between block 1 and block 3
+```{r}
+#linear regressions
+block1block3modelALL <- lm(block1 ~ block3, 
+                           data=PLPSG_sleep_stats_wider)
+pander(summary(block1block3modelALL))
+
+block1block3modelSLEEP <- lm(block1 ~ block3, 
+                             data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(block1block3modelSLEEP))
+
+block1block3modelWAKE <- lm(block1 ~ block3, 
+                            data=subset(PLPSG_sleep_stats_wider, condition == "wake"))
+pander(summary(block1block3modelWAKE))
+```
+
+#determine whether groups differ at any posttest
+```{r}
+t.test(x = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(x = PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(x = PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(x = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(x = PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "wake"],
+       y = PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+```
+
+
+
+
+
+

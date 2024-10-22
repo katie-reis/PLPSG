@@ -32,7 +32,7 @@ hypnogram_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/sleepscoredfiles"
 spindle_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection/YASA_Detections_Without_Sleep_Scoring"
 updated_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection/SpindleDetectionsWithSleepScoring"
 filtered_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection/N2andN3Detections"
-results_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection"
+results_dir <- "~/repos/PL_Sleep_PSG/DataAnalysis/Data"
 
 ```
 

@@ -1,0 +1,503 @@
+---
+title: "PLPSG_Individual_Sleep_Spindles_Filtering"
+author: "Katie Reis"
+date: "2024-10-14"
+output: html_document
+---
+
+---
+title: "EEG Hypnogram and Spindle Processing"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Set the required libraries
+library(dplyr)
+library(readr)
+library(stringr)
+library(tidyr)
+```
+
+
+```{r}
+# Define the subjects with two different file naming patterns
+subjects1 <- c(101, 103, 105, 107, 109, 110, 112, 113, 117, 118, 120, 122, 127, 130, 131, 132)
+subjects2 <- c(134, 135, 136, 137, 138, 139, 140, 141, 143, 144, 145, 146, 147, 148, 149)
+subjects3 <- 142
+
+# Base directories
+hypnogram_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/sleepscoredfiles"
+spindle_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection/YASA_Detections_Without_Sleep_Scoring"
+updated_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection/SpindleDetectionsWithSleepScoring"
+filtered_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection/N2andN3Detections"
+results_dir <- "~/repos/PL_Sleep_PSG/Sleep_Scoring/files_organized_for_spindle_detection"
+
+```
+
+```{r}
+# Process subjects with the first file pattern
+for (subject in subjects1) {
+  # Read in hypnogram file
+  hypnogram_file <- file.path(hypnogram_dir, sprintf("sub-%03d_ses-02_task-rest_acq-sleep_desc-aasm_hypno.txt", subject))
+  hypnogram <- read_delim(hypnogram_file, delim = "\t", col_names = FALSE, show_col_types = FALSE)
+  
+  # Read in spindle file
+  spindle_file <- file.path(spindle_dir, sprintf("spindle_times_subj%03d.csv", subject))
+  spindle_data <- read_csv(spindle_file, show_col_types = FALSE)
+  
+  # Add sleep_score column to spindle_file
+  spindle_data <- spindle_data %>%
+    mutate(sleep_score = hypnogram$X1[ceiling(Start)])
+  
+  # Save updated spindle file
+  write_csv(spindle_data, file.path(updated_dir, sprintf("spindle_times_subj%03d_updated.csv", subject)))
+  
+  # Filter spindle_data to keep rows where sleep_score is 2 or 3
+  filtered_spindle_data <- spindle_data %>%
+    filter(sleep_score %in% c(2, 3))
+  
+  # Save filtered spindle file
+  write_csv(filtered_spindle_data, file.path(filtered_dir, sprintf("spindle_times_subj%03d_filtered.csv", subject)))
+}
+
+
+  
+```
+
+```{r}
+# Process subjects with the second file pattern
+for (subject in subjects2) {
+  # Read in hypnogram file
+  hypnogram_file <- file.path(hypnogram_dir, sprintf("Subj%03d_PLPSG_Sleep-edf_hypno_oldformat.txt", subject))
+  hypnogram <- read_delim(hypnogram_file, delim = "\t", col_names = FALSE, show_col_types = FALSE)
+  
+  # Read in spindle file
+  spindle_file <- file.path(spindle_dir, sprintf("spindle_times_subj%03d.csv", subject))
+  spindle_data <- read_csv(spindle_file, show_col_types = FALSE)
+  
+  # Add sleep_score column to spindle_file
+  spindle_data <- spindle_data %>%
+    mutate(sleep_score = hypnogram$X1[ceiling(Start)])
+  
+  # Save updated spindle file
+  write_csv(spindle_data, file.path(updated_dir, sprintf("spindle_times_subj%03d_updated.csv", subject)))
+  
+  # Filter spindle_data to keep rows where sleep_score is 2 or 3
+  filtered_spindle_data <- spindle_data %>%
+    filter(sleep_score %in% c(2, 3))
+  
+  # Save filtered spindle file
+  write_csv(filtered_spindle_data, file.path(filtered_dir, sprintf("spindle_times_subj%03d_filtered.csv", subject)))
+}
+```
+
+
+```{r}
+# Process subjects with the third file pattern
+for (subject in subjects3) {
+  # Read in hypnogram file
+  hypnogram_file <- file.path(hypnogram_dir, sprintf("Subj%03d_PLPSG_Sleep_2-edf_hypno_oldformat.txt", subject))
+  hypnogram <- read_delim(hypnogram_file, delim = "\t", col_names = FALSE, show_col_types = FALSE)
+  
+  # Read in spindle file
+  spindle_file <- file.path(spindle_dir, sprintf("spindle_times_subj%03d.csv", subject))
+  spindle_data <- read_csv(spindle_file, show_col_types = FALSE)
+  
+  # Add sleep_score column to spindle_file
+  spindle_data <- spindle_data %>%
+    mutate(sleep_score = hypnogram$X1[ceiling(Start)])
+  
+  # Save updated spindle file
+  write_csv(spindle_data, file.path(updated_dir, sprintf("spindle_times_subj%03d_updated.csv", subject)))
+}
+
+# Filter spindle_data to keep rows where sleep_score is 2 or 3
+  filtered_spindle_data <- spindle_data %>%
+    filter(sleep_score %in% c(2, 3))
+  
+  # Save filtered spindle file
+  write_csv(filtered_spindle_data, file.path(filtered_dir, sprintf("spindle_times_subj%03d_filtered.csv", subject)))
+```
+
+
+```{r}
+# Create a new dataframe with specified column titles
+results_df <- data.frame(
+  Subject = integer(),
+  Detections_W_F3 = integer(),
+  Detections_W_F4 = integer(),
+  Detections_W_C3 = integer(),
+  Detections_W_C4 = integer(),
+  Detections_N1_F3 = integer(),
+  Detections_N1_F4 = integer(),
+  Detections_N1_C3 = integer(),
+  Detections_N1_C4 = integer(),
+  Detections_N2_F3 = integer(),
+  Detections_N2_F4 = integer(),
+  Detections_N2_C3 = integer(),
+  Detections_N2_C4 = integer(),
+  Detections_N3_F3 = integer(),
+  Detections_N3_F4 = integer(),
+  Detections_N3_C3 = integer(),
+  Detections_N3_C4 = integer(),
+  Detections_R_F3 = integer(),
+  Detections_R_F4 = integer(),
+  Detections_R_C3 = integer(),
+  Detections_R_C4 = integer(),
+  stringsAsFactors = FALSE
+)
+
+# Function to calculate counts for each sleep stage (0-5) and Channel (F3, F4, C3, C4)
+calculate_counts <- function(spindle_data, subject) {
+  counts <- c(
+    Detections_W_F3 = nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "F3")),
+    Detections_W_F4 = nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "F4")),
+    Detections_W_C3 = nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "C3")),
+    Detections_W_C4 = nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "C4")),
+    
+    Detections_N1_F3 = nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "F3")),
+    Detections_N1_F4 = nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "F4")),
+    Detections_N1_C3 = nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "C3")),
+    Detections_N1_C4 = nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "C4")),
+    
+    Detections_N2_F3 = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F3")),
+    Detections_N2_F4 = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F4")),
+    Detections_N2_C3 = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C3")),
+    Detections_N2_C4 = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C4")),
+    
+    Detections_N3_F3 = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F3")),
+    Detections_N3_F4 = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F4")),
+    Detections_N3_C3 = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C3")),
+    Detections_N3_C4 = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C4")),
+    
+    Detections_R_F3 = nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "F3")),
+    Detections_R_F4 = nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "F4")),
+    Detections_R_C3 = nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "C3")),
+    Detections_R_C4 = nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "C4")),
+    
+    True_Spindle_F3 = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F3"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F3"))),
+    True_Spindle_F4 = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F4"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F4"))),
+    True_Spindle_C3 = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C3"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C3"))),
+    True_Spindle_C4 = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C4"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C4"))),
+    
+    False_Spindle_F3 = (nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "F3"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "F3"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "F3"))),
+    False_Spindle_F4 = (nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "F4"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "F4"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "F3"))), 
+    False_Spindle_C3 = (nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "C3"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "C3"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "F3"))),
+    False_Spindle_C4 = (nrow(spindle_data %>% filter(sleep_score == 0 & Channel == "C4"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 1 & Channel == "C4"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 4 & Channel == "F3"))),
+    
+    Total_Spindles_Detected_F3 = nrow(spindle_data %>% filter(Channel == "F3")),
+    Total_Spindles_Detected_F4 = nrow(spindle_data %>% filter(Channel == "F4")),
+    Total_Spindles_Detected_C3 = nrow(spindle_data %>% filter(Channel == "C3")),
+    Total_Spindles_Detected_C4 = nrow(spindle_data %>% filter(Channel == "C4"))
+
+  )
+  
+  # Combine subject number with the counts
+  return(c(Subject = subject, counts))
+}
+
+# Process all subjects
+for (subject in c(subjects1, subjects2, subjects3)) {
+  # Read spindle data (using the updated files)
+  spindle_file <- file.path(updated_dir, sprintf("spindle_times_subj%03d_updated.csv", subject))
+  spindle_data <- read_csv(spindle_file, show_col_types = FALSE)
+  
+  # Calculate counts for the subject
+  subject_counts <- calculate_counts(spindle_data, subject)
+  
+  # Append the counts to the results dataframe
+  results_df <- rbind(results_df, as.data.frame(as.list(subject_counts), stringsAsFactors = FALSE))
+}
+
+# Save the results dataframe to a CSV file
+write_csv(results_df, file.path(results_dir, "YASA_spindle_count_summary_counts.csv"))
+
+
+```
+
+
+```{r}
+# Create a new dataframe with specified column titles
+results_df <- data.frame(
+  Subject = integer(),
+  Spindles_N2_F3_Count = integer(),
+  stringsAsFactors = FALSE
+)
+
+# Function to calculate counts for each sleep stage (0-5) and Channel (F3, F4, C3, C4)
+calculate_info <- function(spindle_data, subject) {
+  counts <- c(
+    Spindles_N2_F3_Count = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F3")),
+    Spindles_N2_F4_Count = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F4")),
+    Spindles_N2_C3_Count = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C3")),
+    Spindles_N2_C4_Count = nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C4")),
+    
+    Spindles_N3_F3_Count = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F3")),
+    Spindles_N3_F4_Count = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F4")),
+    Spindles_N3_C3_Count = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C3")),
+    Spindles_N3_C4_Count = nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C4")),
+    
+    Spindles_N2_F3_Duration = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N2_F4_Duration = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N2_C3_Duration = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N2_C4_Duration = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    
+    Spindles_N3_F3_Duration = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N3_F4_Duration = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N3_C3_Duration = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N3_C4_Duration = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    
+    Spindles_N2_F3_Amplitude = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N2_F4_Amplitude = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N2_C3_Amplitude = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N2_C4_Amplitude = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    
+    Spindles_N3_F3_Amplitude = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N3_F4_Amplitude = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N3_C3_Amplitude = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N3_C4_Amplitude = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    
+    
+    Spindles_N2_F3_RMS = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N2_F4_RMS = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N2_C3_RMS = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N2_C4_RMS = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    
+    Spindles_N3_F3_RMS = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N3_F4_RMS = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N3_C3_RMS = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N3_C4_RMS = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    
+    Spindles_N2_F3_AbsPower = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N2_F4_AbsPower = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N2_C3_AbsPower = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N2_C4_AbsPower = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    
+    Spindles_N3_F3_AbsPower = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N3_F4_AbsPower = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N3_C3_AbsPower = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N3_C4_AbsPower = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    
+    Spindles_N2_F3_RelPower = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N2_F4_RelPower = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N2_C3_RelPower = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N2_C4_RelPower = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    
+    Spindles_N3_F3_RelPower = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N3_F4_RelPower = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N3_C3_RelPower = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N3_C4_RelPower = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    
+    Spindles_N2_F3_Frequency = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N2_F4_Frequency = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N2_C3_Frequency = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N2_C4_Frequency = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    
+    Spindles_N3_F3_Frequency = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N3_F4_Frequency = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N3_C3_Frequency = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N3_C4_Frequency = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    
+    Spindles_N2_F3_Oscillations = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N2_F4_Oscillations = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N2_C3_Oscillations = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N2_C4_Oscillations = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    
+    Spindles_N3_F3_Oscillations = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N3_F4_Oscillations = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N3_C3_Oscillations = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N3_C4_Oscillations = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    
+    Spindles_N2_F3_Symmetry = spindle_data %>% filter(sleep_score == 2 & Channel == "F3") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N2_F4_Symmetry = spindle_data %>% filter(sleep_score == 2 & Channel == "F4") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N2_C3_Symmetry = spindle_data %>% filter(sleep_score == 2 & Channel == "C3") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N2_C4_Symmetry = spindle_data %>% filter(sleep_score == 2 & Channel == "C4") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    
+    Spindles_N3_F3_Symmetry = spindle_data %>% filter(sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N3_F4_Symmetry = spindle_data %>% filter(sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N3_C3_Symmetry = spindle_data %>% filter(sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N3_C4_Symmetry = spindle_data %>% filter(sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    
+    Spindles_N2andN3_F3_Count = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F3"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F3"))),
+    Spindles_N2andN3_F4_Count = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "F4"))) +
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "F4"))),
+    Spindles_N2andN3_C3_Count = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C3"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C3"))),
+    Spindles_N2andN3_C4_Count = (nrow(spindle_data %>% filter(sleep_score == 2 & Channel == "C4"))) + 
+      (nrow(spindle_data %>% filter(sleep_score == 3 & Channel == "C4"))),
+    
+    Spindles_N2andN3_F3_Duration = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N2andN3_F4_Duration = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N2andN3_C3_Duration = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+    Spindles_N2andN3_C4_Duration = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_duration = mean(Duration, na.rm = TRUE)) %>% pull(mean_duration),
+  
+    Spindles_N2andN3_F3_Amplitude = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N2andN3_F4_Amplitude = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N2andN3_C3_Amplitude = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    Spindles_N2andN3_C4_Amplitude = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_amplitude = mean(Amplitude, na.rm = TRUE)) %>% pull(mean_amplitude),
+    
+    Spindles_N2andN3_F3_RMS = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N2andN3_F4_RMS = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N2andN3_C3_RMS = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    Spindles_N2andN3_C4_RMS = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_rms = mean(RMS, na.rm = TRUE)) %>% pull(mean_rms),
+    
+    Spindles_N2andN3_F3_AbsPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N2andN3_F4_AbsPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N2andN3_C3_AbsPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    Spindles_N2andN3_C4_AbsPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_abspower = mean(AbsPower, na.rm = TRUE)) %>% pull(mean_abspower),
+    
+    Spindles_N2andN3_F3_RelPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N2andN3_F4_RelPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N2andN3_C3_RelPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    Spindles_N2andN3_C4_RelPower = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_relpower = mean(RelPower, na.rm = TRUE)) %>% pull(mean_relpower),
+    
+    Spindles_N2andN3_F3_Frequency = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N2andN3_F4_Frequency = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N2andN3_C3_Frequency = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    Spindles_N2andN3_C4_Frequency = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_frequency = mean(Frequency, na.rm = TRUE)) %>% pull(mean_frequency),
+    
+    Spindles_N2andN3_F3_Oscillations = spindle_data %>% filter(sleep_score == 2  | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N2andN3_F4_Oscillations = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N2andN3_C3_Oscillations = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    Spindles_N2andN3_C4_Oscillations = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_oscillations = mean(Oscillations, na.rm = TRUE)) %>% pull(mean_oscillations),
+    
+    Spindles_N2andN3_F3_Symmetry = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F3") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N2andN3_F4_Symmetry = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "F4") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N2andN3_C3_Symmetry = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C3") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry),
+    Spindles_N2andN3_C4_Symmetry = spindle_data %>% filter(sleep_score == 2 | sleep_score == 3 & Channel == "C4") %>%
+      summarize(mean_symmetry = mean(Symmetry, na.rm = TRUE)) %>% pull(mean_symmetry)
+    
+  )
+  
+  # Combine subject number with the counts
+  return(c(Subject = subject, counts))
+}
+
+# Process all subjects
+for (subject in c(subjects1, subjects2, subjects3)) {
+  # Read spindle data (using the updated files)
+  spindle_file <- file.path(updated_dir, sprintf("spindle_times_subj%03d_updated.csv", subject))
+  spindle_data <- read_csv(spindle_file, show_col_types = FALSE)
+  
+  # Calculate counts for the subject
+  subject_info <- calculate_info(spindle_data, subject)
+  
+  # Append the counts to the results dataframe
+  results_df <- rbind(results_df, as.data.frame(as.list(subject_info), stringsAsFactors = FALSE))
+}
+
+# Save the results dataframe to a CSV file
+write_csv(results_df, file.path(results_dir, "YASA_spindle_count_summary_extended.csv"))
+
+
+```

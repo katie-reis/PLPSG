@@ -1,4 +1,4 @@
-﻿Subject,Age,Gender,Primary_Language,Secondary_Languages,2nd_lang,2nd_lang_proficiency,3rd_lang,3rd_lag_proficiency,4th_lang,4th_lang_proficiency,5th_lang,5th_lang_proficiency,country_born,1st_lived,1st_years,2nd_lived,2nd_years,3rd_lived,3rd_years,4th_lived,4th_years,5th_lived,5th_years,6th_lived,6th_years,Notes
+﻿Subject,Age,Gender,Primary_Language,Secondary_Languages,2nd_lang,2nd_lang_proficiency,3rd_lang,3rd_lang_proficiency,4th_lang,4th_lang_proficiency,5th_lang,5th_lang_proficiency,country_born,1st_lived,1st_years,2nd_lived,2nd_years,3rd_lived,3rd_years,4th_lived,4th_years,5th_lived,5th_years,6th_lived,6th_years,Notes
 100,26,M,English,yes,Spanish,Fluent,NA,NA,NA,NA,NA,NA,America,"Chicago, IL",25,"Lansing, IL",1,NA,NA,NA,NA,NA,NA,NA,NA,NA
 102,21,F,English,yes,Mandarin,Fluent,ASL,Proficient,NA,NA,NA,NA,America,"Tianjin, China",2.5,"Chicago, IL",3-Feb,"Hinsdale, IL",7,"Chicago, IL",9,NA,NA,NA,NA,NA
 101,24,F,English,yes,spanish ,fluent,NA,NA,NA,NA,NA,NA,Mexico,"Villanueva, Zacatecazas, Mexico",2,"Chicago, IL",17,"Wooster, OH",4,"Chicago, IL",1,NA,NA,NA,NA,NA

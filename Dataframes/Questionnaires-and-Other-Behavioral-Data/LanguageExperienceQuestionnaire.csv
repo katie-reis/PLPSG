@@ -1,60 +1,60 @@
-Subject	Age	Gender	Primary_Language	Secondary_Languages	2nd_lang	2nd_lang_proficiency	3rd_lang	3rd_lang_proficiency	4th_lang	4th_lang_proficiency	5th_lang	5th_lang_proficiency	country_born	1st_lived	1st_years	2nd_lived	2nd_years	3rd_lived	3rd_years	4th_lived	4th_years	5th_lived	5th_years	6th_lived	6th_years	Notes
-100	26	M	English	yes	Spanish	Fluent	NA	NA	NA	NA	NA	NA	USA	Chicago, IL	25	Lansing, IL	1	NA	NA	NA	NA	NA	NA	NA	NA	NA
-102	21	F	English	yes	Mandarin	Fluent	ASL	Proficient	NA	NA	NA	NA	USA	Tianjin, China	2.5	Chicago, IL	2.5	Hinsdale, IL	7	Chicago, IL	9	NA	NA	NA	NA	NA
-101	24	F	English	yes	Spanish 	Fluent	NA	NA	NA	NA	NA	NA	Mexico	Villanueva, Zacatecazas, Mexico	2	Chicago, IL	17	Wooster, OH	4	Chicago, IL	1	NA	NA	NA	NA	NA
-103	23	F	English	yes	Macedonian	Semi-fluent	Spanish	Semi-Fluent	NA	NA	NA	NA	Macedonia	Stip, Macedonia	3	Darien, IL	15	Chicago, IL	5	NA	NA	NA	NA	NA	NA	NA
-104	23	F	English	yes	French	Semi-fluent	NA	NA	NA	NA	NA	NA	USA	Jericho, VT	18	Rochester, NY	3.75	Nice, France	0.25	Florham Park, NJ	0.25	Chicago, IL	1	NA	NA	NA
-105	21	F	English	no	NA	NA	NA	NA	NA	NA	NA	NA	USA	Port Orchard, WA	5	Hollister, CA	13	Chicago, IL	3	NA	NA	NA	NA	NA	NA	NA
-106	21	F	English	yes	Spanish 	Fluent	French	Basic	Portuguese	Basic	NA	NA	USA	Chicago, IL	21	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
-107	22	F	English	yes	Mandarin Chinese	Semi-fluent	NA	NA	NA	NA	NA	NA	Malaysia	Beijing, China	7	Kuala Lumpur, Malaysia	11	Chicago, IL, USA	4	NA	NA	NA	NA	NA	NA	NA
-109	20	F	English	yes	Chinese	Basic	NA	NA	NA	NA	NA	NA	USA	Dublin, Ohio	18	Chicago, IL	2	NA	NA	NA	NA	NA	NA	NA	NA	NA
-110	21	F	English	yes	Korean	Fluent	NA	NA	NA	NA	NA	NA	Republic of Korea	Seoul, Republic of Korea	17	Aukland, New Zealand	3	Chicago, IL, USA	1	NA	NA	NA	NA	NA	NA	NA
-111	20	F	English	yes	French	Fluent	Wolof	Semi-Fluent	NA	NA	NA	NA	Senegal	Senegal, Dakar	16	Maastricht, Netherlands	2	Chicago, IL, USA	2	NA	NA	NA	NA	NA	NA	NA
-112	25	M	English	yes	Japanese	Semi-fluent	NA	NA	NA	NA	NA	NA	USA	Anchorage, AK	3	Colombus, MS	4	New Orleans, LA	3	Miami, FL	2	New Orleans, LA	7	Chicago, IL	6	
-113	25	F	English	yes	Malay	Fluent	Sarawakian Malay	Fluent	Arabic	Basic	Korean	Basic	Malaysia	Kuching, Sarawak, Malaysia	12	Kuala Terengganu, Terengganu, Malaysia	3	Bangi, Selangar, Malaysia	2	West Lafayette, Indiana, USA	7	South Korea, Seoul	0.166	Uppsala, Sweden	0.4166	Also Mandarin Chiene (basic); 7th place lived is Chicago, IL for 1 year
-114	22	M	English	yes	Hindi	Fluent	NA	NA	NA	NA	NA	NA	India	New Delhi, India	8	Bangalore, India	5	Lucknow, India	2	New Delhi, India	7	Chicago, IL	0.0833	NA	NA	NA
-115	23	F	English	no	NA	NA	NA	NA	NA	NA	NA	NA	USA	Mt. Pleasant, Michigan, USA	17.5	Ann Arbor, MI, USA	4	Chicago, IL, USA	1.5	NA	NA	NA	NA	NA	NA	NA
-116	22	M	English	yes	French	Proficient	Esperanto	Basic	NA	NA	NA	NA	USA	Mahwah, New Jersey	18	Chicago, IL	4	NA	NA	NA	NA	NA	NA	NA	NA	NA
-117	25	F	English	yes	German	Basic	NA	NA	NA	NA	NA	NA	USA	Green Bay, Wisconsin, USA	18	Madison, Wisconsin, USA	4	Washington DC, USA	2	Chicago, IL, USA	1	NA	NA	NA	NA	NA
-118	19	M	English	yes	French	Proficient	NA	NA	NA	NA	NA	NA	USA	Rockville, Maryland	6	Chestnut Hill, MA	1	Newton, MA	11	Chicago, IL, USA	1	NA	NA	NA	NA	NA
-119	25	F	English	yes	Spanish 	Semi-fluent	NA	NA	NA	NA	NA	NA	USA	Northborough, MA	18	South Bend, IN	4	Santiago, Chile	0.5	Chicago, IL	3	NA	NA	NA	NA	NA
-120	25	M	English	yes	Hindi	Fluent	Marathi	Fluent	French	Basic	NA	NA	India	Mumbai, Maharashtra, India	15	Ahmedabad, Gujurat, India	3	New Delhi, India	7	Chicago, IL, USA	0.5	NA	NA	NA	NA	NA
-121	18	M	English	yes	French	Fluent	NA	NA	NA	NA	NA	NA	USA	Aix-en-Provence, Cote du Rhone, France	8	Baltimore, Maryland	5	Cedar Park, Texas	3	Chicago, IL, USA	2	NA	NA	NA	NA	NA
-122	21	F	English	yes	Arabic	Proficient	Spanish	Proficient	NA	NA	NA	NA	USA	Houston, Texas	8	New York, NY	10	Chicago, IL, USA	4	NA	NA	NA	NA	NA	NA	NA
-123	21	F	English	no	NA	NA	NA	NA	NA	NA	NA	NA	USA	Evanston, IL	4	Des Moines, IA	5	Wilmette, IL	9	Chicago, IL, USA	3	NA	NA	NA	NA	NA
-125	20	F	English	yes	Spanish 	Semi-fluent	French	Fluent	NA	NA	NA	NA	USA	Middle Tennessee, USA	18	Chicago, IL	2	NA	NA	NA	NA	NA	NA	NA	NA	NA
-126	22	M	English	no	NA	NA	NA	NA	NA	NA	NA	NA	United Kingdom	London, UK	18	St. Andrews, UK	4	Chicago, IL, USA	1	NA	NA	NA	NA	NA	NA	NA
-127	27	F	English, Spanish	yes	French	Proficient	Portuguese	Proficient	NA	NA	NA	NA	Colombia	Medellin, Colombia	2	Santiago, Chile	2	Pererira, Colombia	1.5	Ohio/Indiana, US	1	Medellin, Colombia	2	Cali, Colombia	5	Also Ohio/Indiana for 1 year, Sao Paulo Brazil for 1.5 years, Cali Colombia for 2, Durham NC for 4, NYC NY for 3, and Chicago IL for 2.5
-128	20	F	English	yes	French	Proficient	NA	NA	NA	NA	NA	NA	USA	Ocean Springs, Mississippi	4	Pacific Grove, CA	1.5	Ocean Springs, Mississippi	7	San Diego, CA	6	Chicago, IL	2	NA	NA	NA
-129	27	M	English	yes	Chinese	Fluent	NA	NA	NA	NA	NA	NA	China	Xi'an, Shaanxi, China	18	Troy, NY	4	Chicago, IL, USA	6	NA	NA	NA	NA	NA	NA	NA
-130	21	F	English	yes	Mandarin	Fluent	French	Basic	NA	NA	NA	NA	USA	Evanston, IL	1	Indiannapolis, IN	1	Acron, MA	16	Chicago, IL, USA	3	NA	NA	NA	NA	NA
-131	29	F	English	yes	Chinese	Semi-fluent	Spanish	Semi-fluent	NA	NA	NA	NA	Singapore	Singapore	17	Melbourne, Australia	3	Singapore	7	Chicago, IL, USA	0.25	NA	NA	NA	NA	NA
-132	21	M	English	yes	Spanish 	Basic	NA	NA	NA	NA	NA	NA	USA	Grandville, Michigan	18.5	Chicago, IL	1.5	Grandville, MI	1.5	Chicago, IL	0.167	NA	NA	NA	NA	NA
-133	18	F	English	yes	Spanish 	Semi-fluent	Urdu/Hindi	Proficient	NA	NA	NA	NA	USA	Sugar Land, TX, USA	18	Chicago, IL	0.25	NA	NA	NA	NA	NA	NA	NA	NA	NA
-134	20	F	English	yes	Russian	Fluent	Spanish	Basic	NA	NA	NA	NA	USA	NV, US	12	UT, US	0.5	NV, US	6	AZ, US	1	Chicago, IL	0.5	NA	NA	NA
-135	22	M	English	yes	Mandarin	Semi-fluent	French	Proficient	Spanish	Proficient	NA	NA	USA	Redmond, WA	18	Pune, Maharashtra, India	0.583333333	Soldotna, AK	0.33	Chicago, IL, USA	2.5	Paris, Ile de France, France	0.4166	Chicago, IL	0.166	
-136	21	F	English	yes	French	Fluent	Malayalam	Basic	Korean	Basic	NA	NA	USA	Acton, MA	2	Luheaton, IL	7	Oak park, IL	9	Chicago, IL	3	NA	NA	NA	NA	NA
-137	20	F	English	yes	Chinese	Semi-fluent	Spanish	Basic	NA	NA	NA	NA	USA	Cary, NC	18	Chicago, IL	2	NA	NA	NA	NA	NA	NA	NA	NA	NA
-138	21	M	English	no	NA	NA	NA	NA	NA	NA	NA	NA	England	Winchester, Hampshire, UK	18	London, Greater London, UK	2	Chicago, IL, USA	0.166	NA	NA	NA	NA	NA	NA	NA
-139	20	F	English	yes	Polish	Fluent	French	Proficient	NA	NA	NA	NA	USA	Glenview, IL	14	Arlington Heights, IL	6	hyde park, IL	2	NA	NA	NA	NA	NA	NA	NA
-140	22	F	English	yes	German	Basic	NA	NA	NA	NA	NA	NA	USA	Los Gratos, CA	6	Kenmore, WA	12	Chicago, IL, USA	4	NA	NA	NA	NA	NA	NA	NA
-141	19	F	English	yes	Spanish 	Fluent	NA	NA	NA	NA	NA	NA	USA	Pembroke Pines, Florida	18	Chicago, IL	2	NA	NA	NA	NA	NA	NA	NA	NA	NA
-142	25	M	English	yes	Hindi	Fluent	Marathi	Fluent	NA	NA	NA	NA	India	Magpur, Maharashra, India	18	Boston, MA	4	Chicago, IL, USA	3	NA	NA	NA	NA	NA	NA	NA
-143	20	F	English, Russian	yes	Spanish 	Semi-fluent	French	Proficient	NA	NA	NA	NA	USA	Highland Park, IL	2	Buffalo Grove, IL	16	Chicago, IL	2	NA	NA	NA	NA	NA	NA	NA
-144	20	F	English, Spanish	yes	Spanish 	Fluent	French	Proficient	German	Basic	NA	NA	Argentina	Mendoza, Argentina	17	Santa Ana, Costa Rica	2	Chicago, IL	<1	NA	NA	NA	NA	NA	NA	NA
-145	22	F	English	yes	Mandarin	Semi-fluent	NA	NA	NA	NA	NA	NA	China	Shanghai, China	3	Atlanta, GA	3	Shanghai, China	8	Ojai, California	4	Chicago, IL	4	NA	NA	NA
-146	30	F	English, Tagalog	Yes	NA	NA	NA	NA	NA	NA	NA	NA	Philippines	Manila, Philippines	30	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
-147	22	F	English	yes	Spanish	Proficient	Arabic	Basic	NA	NA	NA	NA	Jamaica	St. Catherine, Jamaica	8	Monroe, Louisiana	9.5	Chicago, IL, USA	4.5	NA	NA	NA	NA	NA	NA	NA
-148	20	F	English	yes	German	Proficient	French	Basic	NA	NA	NA	NA	USA	Denver, CO	5	Seattle, WA	6	Denver, CO	8	Chicago, IL, USA	2.5	NA	NA	NA	NA	NA
-149	20	F	English	yes	Korean	Fluent	Spanish	Basic	NA	NA	NA	NA	USA	Upstate, NY	19	Chicago, IL	2	NA	NA	NA	NA	NA	NA	NA	NA	NA
-150	21	M	English	no	NA	NA	NA	NA	NA	NA	NA	NA	USA	New York	3	Hartford, CT	3	West Lafayette, IN	12	Chicago, IL, USA	3	NA	NA	NA	NA	NA
-151	19	F	English	yes	Mandarin 	Basic	Spanish	Basic	NA	NA	NA	NA	USA	Fremont, CA	3	Chicago, IL	8	Frederick, MD	6	Chicago, IL, USA	2	NA	NA	NA	NA	NA
-152	23	F	English	yes	Czech	Fluent	Mandarin	Basic	NA	NA	NA	NA	USA	Crossville, TN	6	St. Louis, MO	11	Chicago, IL, USA	4	Indianapolis, IN	1	NA	NA	NA	NA	NA
-153	26	M	English	yes	Swahili	Fluent	Greek	Semi-Fluent	NA	NA	NA	NA	USA	Chicago, IL	2	Northfield, VA	3	Dallas, TX	2	Dar-es-salaam, Tanzania	18	Edinburgh, Scotland	1	NA	NA	NA
-154	23	F	English	yes	French	Proficient	NA	NA	NA	NA	NA	NA	USA	Baten Rouge, Louisiana	18	Chicago, IL	5	NA	NA	NA	NA	NA	NA	NA	NA	NA
-155	21	F	English	yes	French	Basic	Mandarin	Semi-fluent	NA	NA	NA	NA	Canada	Vancouver, Canada, BC	18	Chicago, IL	3	NA	NA	NA	NA	NA	NA	NA	NA	NA
-157	21	F	English	yes	Spanish 	Basic	NA	NA	NA	NA	NA	NA	USA	Olema, CA	18	Chiacago, IL	4	NA	NA	NA	NA	NA	NA	NA	NA	NA
-159	21	F	English	yes	Vietnamese	Basic	NA	NA	NA	NA	NA	NA	USA	Buena Park, CA	18	Chicago, IL	3	NA	NA	NA	NA	NA	NA	NA	NA	NA
-160	33	M	English, Spanish	yes	French	Fluent	NA	NA	NA	NA	NA	NA	Mexico	Mexico City, Mexico	9	San Francisco	8	Chicago, IL, USA	6	Jalisco Guadalajara, Mexico	9	Chicago, IL	0.583333333	NA	NA	NA
-161	20	M	English	no	NA	NA	NA	NA	NA	NA	NA	NA	USA	Denver, CO	1	Chicago, IL	9	River Forest, IL	8	Chicago,IL	2	NA	NA	NA	NA	NA
-162	19	M	English	yes	Tamil	Fluent	Spanish	Basic	Mandarin	Basic	NA	NA	India	Chennai, India	3	Rochester, NY	8	Basting Ridge, NJ	2	San Diego, CA	5	Austin, TX	1	Hyde Park, Chicago	NA	NA
+﻿Subject,Age,Gender,Primary_Language,Secondary_Languages,2nd_lang,2nd_lang_proficiency,3rd_lang,3rd_lang_proficiency,4th_lang,4th_lang_proficiency,5th_lang,5th_lang_proficiency,country_born,1st_lived,1st_years,2nd_lived,2nd_years,3rd_lived,3rd_years,4th_lived,4th_years,5th_lived,5th_years,6th_lived,6th_years,Notes
+100,26,M,English,yes,Spanish,Fluent,NA,NA,NA,NA,NA,NA,USA,"Chicago, IL",25,"Lansing, IL",1,NA,NA,NA,NA,NA,NA,NA,NA,NA
+102,21,F,English,yes,Mandarin,Fluent,ASL,Proficient,NA,NA,NA,NA,USA,"Tianjin, China",2.5,"Chicago, IL",2.5,"Hinsdale, IL",7,"Chicago, IL",9,NA,NA,NA,NA,NA
+101,24,F,English,yes,Spanish ,Fluent,NA,NA,NA,NA,NA,NA,Mexico,"Villanueva, Zacatecazas, Mexico",2,"Chicago, IL",17,"Wooster, OH",4,"Chicago, IL",1,NA,NA,NA,NA,NA
+103,23,F,English,yes,Macedonian,Semi-fluent,Spanish,Semi-Fluent,NA,NA,NA,NA,Macedonia,"Stip, Macedonia",3,"Darien, IL",15,"Chicago, IL",5,NA,NA,NA,NA,NA,NA,NA
+104,23,F,English,yes,French,Semi-fluent,NA,NA,NA,NA,NA,NA,USA,"Jericho, VT",18,"Rochester, NY",3.75,"Nice, France",0.25,"Florham Park, NJ",0.25,"Chicago, IL",1,NA,NA,NA
+105,21,F,English,no,NA,NA,NA,NA,NA,NA,NA,NA,USA,"Port Orchard, WA",5,"Hollister, CA",13,"Chicago, IL",3,NA,NA,NA,NA,NA,NA,NA
+106,21,F,English,yes,Spanish ,Fluent,French,Basic,Portuguese,Basic,NA,NA,USA,"Chicago, IL",21,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+107,22,F,English,yes,Mandarin Chinese,Semi-fluent,NA,NA,NA,NA,NA,NA,Malaysia,"Beijing, China",7,"Kuala Lumpur, Malaysia",11,"Chicago, IL, USA",4,NA,NA,NA,NA,NA,NA,NA
+109,20,F,English,yes,Chinese,Basic,NA,NA,NA,NA,NA,NA,USA,"Dublin, Ohio",18,"Chicago, IL",2,NA,NA,NA,NA,NA,NA,NA,NA,NA
+110,21,F,English,yes,Korean,Fluent,NA,NA,NA,NA,NA,NA,Republic of Korea,"Seoul, Republic of Korea",17,"Aukland, New Zealand",3,"Chicago, IL, USA",1,NA,NA,NA,NA,NA,NA,NA
+111,20,F,English,yes,French,Fluent,Wolof,Semi-Fluent,NA,NA,NA,NA,Senegal,"Senegal, Dakar",16,"Maastricht, Netherlands",2,"Chicago, IL, USA",2,NA,NA,NA,NA,NA,NA,NA
+112,25,M,English,yes,Japanese,Semi-fluent,NA,NA,NA,NA,NA,NA,USA,"Anchorage, AK",3,"Colombus, MS",4,"New Orleans, LA",3,"Miami, FL",2,"New Orleans, LA",7,"Chicago, IL",6,
+113,25,F,English,yes,Malay,Fluent,Sarawakian Malay,Fluent,Arabic,Basic,Korean,Basic,Malaysia,"Kuching, Sarawak, Malaysia",12,"Kuala Terengganu, Terengganu, Malaysia",3,"Bangi, Selangar, Malaysia",2,"West Lafayette, Indiana, USA",7,"South Korea, Seoul",0.166,"Uppsala, Sweden",0.4166,"Also Mandarin Chiene (basic); 7th place lived is Chicago, IL for 1 year"
+114,22,M,English,yes,Hindi,Fluent,NA,NA,NA,NA,NA,NA,India,"New Delhi, India",8,"Bangalore, India",5,"Lucknow, India",2,"New Delhi, India",7,"Chicago, IL",0.0833,NA,NA,NA
+115,23,F,English,no,NA,NA,NA,NA,NA,NA,NA,NA,USA,"Mt. Pleasant, Michigan, USA",17.5,"Ann Arbor, MI, USA",4,"Chicago, IL, USA",1.5,NA,NA,NA,NA,NA,NA,NA
+116,22,M,English,yes,French,Proficient,Esperanto,Basic,NA,NA,NA,NA,USA,"Mahwah, New Jersey",18,"Chicago, IL",4,NA,NA,NA,NA,NA,NA,NA,NA,NA
+117,25,F,English,yes,German,Basic,NA,NA,NA,NA,NA,NA,USA,"Green Bay, Wisconsin, USA",18,"Madison, Wisconsin, USA",4,"Washington DC, USA",2,"Chicago, IL, USA",1,NA,NA,NA,NA,NA
+118,19,M,English,yes,French,Proficient,NA,NA,NA,NA,NA,NA,USA,"Rockville, Maryland",6,"Chestnut Hill, MA",1,"Newton, MA",11,"Chicago, IL, USA",1,NA,NA,NA,NA,NA
+119,25,F,English,yes,Spanish ,Semi-fluent,NA,NA,NA,NA,NA,NA,USA,"Northborough, MA",18,"South Bend, IN",4,"Santiago, Chile",0.5,"Chicago, IL",3,NA,NA,NA,NA,NA
+120,25,M,English,yes,Hindi,Fluent,Marathi,Fluent,French,Basic,NA,NA,India,"Mumbai, Maharashtra, India",15,"Ahmedabad, Gujurat, India",3,"New Delhi, India",7,"Chicago, IL, USA",0.5,NA,NA,NA,NA,NA
+121,18,M,English,yes,French,Fluent,NA,NA,NA,NA,NA,NA,USA,"Aix-en-Provence, Cote du Rhone, France",8,"Baltimore, Maryland",5,"Cedar Park, Texas",3,"Chicago, IL, USA",2,NA,NA,NA,NA,NA
+122,21,F,English,yes,Arabic,Proficient,Spanish,Proficient,NA,NA,NA,NA,USA,"Houston, Texas",8,"New York, NY",10,"Chicago, IL, USA",4,NA,NA,NA,NA,NA,NA,NA
+123,21,F,English,no,NA,NA,NA,NA,NA,NA,NA,NA,USA,"Evanston, IL",4,"Des Moines, IA",5,"Wilmette, IL",9,"Chicago, IL, USA",3,NA,NA,NA,NA,NA
+125,20,F,English,yes,Spanish ,Semi-fluent,French,Fluent,NA,NA,NA,NA,USA,"Middle Tennessee, USA",18,"Chicago, IL",2,NA,NA,NA,NA,NA,NA,NA,NA,NA
+126,22,M,English,no,NA,NA,NA,NA,NA,NA,NA,NA,United Kingdom,"London, UK",18,"St. Andrews, UK",4,"Chicago, IL, USA",1,NA,NA,NA,NA,NA,NA,NA
+127,27,F,"English, Spanish",yes,French,Proficient,Portuguese,Proficient,NA,NA,NA,NA,Colombia,"Medellin, Colombia",2,"Santiago, Chile",2,"Pererira, Colombia",1.5,"Ohio/Indiana, US",1,"Medellin, Colombia",2,"Cali, Colombia",5,"Also Ohio/Indiana for 1 year, Sao Paulo Brazil for 1.5 years, Cali Colombia for 2, Durham NC for 4, NYC NY for 3, and Chicago IL for 2.5"
+128,20,F,English,yes,French,Proficient,NA,NA,NA,NA,NA,NA,USA,"Ocean Springs, Mississippi",4,"Pacific Grove, CA",1.5,"Ocean Springs, Mississippi",7,"San Diego, CA",6,"Chicago, IL",2,NA,NA,NA
+129,27,M,English,yes,Chinese,Fluent,NA,NA,NA,NA,NA,NA,China,"Xi'an, Shaanxi, China",18,"Troy, NY",4,"Chicago, IL, USA",6,NA,NA,NA,NA,NA,NA,NA
+130,21,F,English,yes,Mandarin,Fluent,French,Basic,NA,NA,NA,NA,USA,"Evanston, IL",1,"Indiannapolis, IN",1,"Acron, MA",16,"Chicago, IL, USA",3,NA,NA,NA,NA,NA
+131,29,F,English,yes,Chinese,Semi-fluent,Spanish,Semi-fluent,NA,NA,NA,NA,Singapore,Singapore,17,"Melbourne, Australia",3,Singapore,7,"Chicago, IL, USA",0.25,NA,NA,NA,NA,NA
+132,21,M,English,yes,Spanish ,Basic,NA,NA,NA,NA,NA,NA,USA,"Grandville, Michigan",18.5,"Chicago, IL",1.5,"Grandville, MI",1.5,"Chicago, IL",0.167,NA,NA,NA,NA,NA
+133,18,F,English,yes,Spanish ,Semi-fluent,Urdu/Hindi,Proficient,NA,NA,NA,NA,USA,"Sugar Land, TX, USA",18,"Chicago, IL",0.25,NA,NA,NA,NA,NA,NA,NA,NA,NA
+134,20,F,English,yes,Russian,Fluent,Spanish,Basic,NA,NA,NA,NA,USA,"NV, US",12,"UT, US",0.5,"NV, US",6,"AZ, US",1,"Chicago, IL",0.5,NA,NA,NA
+135,22,M,English,yes,Mandarin,Semi-fluent,French,Proficient,Spanish,Proficient,NA,NA,USA,"Redmond, WA",18,"Pune, Maharashtra, India",0.583333333,"Soldotna, AK",0.33,"Chicago, IL, USA",2.5,"Paris, Ile de France, France",0.4166,"Chicago, IL",0.166,
+136,21,F,English,yes,French,Fluent,Malayalam,Basic,Korean,Basic,NA,NA,USA,"Acton, MA",2,"Luheaton, IL",7,"Oak park, IL",9,"Chicago, IL",3,NA,NA,NA,NA,NA
+137,20,F,English,yes,Chinese,Semi-fluent,Spanish,Basic,NA,NA,NA,NA,USA,"Cary, NC",18,"Chicago, IL",2,NA,NA,NA,NA,NA,NA,NA,NA,NA
+138,21,M,English,no,NA,NA,NA,NA,NA,NA,NA,NA,England,"Winchester, Hampshire, UK",18,"London, Greater London, UK",2,"Chicago, IL, USA",0.166,NA,NA,NA,NA,NA,NA,NA
+139,20,F,English,yes,Polish,Fluent,French,Proficient,NA,NA,NA,NA,USA,"Glenview, IL",14,"Arlington Heights, IL",6,"hyde park, IL",2,NA,NA,NA,NA,NA,NA,NA
+140,22,F,English,yes,German,Basic,NA,NA,NA,NA,NA,NA,USA,"Los Gratos, CA",6,"Kenmore, WA",12,"Chicago, IL, USA",4,NA,NA,NA,NA,NA,NA,NA
+141,19,F,English,yes,Spanish ,Fluent,NA,NA,NA,NA,NA,NA,USA,"Pembroke Pines, Florida",18,"Chicago, IL",2,NA,NA,NA,NA,NA,NA,NA,NA,NA
+142,25,M,English,yes,Hindi,Fluent,Marathi,Fluent,NA,NA,NA,NA,India,"Magpur, Maharashra, India",18,"Boston, MA",4,"Chicago, IL, USA",3,NA,NA,NA,NA,NA,NA,NA
+143,20,F,"English, Russian",yes,Spanish ,Semi-fluent,French,Proficient,NA,NA,NA,NA,USA,"Highland Park, IL",2,"Buffalo Grove, IL",16,"Chicago, IL",2,NA,NA,NA,NA,NA,NA,NA
+144,20,F,"English, Spanish",yes,Spanish ,Fluent,French,Proficient,German,Basic,NA,NA,Argentina,"Mendoza, Argentina",17,"Santa Ana, Costa Rica",2,"Chicago, IL",<1,NA,NA,NA,NA,NA,NA,NA
+145,22,F,English,yes,Mandarin,Semi-fluent,NA,NA,NA,NA,NA,NA,China,"Shanghai, China",3,"Atlanta, GA",3,"Shanghai, China",8,"Ojai, California",4,"Chicago, IL",4,NA,NA,NA
+146,30,F,"English, Tagalog",Yes,NA,NA,NA,NA,NA,NA,NA,NA,Philippines,"Manila, Philippines",30,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+147,22,F,English,yes,Spanish,Proficient,Arabic,Basic,NA,NA,NA,NA,Jamaica,"St. Catherine, Jamaica",8,"Monroe, Louisiana",9.5,"Chicago, IL, USA",4.5,NA,NA,NA,NA,NA,NA,NA
+148,20,F,English,yes,German,Proficient,French,Basic,NA,NA,NA,NA,USA,"Denver, CO",5,"Seattle, WA",6,"Denver, CO",8,"Chicago, IL, USA",2.5,NA,NA,NA,NA,NA
+149,20,F,English,yes,Korean,Fluent,Spanish,Basic,NA,NA,NA,NA,USA,"Upstate, NY",19,"Chicago, IL",2,NA,NA,NA,NA,NA,NA,NA,NA,NA
+150,21,M,English,no,NA,NA,NA,NA,NA,NA,NA,NA,USA,New York,3,"Hartford, CT",3,"West Lafayette, IN",12,"Chicago, IL, USA",3,NA,NA,NA,NA,NA
+151,19,F,English,yes,Mandarin ,Basic,Spanish,Basic,NA,NA,NA,NA,USA,"Fremont, CA",3,"Chicago, IL",8,"Frederick, MD",6,"Chicago, IL, USA",2,NA,NA,NA,NA,NA
+152,23,F,English,yes,Czech,Fluent,Mandarin,Basic,NA,NA,NA,NA,USA,"Crossville, TN",6,"St. Louis, MO",11,"Chicago, IL, USA",4,"Indianapolis, IN",1,NA,NA,NA,NA,NA
+153,26,M,English,yes,Swahili,Fluent,Greek,Semi-Fluent,NA,NA,NA,NA,USA,"Chicago, IL",2,"Northfield, VA",3,"Dallas, TX",2,"Dar-es-salaam, Tanzania",18,"Edinburgh, Scotland",1,NA,NA,NA
+154,23,F,English,yes,French,Proficient,NA,NA,NA,NA,NA,NA,USA,"Baten Rouge, Louisiana",18,"Chicago, IL",5,NA,NA,NA,NA,NA,NA,NA,NA,NA
+155,21,F,English,yes,French,Basic,Mandarin,Semi-fluent,NA,NA,NA,NA,Canada,"Vancouver, Canada, BC",18,"Chicago, IL",3,NA,NA,NA,NA,NA,NA,NA,NA,NA
+157,21,F,English,yes,Spanish ,Basic,NA,NA,NA,NA,NA,NA,USA,"Olema, CA",18,"Chiacago, IL",4,NA,NA,NA,NA,NA,NA,NA,NA,NA
+159,21,F,English,yes,Vietnamese,Basic,NA,NA,NA,NA,NA,NA,USA,"Buena Park, CA",18,"Chicago, IL",3,NA,NA,NA,NA,NA,NA,NA,NA,NA
+160,33,M,"English, Spanish",yes,French,Fluent,NA,NA,NA,NA,NA,NA,Mexico,"Mexico City, Mexico",9,San Francisco,8,"Chicago, IL, USA",6,"Jalisco Guadalajara, Mexico",9,"Chicago, IL",0.583333333,NA,NA,NA
+161,20,M,English,no,NA,NA,NA,NA,NA,NA,NA,NA,USA,"Denver, CO",1,"Chicago, IL",9,"River Forest, IL",8,"Chicago,IL",2,NA,NA,NA,NA,NA
+162,19,M,English,yes,Tamil,Fluent,Spanish,Basic,Mandarin,Basic,NA,NA,India,"Chennai, India",3,"Rochester, NY",8,"Basting Ridge, NJ",2,"San Diego, CA",5,"Austin, TX",1,"Hyde Park, Chicago",NA,NA

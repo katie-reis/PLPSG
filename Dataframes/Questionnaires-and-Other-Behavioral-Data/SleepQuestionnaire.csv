@@ -1,0 +1,60 @@
+﻿Subject,UsualBedTime,FallAsleepEasily,DepthOfSleep,UsualWakeUpTime,UsuallyWellRested,SleepDisorder,Disabilities,SleepMedications,AnyMedications,AnyMedicationsNotes,SubstanceAbuseOrMentalIllness,NormalCaffeinePerDay
+100,9-10pm,not usually,deep,5-6am,no,no,"adhd (not on medications, more than 5 years)",no,no,NA,no,2-3 cups
+102,1-2am,not usually,medium,8am,no,no,no,no,no,NA,no,1 cup coffee
+101,10pm (workday) 11pm-12am (weekend),usually yes,light-medium,6am (workday) 8-9am (weekend),yes,no,no,no,no,birth control ,depression/anxiety (unmedicated),1 cup coffee + preworkout (2-3 times week)
+103,10:30pm,yes,deep,7:30am,yes,no,no,no,no,NA,no,1.5
+104,10-11pm,usually yes,medium,7-9am,only after coffee,no,no,no,yes,humira,no,1
+105,12am,yes,medium,9am,yes,no,no,no,no,NA,no,1
+106,1am,yes,deep,10am,yes,no,no,no,no,NA,no,0-1
+107,12am,yes,deep,8:30am,yes,no,no,no,no,NA,no,2 cups coffee
+109,11:45pm-12am,"somewhat, usually 10-15 minutes",medium,7:45am (working); 8:15-8:30am (otherwise),somewhat,no,no,no,yes,tretinoin (acne medication),no,0-1 (not usual)
+110,12-1am (weekday); 12-3am (weekend),no,medium-deep,8-10am,yes (only if go to sleep before 1am),no,no,no,no,NA,no,0
+111,11pm,yes,deep,7am,yes,no,no,no,no,melatonin sometimes (supplemental),no,1
+112,10-10:30pm,no,medium,7:30-8:30am,no,no,no,no,no,melatonin sometimes (supplemental),no,2
+113,1-1:30am,yes,deep,9:30am,yes,no,no,no,no,na,no,0-1 (2 or 3 times a week)
+114,12:30am,yes,medium,9am,yes,no,no,no,no,na,no,0
+115,10pm,yes,deep,7am,not usually (50% of the time),no,no,no,no,na,no,1-2 beverages
+116,10:30pm,yes,medium,6:30am,yes,no,no,no,no,na,no,0
+117,10pm,yes,medium,6am,yes,no,no,no,yes,"zyrtec, IUD contraception, B12",no,2 cups coffee
+118,12am,yes,medium,8:30am,no,no,no,no,no,na,no,0
+119,10:30pm,yes,medium-deep,6:30-7am,no,no,no,no,no,na,no,1 to 2
+120,11:30pm-12:30am,yes,medium,7-9am,sometimes,no,no,no,yes,acutret 10 and biotin forte,no,0
+121,12am,no,medium,9am,yes,no,no,no,no,na,no,0
+122,10-12am,pretty easily,light,7-8am,yes,no,no,no,yes,IUD,no,1 to 2
+123,11-12am,yes,medium,7am,yes,no,no,no,no,na,no,1
+125,11:30-12am,yes,medium,8:30-9am,yes,no,no,no,yes,"magnesium, iron, probiotic",no,1 to 2
+126,12-1am,yes,deep,8-9:30am,yes,no,no,no,no,na,no,1-2 mugs of tea
+127,9:30pm,yes,deep,7am,no,no,no,no,yes,asthma meds,no,1 espresso
+128,12-2am,usually,medium/deep,9:30am,about half the time,no,"yes, ocassionally (type I diabetes)",no,yes,hamalog (insulin),no,2-3 beverages
+129,12-1am,yes,deep,8-9am,yes,no,no,no,no,na,no,2-3 beverages
+130,11-12am,yes,medium,8-9am,yes,no,no,no,no,na,no,usually none
+131,11:30pm,yes,medium,7:30am,no,no,no,no,no,na,no,1 cup 
+132,1am,yes,medium,8:45-9:30am,no,no,no,no,no,na,no,1 cup coffee
+133,12am,yes,medium,8-9am,no,no,no,no,no,na,no,once a week
+134,1:00am,yes,medium,8:30-9:30am,no,no,tooth grinding,no,no,na,no,300-600 mg of caffeine 
+135,2am,yes,deep,10:45am,"yes, mostly",no,no,no,no,na,no,0
+136,11:30pm-12:30am,sometimes,deep,7am,no,no,no,no,yes,"curology, tacrolimus ointment, mirena IUD",no,2
+137,12am-2am,yes,medium,9am,not usually (50% of the time),no,no,no,no,na,no,1
+138,11pm,not often,light,7-8am,no,no,no,no,no,na,no,2
+139,10-11pm,no,medium,6-8am,yes,no,no,no,yes,oral contraceptives,no,1
+140,10-11pm,yes,medium,7-8am,yes,no,no,no,no,na,no,2 to 3
+141,1-2am,yes,deep,9-10am,at times,no,no,no,yes,iron,no,1
+142,11:30pm ,yes,light ,8am,yes,no,no,no,no,na,no,3
+143,12am-2am,yes,deep,7-11am,yes,no,no,no,no,na,no,0-2 cups
+144,12am,sometimes,medium,8:30am,yes,no,no,no,no,na,no,2-3 beverages
+145,12:30-1am,"yes, most days",deep,8:30am,yes,no,no,no,no,na,no,1 cup coffee 
+146,11:30-12,yes,deep,7am,yes,no,no,no,no,na,no,1-2 cups
+147,2-4am,yes,deep,10am-12pm,"yes, sort of",no,no,no,no,na,no,2
+148,12:30am,somewhat,deep,8:30am,yes,no,no,no,no,na,no,2 per week 
+149,1am,moderately,deep,8am,somewhat,no,no,no,yes,multivitamins,no,1-2 green/white tea
+150,1:30-3am,yes,"deep, sometimes medium",8:30-10am,yes,no,no,no,no,na,no,0-1
+151,1am,yes,deep,9am,yes,no,no,no,no,na,no,0
+152,12-1am,yes,medium,7am,somewhat,no,no,no,no,na,no,1-2 beverages
+153,10pm-1am,yes,deep,9am,yes,no,no,no,no,na,no,0
+154,11pm,yes,deep,8am,yes,no,no,no,no,na,no,1-2 beverages
+155,11pm,usually,medium,8:30am,no ,no,no,no,no,na,no,.5-1
+157,10:30pm,"usually, yes",deep,8:30am,no,no,no,no,no,na,no,3
+159,12:30-1am,yes,deep,8:15am,yes,no,no,no,no,na,no,0
+160,10-11pm,not often,light ,8-10am,half of the time,no,no,no,no,na,Depression for 8 years,2 -4 beverages
+161,1:00 AM,somewhat,"deep, sometimes medium",9-10am,yes,yes,no,no,no,na,no,0
+162,12am ,moderately,medium,8am,yes,no,no,no,no,na,no,0

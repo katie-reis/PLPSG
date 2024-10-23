@@ -7,28 +7,60 @@ library(dplyr) #needed for data manipulation
 library(data.table) #needed for reading in files
 library(tidyverse) #needed for tidying data
 
-#read in some relevant csv files beforehand 
-setwd("~/Documents/PLPSG_sleep_analysis/")
-demographics = read.csv("Demographics.csv")
-#spindles = fread("PLPSG_Spindle_Counts.csv", select = c("subject","Spindles_Avg_11-16Hz"))
+#read in some questionnaire dataframes
+setwd("~/repos/PL_Sleep_PSG/DataAnalysis/Data")
 
-#import behavioral data that was scored in python using scripts "perceptual-learning-scoring.ipynb" and "Perceptual_Learning_Scoring_AfterCheck.ipynb"
-setwd("~/Documents/PLPSG_sleep_analysis/PLPSG_behavioral_results/Scored_Final/")
-behavioral = read.csv("data.csv")
+#demographics
+demographics = read.csv("Demographics.csv")
+demographics$Subject = as.character(demographics$Subject)
+
+#language experience questionnaire 
+languageexperience = read.csv("LanguageExperienceQuestionnaire.csv")
+languageexperience = languageexperience %>% select(-c(Age, Gender)) %>% mutate_at("Subject", as.character) %>%
+  rename("LanguageExperienceNotes" = "Notes") %>% rename_with(.fn = ~gsub("_years$", "_place_lived_years", .) %>%
+  gsub("_lived$", "_place_lived", .), .cols = everything())
+names(languageexperience)<-sapply(str_remove_all(colnames(languageexperience),"X"),"[") 
+
+#usual sleep lengths
+usualsleeplengths = read.csv("UsualSleepLengths.csv")
+usualsleeplengths = usualsleeplengths %>% 
+  mutate(Subject = as.character(Subject), UsualSleepLengthHours = as.numeric(UsualSleepLengthHours))
+
+#sleep questionnaire 
+sleepquestionnaire = read.csv("SleepQuestionnaire.csv")
+sleepquestionnaire = sleepquestionnaire %>% mutate(Subject = as.character(Subject)) %>% rename("UsualBedTimeRange" = "UsualBedTime", "UsualWakeUpTimeRange" = "UsualWakeUpTime")
+
+#sleep logs
+sleeplogs = read.csv("PLPSG_SleepLog_ALL.csv")
+sleeplogs = sleeplogs %>% mutate(Subject = as.character(Subject))
+
+#stanford sleepiness scale responses
+stanfordsleepiness = read.csv("StanfordSleepiness.csv")
+stanfordsleepiness = stanfordsleepiness %>% mutate(Subject = as.character(Subject)) %>%
+  rename_with(.cols = -1, .fn = ~ paste0("SS_", .))
+
+#nback data 
+nback = read.csv("N-back_Scores_SleepWake.csv")
+names(nback)<-sapply(str_remove_all(colnames(nback),"X"),"[")
+nback = nback %>% mutate(Subject = as.character(Subject)) %>% rename('2dprime'= '2d.', '3dprime'='3d.', 'nback_score' = 'score')
+
+#read in spindle information 
+YASA_spindles_wider = read.csv("YASA_spindle_count_summary_extended.csv")
+YASA_spindles_wider = YASA_spindles_wider %>% mutate(Subject = as.character(Subject))
+
+#import behavioral data that was scored in python using scripts "perceptual-learning-scoring.ipynb" and "Perceptual_Learning_Scoring_AfterCheck.ipynb" 
+#the file data.csv that was exported to ~/Documents/PLPSG_sleep_analysis/PLPSG_behavioral_results/Scored_Final/ by these scripts is the SAME FILE as the file being loaded
+behavioral = read.csv("PLPSG_PerceptualLearning_Longer.csv")
+behavioral$subject = gsub("subj","",as.character(behavioral$subject))
+behavioral = behavioral %>% arrange(subject, block) %>% select(-X) %>% 
+  rename("Subject"="subject") %>% mutate(block = as.factor(block))
 
 #now switch working directories to recursively read in information from the hypnograms (sleep statistics)
-setwd("~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/")
+setwd("~/repos/PL_Sleep_PSG/Sleep_Scoring/sleepscoredfiles/files_organized_for_sleep_summarizing")
 filelist = list.files(pattern = "*.txt")
 
-#make some changes to the behavioral data
-PLPSG_sleep_stats_longer = behavioral
-PLPSG_sleep_stats_longer$subject = gsub("subj","",as.character(PLPSG_sleep_stats_longer$subject))
-PLPSG_sleep_stats_longer = PLPSG_sleep_stats_longer %>% arrange(subject, block)
-PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, select = -X)
-PLPSG_sleep_stats_longer$block = as.factor(PLPSG_sleep_stats_longer$block)
-
-PLPSG_sleep_stats_wider = PLPSG_sleep_stats_longer %>% 
-  select(c(subject,block,score)) %>%
+PLPSG_sleep_stats_wider = behavioral %>% 
+  select(c(Subject,block,score)) %>%
   pivot_wider(names_from = block,
               values_from = score) %>% 
   mutate(learning = (block3-block1),
@@ -38,7 +70,6 @@ PLPSG_sleep_stats_wider = PLPSG_sleep_stats_longer %>%
          protective = (block6-block3),
          longtermrecovery = (block6 - block4),
          retention = (block6-block1),
-         #fasting = factor(rep(c("yes", "no"),each=16)),
          condition = "",
          lightsoff = "",
          lightson = "",
@@ -60,19 +91,21 @@ PLPSG_sleep_stats_wider = PLPSG_sleep_stats_longer %>%
          latN1 = "",
          latN2 = "",
          latN3 = "",
-         latR = "") %>%
-  relocate(c(condition), .after = subject)
+         latR = "",
+         N2andN3 = "",
+         perN2andN3 = "") %>%
+  relocate(c(condition), .after = Subject)
 
 for (i in 1:length(filelist)){
   #read in the file
-  setwd("~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/")
+  setwd("~/repos/PL_Sleep_PSG/Sleep_Scoring/sleepscoredfiles/files_organized_for_sleep_summarizing")
   file_hypno = read.delim(filelist[i], header = FALSE, col.names = "stage")
   
   #identify when lights off (lights out clock time)
   recording_time_info = read.csv("PLPSG_lightson_lightsoff.csv", header = TRUE)
   
   #extract the subject ID
-  PLPSG_sleep_stats_wider$subject[i] = substr(filelist[i], start = 5, stop = 7)
+  PLPSG_sleep_stats_wider$Subject[i] = substr(filelist[i], start = 5, stop = 7)
   
   #extract what group/condition they were in (sleep or wake)
   PLPSG_sleep_stats_wider$condition[i] = recording_time_info$condition[i]
@@ -153,20 +186,15 @@ for (i in 1:length(filelist)){
   
   #latency in minutes to first epoch of R
   PLPSG_sleep_stats_wider$latR[i] = (which(file_hypno == 4)[1]) / 60
+  
+  #total time in minutes that subjects spent in N2 and N3
+  PLPSG_sleep_stats_wider$N2andN3[i] = N2 + N3
+  
+  #percentage of time that subjects spent in N2 and N3
+  PLPSG_sleep_stats_wider$perN2andN3[i] = ((N2 + N3)/TST) *100
 }
 
 PLPSG_sleep_stats_wider$condition = factor(PLPSG_sleep_stats_wider$condition)
-
-#add demographic info
-demographics = rename(demographics, subject = Subject)
-demographics$subject = as.character(demographics$subject)
-PLPSG_sleep_stats_wider = left_join(PLPSG_sleep_stats_wider, demographics, by = "subject")
-
-#add spindle information
-#PLPSG_sleep_stats_wider <- merge(PLPSG_sleep_stats_wider, spindles, by="subject")
-
-#rename spindle column so that there isn't a dash
-#PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% rename(spindles = 'Spindles_Avg_11-16Hz')
 
 #calculate median of pre-test score 
 median_sleep = median(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"])
@@ -178,20 +206,39 @@ PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% mutate(above_median =
                                                                         (block1 >= median_wake & condition == "wake"), 
                                                                       "yes", "no"))
 
+
+# filter out subjects who didn't learn (subjects 134, 141, 142)
+PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, Subject != '134' & Subject != '141' & Subject != '142')
+
+#merge all dataframes
+PLPSG_sleep_stats_wider <- PLPSG_sleep_stats_wider %>%
+  left_join(YASA_spindles_wider, by="Subject") %>%
+  left_join(demographics, by="Subject") %>%
+  left_join(languageexperience, by="Subject") %>%
+  left_join(sleepquestionnaire, by="Subject") %>%
+  left_join(usualsleeplengths, by="Subject") %>%
+  left_join(sleeplogs, by="Subject") %>%
+  left_join(stanfordsleepiness, by="Subject") %>%
+  left_join(nback, by="Subject")
+  
+
 #create a dataset that creates a one column called block
 PLPSG_sleep_stats_longer = PLPSG_sleep_stats_wider %>%
   pivot_longer(cols = c("block1", "block3","block4","block5", "block6"),
                names_to = "block",
                values_to = "score")
 
-PLPSG_sleep_stats_longer = PLPSG_sleep_stats_longer %>% mutate(test= ifelse(block == "block1", "PreTest",
-                                                                            ifelse(block == "block3", "AfterTrainingPostTest",
-                                                                                   ifelse(block == "block4", "BeforeSleepPostTest", 
-                                                                                          ifelse(block == "block5", "AfterSleepPostTest","NightPostTest")))))
+PLPSG_sleep_stats_longer = PLPSG_sleep_stats_longer %>% 
+  mutate(test= ifelse(block == "block1", "PreTest",
+                      ifelse(block == "block3", "AfterTrainingPostTest",
+                             ifelse(block == "block4", "BeforeSleepPostTest", 
+                                    ifelse(block == "block5", "AfterSleepPostTest","NightPostTest"))))) %>%
+  relocate(c(block, score), .after = condition)
 
 #export datasets
-write.csv(PLPSG_sleep_stats_wider,"~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/PLPSG_sleep_stats_wider.csv", row.names = FALSE)
-write.csv(PLPSG_sleep_stats_longer,"~/Documents/PLPSG_sleep_analysis/PLPSG_sleepscoring_hypnogram/PLPSG_sleep_stats_longer.csv", row.names = FALSE)
+setwd("~/repos/PL_Sleep_PSG/DataAnalysis/Data/CombinedDataFrames")
+write.csv(PLPSG_sleep_stats_wider,"PLPSG_PL_surveys_and_PSG_wider.csv", row.names = FALSE)
+write.csv(PLPSG_sleep_stats_longer,"PLPSG_PL_surveys_and_PSG_longer.csv", row.names = FALSE)
 
 #clear environment
-rm(list=ls()[-match(c("PLPSG_sleep_stats_wider", "PLPSG_sleep_stats_longer"), ls())])
+#rm(list=ls()[-match(c("PLPSG_sleep_stats_wider", "PLPSG_sleep_stats_longer"), ls())])

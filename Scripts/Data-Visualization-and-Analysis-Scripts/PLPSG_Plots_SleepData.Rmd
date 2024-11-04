@@ -225,7 +225,7 @@ figure
 
 ### visualize with dot-plot - WASO (wake after sleep onset) correlated with recovery (our measure of consolidation)
 ```{r, message = FALSE}
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+wasoplot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(x = as.numeric(WASO), y = recovery,
       na.rm = TRUE) + 
   xlab("WASO (minutes)") + 
@@ -233,12 +233,14 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE)
 
+wasoplot
+
 #yeah.. this is definitely not what I would predict
 ```
 
 ### visualize with dot-plot - TST (total sleep time) correlated with recovery (our measure of consolidation)
 ```{r, message = FALSE}
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+tstplot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(x = as.numeric(TST), y = recovery,
       na.rm = TRUE) + 
   xlab("TST (minutes)") + 
@@ -246,12 +248,13 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE)
 
+tstplot
 #this is also not what I would predict necessarily
 ```
 
 ### visualize with dot-plot - SE (sleep efficiency) correlated with recovery (our measure of consolidation)
 ```{r, message = FALSE}
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+seplot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(x = as.numeric(SE), y = recovery,
       na.rm = TRUE) + 
   xlab("SE (percent)") + 
@@ -259,8 +262,17 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE)
 
+seplot
 #yeah.. this is not what I would predict either
 ```
+### combine those three plots for summarizing 
+```{r}
+figure <- ggarrange(wasoplot, tstplot, seplot,
+                    labels = c("A", "B", "C"),
+                    ncol = 3, nrow = 1)
+figure
+```
+
 
 ### visualize with dot-plot - spindles correlated with recovery (our measure of consolidation )
 ```{r, message = FALSE}
@@ -274,7 +286,8 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
 
 #yeah.. this is not what I would predict either
 ```
-###
+
+### visualize number of spindles detected during N2 and N3 
 ```{r}
 plot_N2andN3_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2andN3_F3_Count), x = condition, na.rm = TRUE) + 
@@ -345,6 +358,7 @@ figure
 
 ```
 
+### visualize number of spindles detected during N2 
 ```{r}
 plot_N2_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2_F3_Count), x = condition, na.rm = TRUE) + 
@@ -415,6 +429,7 @@ figure
 
 ```
 
+### visualize number of spindles detected during N3 
 ```{r}
 plot_N3_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N3_F3_Count), x = condition, na.rm = TRUE) + 

@@ -12,47 +12,80 @@ library(ggpubr) #needed for arranging multiple plots and making plots
 ### import data files
 ```{r}
 source("PLPSG_ImportData.R")
-
-# filter out subjects who didn't learn (subjects 134, 141, 142)
-PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, subject != '134' & subject != '141' & subject != '142')
-PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & subject != '141' & subject != '142')
-
 ```
 
 
 ### visualize with histogram - amount of time spent in each stage of sleep 
 ```{r}
 plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N1),
-      na.rm = TRUE) + 
-  xlab("N1 (minutes)") + 
-  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
-  geom_histogram() 
+  aes(y = as.numeric(N1), x = condition, na.rm = TRUE) + 
+  ylab("N1 (minutes)") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  ylim(0, 60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+
 
 plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N2),
+  aes(y = as.numeric(N2), x = condition,
       na.rm = TRUE) +
-  xlab("N2 (minutes)") + 
-  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
-  geom_histogram() 
+  ylab("N2 (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
 
 plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3), 
+  aes(y = as.numeric(N3), x = condition,
       na.rm = TRUE) +
-  xlab("N3 (minutes)") + 
-  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
-  geom_histogram() 
+  ylab("N3 (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
 
 plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R), 
+  aes(y = as.numeric(R), x = condition,
       na.rm = TRUE) +
-  xlab("R (minutes)") + 
-  theme(axis.title.x = element_text(size=9)) + xlim(0,60) +
-  geom_histogram()
+  ylab("R (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
 
 figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
                     labels = c("A", "B", "C", "D"),
-                    ncol = 2, nrow = 2)
+                    ncol = 4, nrow = 1)
 figure
 
 ```

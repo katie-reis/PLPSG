@@ -28,11 +28,13 @@ usualsleeplengths = usualsleeplengths %>%
 
 #sleep questionnaire 
 sleepquestionnaire = read.csv("SleepQuestionnaire.csv")
-sleepquestionnaire = sleepquestionnaire %>% mutate(Subject = as.character(Subject)) %>% rename("UsualBedTimeRange" = "UsualBedTime", "UsualWakeUpTimeRange" = "UsualWakeUpTime")
+sleepquestionnaire = sleepquestionnaire %>% mutate(Subject = as.character(Subject)) %>% 
+  rename("UsualBedTimeRange" = "UsualBedTime", "UsualWakeUpTimeRange" = "UsualWakeUpTime")
 
 #sleep logs
 sleeplogs = read.csv("PLPSG_SleepLog_ALL.csv")
-sleeplogs = sleeplogs %>% mutate(Subject = as.character(Subject))
+sleeplogs = sleeplogs %>% mutate(Subject = as.character(Subject)) %>% 
+  rename("TwoNightBefore_TST" = "TwoNightBefore_TSL", "NightBefore_TST" = "NightBefore_TSL")
 
 #stanford sleepiness scale responses
 stanfordsleepiness = read.csv("StanfordSleepiness.csv")
@@ -44,9 +46,24 @@ nback = read.csv("N-back_Scores_SleepWake.csv")
 names(nback)<-sapply(str_remove_all(colnames(nback),"X"),"[")
 nback = nback %>% mutate(Subject = as.character(Subject)) %>% rename('2dprime'= '2d.', '3dprime'='3d.', 'nback_score' = 'score')
 
-#read in spindle information 
+#read in spindle information and do some summarizing
 YASA_spindles_wider = read.csv("YASA_spindle_count_summary_extended.csv")
 YASA_spindles_wider = YASA_spindles_wider %>% mutate(Subject = as.character(Subject))
+YASA_spindles_wider <- YASA_spindles_wider %>% mutate(Spindles_N2andN3_Count = 
+                                                                (Spindles_N2andN3_F3_Count + 
+                                                                   Spindles_N2andN3_F4_Count + 
+                                                                   Spindles_N2andN3_C3_Count + 
+                                                                   Spindles_N2andN3_C4_Count) / 4,
+                                                              Spindles_N2_Count = 
+                                                                (Spindles_N2_F3_Count +
+                                                                   Spindles_N2_F4_Count +
+                                                                   Spindles_N2_C3_Count +
+                                                                   Spindles_N2_C4_Count) / 4,
+                                                              Spindles_N3_Count = 
+                                                                (Spindles_N3_F3_Count +
+                                                                   Spindles_N3_F4_Count +
+                                                                   Spindles_N3_C3_Count +
+                                                                   Spindles_N3_C4_Count) / 4)
 
 #import behavioral data that was scored in python using scripts "perceptual-learning-scoring.ipynb" and "Perceptual_Learning_Scoring_AfterCheck.ipynb" 
 #the file data.csv that was exported to ~/Documents/PLPSG_sleep_analysis/PLPSG_behavioral_results/Scored_Final/ by these scripts is the SAME FILE as the file being loaded
@@ -93,7 +110,9 @@ PLPSG_sleep_stats_wider = behavioral %>%
          latN3 = "",
          latR = "",
          N2andN3 = "",
-         perN2andN3 = "") %>%
+         perN2andN3 = "",
+         N3andR = "",
+         perN3andR = "") %>%
   relocate(c(condition), .after = Subject)
 
 for (i in 1:length(filelist)){
@@ -160,9 +179,6 @@ for (i in 1:length(filelist)){
   PLPSG_sleep_stats_wider$WASO[i] = TRT - SL - TST
   
   ###now calculate percent of TST in each stage 
-  #% spent in W (W/TST * 100)
-  PLPSG_sleep_stats_wider$perW[i] = (W/TST) * 100
-  
   #% spent in N1 (N1/TST * 100)
   PLPSG_sleep_stats_wider$perN1[i] = (N1/TST) * 100
   
@@ -192,6 +208,12 @@ for (i in 1:length(filelist)){
   
   #percentage of time that subjects spent in N2 and N3
   PLPSG_sleep_stats_wider$perN2andN3[i] = ((N2 + N3)/TST) *100
+  
+  #total time in minutes that subjects spent in N3 and R
+  PLPSG_sleep_stats_wider$N3andR[i] = N3 + R
+  
+  #percentage of time that subjects spent in N3 and R
+  PLPSG_sleep_stats_wider$perN3andR[i] = ((N3 + R)/TST) *100
 }
 
 PLPSG_sleep_stats_wider$condition = factor(PLPSG_sleep_stats_wider$condition)
@@ -221,6 +243,15 @@ PLPSG_sleep_stats_wider <- PLPSG_sleep_stats_wider %>%
   left_join(stanfordsleepiness, by="Subject") %>%
   left_join(nback, by="Subject")
   
+#now create a dataset that is abbreviated (friendlier for looking at when analyzing data that we're more interested in (at this time))
+PLPSG_sleep_stats_wider_abbrev <- PLPSG_sleep_stats_wider %>%
+  select(-c(Major_Department, UsualSleepLength, Year_Student, LanguageExperienceNotes, 
+            DepthOfSleep, FallAsleepEasily, SleepDisorder, Disabilities, SubstanceAbuseOrMentalIllness,
+            NormalCaffeinePerDay)) %>%
+  select(-contains(c('_Duration', '_Amplitude', '_RMS', '_AbsPower', '_RelPower', '_Frequency', '_Oscillations', 
+                     '_Symmetry', 'Student', '2nd_lang', '3rd_lang', '4th_lang','5th_lang','_lived', 'TimeRange', 
+                     'WellRested', 'Medication', '_Bedtime','_TTS','_OOB','_Arousals','Before_WASO', '_hit', 
+                     '_miss', '_cr', '_fa', 'nr', 'lights')))
 
 #create a dataset that creates a one column called block
 PLPSG_sleep_stats_longer = PLPSG_sleep_stats_wider %>%
@@ -233,12 +264,27 @@ PLPSG_sleep_stats_longer = PLPSG_sleep_stats_longer %>%
                       ifelse(block == "block3", "AfterTrainingPostTest",
                              ifelse(block == "block4", "BeforeSleepPostTest", 
                                     ifelse(block == "block5", "AfterSleepPostTest","NightPostTest"))))) %>%
-  relocate(c(block, score), .after = condition)
+  relocate(c(block, test, score), .after = condition)
+
+#create a longer dataframe for the abbreviated data as well 
+PLPSG_sleep_stats_longer_abbrev = PLPSG_sleep_stats_wider_abbrev %>%
+  pivot_longer(cols = c("block1", "block3","block4","block5", "block6"),
+               names_to = "block",
+               values_to = "score")
+
+PLPSG_sleep_stats_longer_abbrev = PLPSG_sleep_stats_longer_abbrev %>% 
+  mutate(test= ifelse(block == "block1", "PreTest",
+                      ifelse(block == "block3", "AfterTrainingPostTest",
+                             ifelse(block == "block4", "BeforeSleepPostTest", 
+                                    ifelse(block == "block5", "AfterSleepPostTest","NightPostTest"))))) %>%
+  relocate(c(block, test, score), .after = condition)
 
 #export datasets
 setwd("~/repos/PL_Sleep_PSG/DataAnalysis/Data/CombinedDataFrames")
 write.csv(PLPSG_sleep_stats_wider,"PLPSG_PL_surveys_and_PSG_wider.csv", row.names = FALSE)
 write.csv(PLPSG_sleep_stats_longer,"PLPSG_PL_surveys_and_PSG_longer.csv", row.names = FALSE)
+write.csv(PLPSG_sleep_stats_wider_abbrev,"PLPSG_PL_surveys_and_PSG_wider_abbrev_for_analysis.csv", row.names = FALSE)
+write.csv(PLPSG_sleep_stats_longer_abbrev,"PLPSG_PL_surveys_and_PSG_longer_abbrev_for_analysis.csv", row.names = FALSE)
 
 #clear environment
 #rm(list=ls()[-match(c("PLPSG_sleep_stats_wider", "PLPSG_sleep_stats_longer"), ls())])

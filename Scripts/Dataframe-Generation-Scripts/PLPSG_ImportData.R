@@ -36,6 +36,13 @@ sleeplogs = read.csv("PLPSG_SleepLog_ALL.csv")
 sleeplogs = sleeplogs %>% mutate(Subject = as.character(Subject)) %>% 
   rename("TwoNightBefore_TST" = "TwoNightBefore_TSL", "NightBefore_TST" = "NightBefore_TSL")
 
+#merge usual sleep lengths (derived from sleep questionnaire), sleep questionnaire, and sleep log, and then do some additional calculations 
+sleephistory = sleepquestionnaire %>% left_join(usualsleeplengths, by="Subject") %>% left_join(sleeplogs, by = "Subject")
+
+sleephistory = sleephistory %>%
+  mutate(average_sleep_deviation_from_norm = as.numeric(UsualSleepLengthHours) - as.numeric(AverageSleep),
+         nightbefore_sleep_deviation_from_norm = as.numeric(UsualSleepLengthHours) - as.numeric(NightBefore_TST))
+
 #stanford sleepiness scale responses
 stanfordsleepiness = read.csv("StanfordSleepiness.csv")
 stanfordsleepiness = stanfordsleepiness %>% mutate(Subject = as.character(Subject)) %>%
@@ -237,15 +244,13 @@ PLPSG_sleep_stats_wider <- PLPSG_sleep_stats_wider %>%
   left_join(YASA_spindles_wider, by="Subject") %>%
   left_join(demographics, by="Subject") %>%
   left_join(languageexperience, by="Subject") %>%
-  left_join(sleepquestionnaire, by="Subject") %>%
-  left_join(usualsleeplengths, by="Subject") %>%
-  left_join(sleeplogs, by="Subject") %>%
+  left_join(sleephistory, by="Subject") %>%
   left_join(stanfordsleepiness, by="Subject") %>%
   left_join(nback, by="Subject")
   
 #now create a dataset that is abbreviated (friendlier for looking at when analyzing data that we're more interested in (at this time))
 PLPSG_sleep_stats_wider_abbrev <- PLPSG_sleep_stats_wider %>%
-  select(-c(Major_Department, UsualSleepLength, Year_Student, LanguageExperienceNotes, 
+  select(-c(Major_Department, Year_Student, LanguageExperienceNotes, 
             DepthOfSleep, FallAsleepEasily, SleepDisorder, Disabilities, SubstanceAbuseOrMentalIllness,
             NormalCaffeinePerDay)) %>%
   select(-contains(c('_Duration', '_Amplitude', '_RMS', '_AbsPower', '_RelPower', '_Frequency', '_Oscillations', 

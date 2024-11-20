@@ -119,7 +119,29 @@ PLPSG_sleep_stats_wider = behavioral %>%
          N2andN3 = "",
          perN2andN3 = "",
          N3andR = "",
-         perN3andR = "") %>%
+         perN3andR = "",
+         last_sleep_epoch = "",
+         N1_to_N2_transitions = "",
+         N1_to_N3_transitions = "",
+         N1_to_R_transitions = "",
+         N1_to_W_transitions = "",
+         N2_to_N1_transitions = "",
+         N2_to_N3_transitions = "",
+         N2_to_R_transitions = "",
+         N2_to_W_transitions = "",
+         N3_to_N1_transitions = "",
+         N3_to_N2_transitions = "",
+         N3_to_R_transitions = "",
+         N3_to_W_transitions = "",
+         R_to_N1_transitions = "",
+         R_to_N2_transitions = "",
+         R_to_N3_transitions = "",
+         R_to_W_transitions = "",
+         W_to_N1_transitions = "",
+         W_to_N2_transitions = "",
+         W_to_N3_transitions = "",
+         W_to_R_transitions = "",
+         number_fragmentations = "") %>%
   relocate(c(condition), .after = Subject)
 
 for (i in 1:length(filelist)){
@@ -221,6 +243,118 @@ for (i in 1:length(filelist)){
   
   #percentage of time that subjects spent in N3 and R
   PLPSG_sleep_stats_wider$perN3andR[i] = ((N3 + R)/TST) *100
+  
+  #what stage of sleep they woke up out of 
+  last_sleep_row <- max(which(file_hypno != 0))
+  PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- file_hypno[last_sleep_row]
+  
+  # Initialize variables for transition counts
+  N1_to_N2_transitions <- 0
+  N1_to_N3_transitions <- 0
+  N1_to_R_transitions <- 0
+  N1_to_W_transitions <- 0
+  
+  N2_to_N1_transitions <- 0
+  N2_to_N3_transitions <- 0
+  N2_to_R_transitions <- 0
+  N2_to_W_transitions <- 0
+  
+  N3_to_N1_transitions <- 0
+  N3_to_N2_transitions <- 0
+  N3_to_R_transitions <- 0
+  N3_to_W_transitions <- 0
+  
+  R_to_N1_transitions <- 0
+  R_to_N2_transitions <- 0
+  R_to_N3_transitions <- 0
+  R_to_W_transitions <- 0
+  
+  W_to_N1_transitions <- 0
+  W_to_N2_transitions <- 0
+  W_to_N3_transitions <- 0
+  W_to_R_transitions <- 0
+  
+  number_fragmentations <- 0
+  
+  # Loop through the file_hypno vector to check transitions
+  for (j in 1:(length(file_hypno) - 1)) {
+    current_stage <- file_hypno[j]
+    next_stage <- file_hypno[j + 1]
+    
+    # Transitions from N1
+    if (current_stage == 1) {
+      if (next_stage == 2) N1_to_N2_transitions <- N1_to_N2_transitions + 1
+      if (next_stage == 3) N1_to_N3_transitions <- N1_to_N3_transitions + 1
+      if (next_stage == 4) N1_to_R_transitions <- N1_to_R_transitions + 1
+      if (next_stage == 0) N1_to_W_transitions <- N1_to_W_transitions + 1
+    }
+    
+    # Transitions from N2
+    if (current_stage == 2) {
+      if (next_stage == 1) N2_to_N1_transitions <- N2_to_N1_transitions + 1
+      if (next_stage == 3) N2_to_N3_transitions <- N2_to_N3_transitions + 1
+      if (next_stage == 4) N2_to_R_transitions <- N2_to_R_transitions + 1
+      if (next_stage == 0) N2_to_W_transitions <- N2_to_W_transitions + 1
+    }
+    
+    # Transitions from N3
+    if (current_stage == 3) {
+      if (next_stage == 1) N3_to_N1_transitions <- N3_to_N1_transitions + 1
+      if (next_stage == 2) N3_to_N2_transitions <- N3_to_N2_transitions + 1
+      if (next_stage == 4) N3_to_R_transitions <- N3_to_R_transitions + 1
+      if (next_stage == 0) N3_to_W_transitions <- N3_to_W_transitions + 1
+    }
+    
+    # Transitions from R
+    if (current_stage == 4) {
+      if (next_stage == 1) R_to_N1_transitions <- R_to_N1_transitions + 1
+      if (next_stage == 2) R_to_N2_transitions <- R_to_N2_transitions + 1
+      if (next_stage == 3) R_to_N3_transitions <- R_to_N3_transitions + 1
+      if (next_stage == 0) R_to_W_transitions <- R_to_W_transitions + 1
+    }
+    
+    # Transitions from Wake (W)
+    if (current_stage == 0) {
+      if (next_stage == 1) W_to_N1_transitions <- W_to_N1_transitions + 1
+      if (next_stage == 2) W_to_N2_transitions <- W_to_N2_transitions + 1
+      if (next_stage == 3) W_to_N3_transitions <- W_to_N3_transitions + 1
+      if (next_stage == 4) W_to_R_transitions <- W_to_R_transitions + 1
+    }
+    
+    # Count fragmentations (transitions from any sleep stage to wake)
+    if ((current_stage == 1 || current_stage == 2 || current_stage == 3 || current_stage == 4) && next_stage == 0) {
+      number_fragmentations <- number_fragmentations + 1
+    }
+  }
+  
+  # Store the results for the current subject
+  PLPSG_sleep_stats_wider$N1_to_N2_transitions[i] <- N1_to_N2_transitions
+  PLPSG_sleep_stats_wider$N1_to_N3_transitions[i] <- N1_to_N3_transitions
+  PLPSG_sleep_stats_wider$N1_to_R_transitions[i] <- N1_to_R_transitions
+  PLPSG_sleep_stats_wider$N1_to_W_transitions[i] <- N1_to_W_transitions
+  
+  PLPSG_sleep_stats_wider$N2_to_N1_transitions[i] <- N2_to_N1_transitions
+  PLPSG_sleep_stats_wider$N2_to_N3_transitions[i] <- N2_to_N3_transitions
+  PLPSG_sleep_stats_wider$N2_to_R_transitions[i] <- N2_to_R_transitions
+  PLPSG_sleep_stats_wider$N2_to_W_transitions[i] <- N2_to_W_transitions
+  
+  PLPSG_sleep_stats_wider$N3_to_N1_transitions[i] <- N3_to_N1_transitions
+  PLPSG_sleep_stats_wider$N3_to_N2_transitions[i] <- N3_to_N2_transitions
+  PLPSG_sleep_stats_wider$N3_to_R_transitions[i] <- N3_to_R_transitions
+  PLPSG_sleep_stats_wider$N3_to_W_transitions[i] <- N3_to_W_transitions
+  
+  PLPSG_sleep_stats_wider$R_to_N1_transitions[i] <- R_to_N1_transitions
+  PLPSG_sleep_stats_wider$R_to_N2_transitions[i] <- R_to_N2_transitions
+  PLPSG_sleep_stats_wider$R_to_N3_transitions[i] <- R_to_N3_transitions
+  PLPSG_sleep_stats_wider$R_to_W_transitions[i] <- R_to_W_transitions
+  
+  PLPSG_sleep_stats_wider$W_to_N1_transitions[i] <- W_to_N1_transitions
+  PLPSG_sleep_stats_wider$W_to_N2_transitions[i] <- W_to_N2_transitions
+  PLPSG_sleep_stats_wider$W_to_N3_transitions[i] <- W_to_N3_transitions
+  PLPSG_sleep_stats_wider$W_to_R_transitions[i] <- W_to_R_transitions
+  
+  PLPSG_sleep_stats_wider$number_fragmentations[i] <- number_fragmentations
+  
 }
 
 PLPSG_sleep_stats_wider$condition = factor(PLPSG_sleep_stats_wider$condition)

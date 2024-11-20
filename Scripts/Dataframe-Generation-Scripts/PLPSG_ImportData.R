@@ -244,9 +244,26 @@ for (i in 1:length(filelist)){
   #percentage of time that subjects spent in N3 and R
   PLPSG_sleep_stats_wider$perN3andR[i] = ((N3 + R)/TST) *100
   
-  #what stage of sleep they woke up out of 
-  last_sleep_row <- max(which(file_hypno != 0))
-  PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- file_hypno[last_sleep_row]
+  #determine what stage of sleep subjects wake up out of 
+  if (any(file_hypno != 0)) {
+    # Find the last non-wake epoch (non-zero stage)
+    last_sleep_row <- max(which(file_hypno != 0))
+    last_sleep_stage <- file_hypno[last_sleep_row]  # Get the stage number (1, 2, 3, or 4)
+    
+    # Map the numeric value to the corresponding stage name
+    if (last_sleep_stage == 1) {
+      PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- "N1"
+    } else if (last_sleep_stage == 2) {
+      PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- "N2"
+    } else if (last_sleep_stage == 3) {
+      PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- "N3"
+    } else if (last_sleep_stage == 4) {
+      PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- "R"
+    }
+  } else {
+    # If there is no sleep (i.e., all zeros), assign NA
+    PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- NA
+  }
   
   # Initialize variables for transition counts
   N1_to_N2_transitions <- 0

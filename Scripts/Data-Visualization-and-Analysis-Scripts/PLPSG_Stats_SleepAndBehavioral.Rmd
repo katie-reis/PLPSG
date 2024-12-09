@@ -12,20 +12,15 @@ library(pander)
 ### import data files
 ```{r}
 source("PLPSG_ImportData.R")
-
-# filter out subjects who didn't learn (subjects 134, 141, 142)
-PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, subject != '134' & subject != '141' & subject != '142')
-PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & subject != '141' & subject != '142')
-
 ```
 
-### both directions stepwise selection regression, predicting consolidation from time spent in sleep stages
+### both directions stepwise selection regression, predicting recovery from time spent in sleep stages
 ```{r}
 #define intercept-only model
-intercept_only <- lm(consolidation ~ 1, data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+intercept_only <- lm(recovery ~ 1, data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 
 #define model with all predictors
-all <- lm(consolidation ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+all <- lm(recovery ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 
 #perform backward stepwise regression
 both <- step(intercept_only, direction='both', scope=formula(all), trace=0)
@@ -36,81 +31,249 @@ pander(both$anova)
 #view final model
 pander(both$coefficients)
 
-step(lm(consolidation ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep")),direction="both")
+step(lm(recovery ~ as.numeric(N1) + as.numeric(N2) + as.numeric(N3) + as.numeric(R), data=subset(PLPSG_sleep_stats_wider, condition == "sleep")),direction="both")
+```
+### linear model predicting recovery (our measure of consolidation) from duration of N1
+```{r}
+n1_model = lm(recovery ~ as.numeric(N1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(n1_model))
+summary(n1_model)
 ```
 
-### linear model predicting consolidation from duration of N2/N3
+### linear model predicting recovery (our measure of consolidation) from duration of N2
 ```{r}
-n2n3_model = lm(consolidation ~ as.numeric(N2) + as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(n2n3_model))
+n2_model = lm(recovery ~ as.numeric(N2), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(n2_model))
+summary(n2_model)
 ```
 
-### linear model predicting consolidation from percentage of time spent in N2/N3
+
+
+### linear model predicting recovery (our measure of consolidation) from duration of N3
 ```{r}
-pern2n3_model = lm(consolidation ~ as.numeric(perN2) + as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(pern2n3_model))
+n3_model = lm(recovery ~ as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(n3_model))
+summary(n3_model)
+```
+### what about if we remove the subjects that didn't demonstrate any N3 
+```{r}
+n3_model = lm(recovery ~ as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0))
+pander(summary(n3_model))
+summary(n3_model)
+```
+### what about if we remove the subjects that didn't demonstrate any R, does N3 now predict recovery
+```{r}
+n3_model = lm(recovery ~ as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0))
+pander(summary(n3_model))
+summary(n3_model)
 ```
 
-### linear model predicting consolidation from latency of N2 and N3
+
+### linear model predicting recovery (our measure of consolidation) from duration of R
 ```{r}
-latn3_model = lm(consolidation ~ as.numeric(latN2) + as.numeric(latN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(latn3_model))
+r_model = lm(recovery ~ as.numeric(R), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(r_model))
+summary(r_model)
 ```
 
-### linear model predicting consolidation from WASO
+### what about if we remove the subjects that didn't demonstrate any R 
 ```{r}
-waso_model = lm(consolidation ~ as.numeric(WASO), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(waso_model))
+r_model = lm(recovery ~ as.numeric(R), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0))
+pander(summary(r_model))
+summary(r_model)
 ```
 
-### linear model predicting consolidation from TST
+### linear model predicting recovery (our measure of consolidation) from duration of N3 and R
 ```{r}
-tst_model = lm(consolidation ~ as.numeric(TST), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(tst_model))
+n3r_model = lm(recovery ~ as.numeric(N3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+pander(summary(n3r_model))
+summary(n3r_model)
 ```
 
-### linear model predicting consolidation from SE
+
+
+
+### what about if we remove the subjects that didn't demonstrate any R or n3 - do for n3, r, and n3 plus r
 ```{r}
-se_model = lm(consolidation ~ as.numeric(SE), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(se_model))
+n3_model = lm(recovery ~ as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+pander(summary(n3_model))
+summary(n3_model)
+
+r_model = lm(recovery ~ as.numeric(R), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+pander(summary(r_model))
+summary(r_model)
+
+n3r_model = lm(recovery ~ as.numeric(N3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+pander(summary(n3r_model))
+summary(n3r_model)
+```
+### NOW LOOK AT PERCENTAGE TIME SPENT IN EACH STAGE 
+
+### linear model predicting recovery (our measure of consolidation) from percentage time spent in N1
+```{r}
+n1per_model = lm(recovery ~ as.numeric(perN1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n1per_model)
 ```
 
-### linear model predicting maintenance from spindle count 
+### linear model predicting recovery (our measure of consolidation) from percentage time spent in N2
 ```{r}
-spindles_maintenance_model = lm(maintenance ~ as.numeric(spindles), 
-                                data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(spindles_maintenance_model))
+n2per_model = lm(recovery ~ as.numeric(perN2), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n2per_model)
 ```
 
-### linear model predicting consolidation from spindle count 
+
+### linear model predicting recovery (our measure of consolidation) from percentage time spent in N3
 ```{r}
-spindles_consolidation_model = lm(consolidation ~ as.numeric(spindles), 
+n3per_model = lm(recovery ~ as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n3per_model)
+```
+
+### linear model predicting recovery from percentage of time spent in R
+```{r}
+rper_model = lm(recovery ~ as.numeric(perR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(rper_model)
+```
+
+
+### linear model predicting recovery from percentage of time spent in N3 and R
+```{r}
+n3rper_model = lm(recovery ~ as.numeric(perN3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n3rper_model)
+```
+
+### what about if we remove the subjects that didn't demonstrate any R or N3
+```{r}
+n3per_model = lm(recovery ~ as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n3per_model)
+
+rper_model = lm(recovery ~ as.numeric(perR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(rper_model)
+
+n3andrper_model = lm(recovery ~ as.numeric(perN3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n3andrper_model)
+```
+### NOW LOOK AT LATENCY 
+
+### linear model predicting recovery from latency of N1
+```{r}
+latn1_model = lm(recovery ~ as.numeric(latN1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(latn1_model)
+```
+
+### linear model predicting recovery from latency of N2
+```{r}
+latn2_model = lm(recovery ~ as.numeric(latN2), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(latn2_model)
+```
+
+### linear model predicting recovery from latency of N3
+```{r}
+latn3_model = lm(recovery ~ as.numeric(latN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(latn3_model)
+```
+### linear model predicting recovery from latency of R
+```{r}
+latr_model = lm(recovery ~ as.numeric(latR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(latr_model)
+```
+
+
+### linear model predicting recovery from WASO
+```{r}
+waso_model = lm(recovery ~ as.numeric(WASO), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(waso_model)
+```
+
+### linear model predicting recovery from TST
+```{r}
+tst_model = lm(recovery ~ as.numeric(TST), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(tst_model)
+```
+
+### linear model predicting recovery from SE
+```{r}
+se_model = lm(recovery ~ as.numeric(SE), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(se_model)
+```
+### linear model predicting recovery from number of fragmentations 
+```{r}
+frag_model = lm(recovery ~ as.numeric(number_fragmentations), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(frag_model)
+
+```
+
+### linear model predicting recovery from spindle count (both N2 and N3)
+```{r}
+spindles_consolidation_model = lm(recovery ~ as.numeric(Spindles_N2andN3_Count), 
                                   data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(spindles_consolidation_model))
+summary(spindles_consolidation_model)
 ```
-
-# do the same thing but with protective measure as the DV 
-
-### linear model predicting protection from duration of N2/N3
+### linear model predicting recovery from spindle count (N2)
 ```{r}
-n2n3_model = lm(protective ~ as.numeric(N2) + as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(n2n3_model))
-```
-
-### linear model predicting protection from percentage of time spent in N2/N3
-```{r}
-pern2n3_model = lm(protective ~ as.numeric(perN2) + as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(pern2n3_model))
-```
-
-### linear model predicting protection from latency of N2 and N3
-```{r}
-latn3_model = lm(protective ~ as.numeric(latN2) + as.numeric(latN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(latn3_model))
-```
-### linear model predicting protection from spindle count 
-```{r}
-spindles_consolidation_model = lm(protective ~ as.numeric(spindles), 
+spindles_n2_consolidation_model = lm(recovery ~ as.numeric(Spindles_N2_Count), 
                                   data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-pander(summary(spindles_consolidation_model))
+summary(spindles_n2_consolidation_model)
 ```
+
+### linear model predicting recovery from spindle count (N3)
+```{r}
+spindles_n3_consolidation_model = lm(recovery ~ as.numeric(Spindles_N3_Count), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(spindles_n3_consolidation_model)
+```
+### spindles (minus the subjects with no rem and no sws)
+```{r}
+#spindles
+spindles_minus0sws0rem_consolidation_model = lm(recovery ~ as.numeric(Spindles_N2andN3_Count), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+pander(summary(spindles_minus0sws0rem_consolidation_model))
+summary(spindles_minus0sws0rem_consolidation_model)
+```
+
+#for the folks who got 0 R or 0 N3, does anything predict their recovery?
+```{r}
+n1_0sws0rem_consolidation_model = lm(recovery ~ as.numeric(N1), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (R == 0 | N3 == 0)))
+summary(n1_0sws0rem_consolidation_model)
+
+n2_0sws0rem_consolidation_model = lm(recovery ~ as.numeric(N2), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (R == 0 | N3 == 0)))
+summary(n2_0sws0rem_consolidation_model)
+
+n3_0sws0rem_consolidation_model = lm(recovery ~ as.numeric(N3), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (R == 0 | N3 == 0)))
+summary(n3_0sws0rem_consolidation_model)
+
+r_0sws0rem_consolidation_model = lm(recovery ~ as.numeric(R), 
+                                  data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (R == 0 | N3 == 0)))
+summary(r_0sws0rem_consolidation_model)
+
+
+```
+
+
+```{r}
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0 & recovery >= 0))
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0 & recovery < 0))
+
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R == 0 & N3 > 0 & recovery >= 0))
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R == 0 & N3 > 0 & recovery < 0))
+
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 == 0 & recovery >= 0))
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 == 0 & recovery < 0))
+
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R == 0 & N3 == 0 & recovery >= 0))
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R == 0 & N3 == 0 & recovery < 0))
+
+
+
+
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R == 0 & N3 > 0))
+
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 == 0))
+count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R == 0 & N3 == 0))
+
+```
+
+

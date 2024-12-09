@@ -169,7 +169,7 @@ maintenanceplot
 protectiveplot = ggplot(PLPSG_sleep_stats_wider,
   aes(y = protective,
       x = condition)) +
-  ggtitle("Protective (block 6 - block 3") +
+  ggtitle("Protective (block 6 - block 3)") +
   geom_violin() + 
   ylim(-.2,.175) +
   geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +
@@ -185,7 +185,7 @@ protectiveplot
 LTRplot = ggplot(PLPSG_sleep_stats_wider,
   aes(y = longtermrecovery,
       x = condition)) +
-  ggtitle("Long Term Recovery (block 6 - block 4") +
+  ggtitle("Long Term Recovery (block 6 - block 4)") +
   geom_violin() + 
   ylim(-.2,.175) +
   geom_dotplot(binaxis='y', stackdir='center', dotsize=1)  +

@@ -2168,6 +2168,133 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
              label = paste("p =",signif(summary(fit1)$coef[2,4], 5)))
 ```
 
+```{r}
+lastepoch <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"),   
+                        aes(x = last_sleep_epoch, y = recovery)) +
+  ggtitle("What stage subjects woke up out of") +
+  geom_bar(stat = "summary", fun = "mean", fill = "skyblue", alpha = 0.5) +
+  geom_jitter(width = 0.1, size = 1, color = "black") +
+  stat_summary(fun.data = "mean_cl_boot", 
+               geom = "errorbar", 
+               colour = "red", 
+               width = 0.2) 
+
+lastepoch
+
+
+```
 
 
 
+### visualize with dot-plot - spindles correlated with recovery (our measure of consolidation )
+```{r, message = FALSE}
+#n1 start
+n1ton2 =ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
+    aes(x = as.numeric(N1_to_N2_transitions),
+        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
+    xlab("N1 to N2") +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) +
+    geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+n1ton3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1_to_N3_transitions),fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N1 to N3") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) + 
+  theme(legend.title = element_blank()) +
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), color = "black", linetype = "solid")  # Vertical line at x = 0
+
+n1tor = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1_to_R_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N1 to R") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+#n2 start
+n2ton1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2_to_N1_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 to N1") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+n2ton3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2_to_N3_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 to N3") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+n2tor = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2_to_R_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 to R") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+#n3 start 
+n3ton1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3_to_N1_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N3 to N1") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+n3ton2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3_to_N2_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N3 to N2") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+n3tor = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3_to_R_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N3 to R") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+#r start 
+rton1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R_to_N1_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("R to N1") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+rton2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R_to_N2_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("R to N2") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank())
+
+rton3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R_to_N3_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("R to N3") + 
+  ylab("Density") +
+  theme(axis.title.x = element_text(size = 9)) +
+  geom_density(alpha = 0.5) +
+  theme(legend.title = element_blank()) +
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), color = "black", linetype = "solid")  # Vertical line at x = 0
+
+figure <- ggarrange(n1ton2, n1ton3, n1tor,
+                    n2ton1, n2ton3, n2tor,
+                    n3ton1, n3ton2, n3tor,
+                    rton1, rton2, rton3,
+                    ncol = 3, nrow = 4, common.legend = TRUE)
+figure
+```

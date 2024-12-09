@@ -1,0 +1,532 @@
+---
+title: "PLPSG_Stats_SleepHistory"
+author: "Katie Reis"
+date: "2024-11-25"
+output: html_document
+---
+
+### import packages
+```{r, message=FALSE}
+library(pander)
+library(dplyr)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+```
+
+### summary table for time spent in each stage 
+```{r}
+# Load necessary packages
+library(dplyr)
+library(tidyr)
+
+data.frame (statistic = c("min","max","mean","sd","count"),
+            N1 = c(min(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$condition == "sleep"])), 
+                   max(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   mean(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sd(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sum(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$condition == "sleep"]) > 0)),
+            N2 = c(min(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$condition == "sleep"])), 
+                   max(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   mean(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sd(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sum(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$condition == "sleep"]) > 0)),
+            N3 = c(min(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$condition == "sleep"])), 
+                   max(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   mean(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sd(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sum(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$condition == "sleep"]) > 0)),
+            R = c(min(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$condition == "sleep"])), 
+                   max(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   mean(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sd(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$condition == "sleep"])),
+                   sum(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$condition == "sleep"]) > 0)))
+                   
+```
+
+### table for how many folks woke out of each stage 
+```{r}
+# Get a frequency table of the 'last_sleep_epoch' variable
+freq_table <- table(PLPSG_sleep_stats_wider$last_sleep_epoch)
+
+# Convert to data.frame for a clearer output
+counts <- as.data.frame(freq_table)
+
+# Print the result
+print(counts)
+
+```
+
+### impact of last sleep epoch on recovery 
+```{r}
+lastepochfit = aov(recovery ~ last_sleep_epoch, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(lastepochfit)
+
+tukey_results = TukeyHSD(lastepochfit)
+summary(tukey_results)
+print(tukey_results)
+
+t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" & PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$last_sleep_epoch != "N3" & PLPSG_sleep_stats_wider$condition == "sleep"])
+```
+
+### consolidators vs non consonsolidators with last sleep epoch 
+```{r}
+#contingency table
+data.frame (last_epoch_stage = c("N1","N2","N3","R"),
+            Consolidators = c(sum(PLPSG_sleep_stats_wider$recovery > 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "N1"),
+                              sum(PLPSG_sleep_stats_wider$recovery > 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "N2"),
+                              sum(PLPSG_sleep_stats_wider$recovery > 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "N3"),
+                              sum(PLPSG_sleep_stats_wider$recovery > 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "R")),
+            Nonconsolidators = c(sum(PLPSG_sleep_stats_wider$recovery < 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "N1"),
+                              sum(PLPSG_sleep_stats_wider$recovery < 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "N2"),
+                              sum(PLPSG_sleep_stats_wider$recovery < 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "N3"),
+                              sum(PLPSG_sleep_stats_wider$recovery < 0 & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "R")))
+                                 
+
+#there are expected counts less than 5, so it makes more sense to do a likelihood-ratio chi-square test, which is based on log-liklihood differences and compares how well the observed data fits the expected data under the assumption of independence. it's used for small or sparse datasets because it uses the exact observed to expected ratio rather than squared differences. 
+
+#first plot 
+# Load necessary library
+library(ggplot2)
+
+# Observed data
+categories <- c("N1", "N2", "N3", "R")
+consolidators <- c(3, 5, 6, 4)
+non_consolidators <- c(1, 8, 0, 1)
+
+# Create a data frame for ggplot
+data <- data.frame(
+  Epoch = rep(categories, each = 2),
+  Status = rep(c("Consolidators", "Non-Consolidators"), times = 4),
+  Count = c(consolidators, non_consolidators)
+)
+
+# Plot the stacked bar chart with fixed y-axis range
+ggplot(data, aes(x = Epoch, y = Count, fill = Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_y_continuous(
+    breaks = seq(0, max(data$Count) + 2, by = 1),  # Whole-number ticks
+    limits = c(0, max(data$Count) + 2)             # Ensure proper range
+  ) +
+  labs(
+    title = "Consolidators vs. Non-Consolidators by Last Sleep Epoch",
+    x = "Last Sleep Epoch",
+    y = "Count",
+    fill = "Status"
+  ) +
+  theme_minimal()
+
+# Observed counts
+observed <- matrix(
+  c(3, 1,  # N1
+    5, 8,  # N2
+    6, 0,  # N3
+    4, 1), # R
+  nrow = 4, byrow = TRUE
+)
+rownames(observed) <- c("N1", "N2", "N3", "R")
+colnames(observed) <- c("Consolidators", "Non-Consolidators")
+
+# Step 1: Calculate expected counts
+total <- sum(observed)
+row_totals <- rowSums(observed)
+col_totals <- colSums(observed)
+expected <- outer(row_totals, col_totals) / total
+
+# Print expected counts
+print("Expected Counts:")
+print(expected)
+
+# Step 2: Check if any expected count < 5
+if (any(expected < 5)) {
+  # Use likelihood-ratio chi-square test
+  G2 <- 2 * sum(observed * log(observed / expected), na.rm = TRUE)
+  df <- (nrow(observed) - 1) * (ncol(observed) - 1)
+  p_value <- 1 - pchisq(G2, df)
+  
+  print("Likelihood-Ratio Chi-Square Test:")
+  print(paste("G2 Statistic:", G2))
+  print(paste("p-value:", p_value))
+} else {
+  # Use Pearson chi-square test
+  chisq_result <- chisq.test(observed, simulate.p.value = TRUE, B = 10000)
+  
+  print("Pearson Chi-Square Test:")
+  print(paste("Chi-Square Statistic:", chisq_result$statistic))
+  print(paste("p-value:", chisq_result$p.value))
+}
+
+#Interpretation: There is evidence of a significant association between "Last Sleep Epoch" and "Consolidator Status." This suggests that the stage of sleep from which someone wakes (N1, N2, N3, R) is not independent of whether they are a consolidator or non-consolidator.
+
+#calculate effect size 
+# Number of observations
+n <- sum(observed)
+
+# Degrees of freedom
+df <- (nrow(observed) - 1) * (ncol(observed) - 1)
+
+# Cramér's V
+cramer_v <- sqrt(9.67242253055465 / (n * min(nrow(observed) - 1, ncol(observed) - 1)))
+print(paste("Cramér's V:", cramer_v))
+#large effect since V > 0.5
+
+```
+
+#add a column to the dataframe that says whether subjects consolidators or not - and filter out wake subjects...
+```{r}
+PLPSG_sleep_stats_wider$consolidator_status <- ifelse(
+  PLPSG_sleep_stats_wider$recovery > 0, 1, 0
+)
+
+# Filter the data to only include rows where condition is "sleep"
+sleep_data <- subset(PLPSG_sleep_stats_wider, condition == "sleep")
+
+# a. Correlation Analysis - Examine the relationship between time spent in each stage and recovery:
+cor.test(as.numeric(sleep_data$N1), sleep_data$recovery)
+cor.test(as.numeric(sleep_data$N2), sleep_data$recovery)
+cor.test(as.numeric(sleep_data$N3), sleep_data$recovery)
+cor.test(as.numeric(sleep_data$R), sleep_data$recovery)
+cor.test(as.numeric(sleep_data$TST), sleep_data$recovery)
+
+# b. Comparing Consolidators and Non-Consolidators - Use t-tests or Mann-Whitney U tests to compare the amount of time spent in each stage between groups:
+t.test(as.numeric(sleep_data$N1) ~ sleep_data$consolidator_status, data = sleep_data)
+t.test(as.numeric(sleep_data$N2) ~ sleep_data$consolidator_status, data = sleep_data)
+t.test(as.numeric(sleep_data$N3) ~ sleep_data$consolidator_status, data = sleep_data)
+t.test(as.numeric(sleep_data$R) ~ sleep_data$consolidator_status, data = sleep_data)
+t.test(as.numeric(sleep_data$TST) ~ sleep_data$consolidator_status, data = sleep_data)
+
+# 3. Exploring the Impact of Last Sleep Epoch - Chi-Square Test - Create a contingency table of last_sleep_epoch and consolidator_status, and perform the likelihood-ratio chi-square test:
+table_epoch <- table(sleep_data$last_sleep_epoch, sleep_data$consolidator_status)
+
+# Perform likelihood-ratio chi-square test
+chisq_test <- chisq.test(table_epoch, simulate.p.value = TRUE, B = 10000)
+chisq_test
+
+# 4. Regression Analysis - Logistic Regression - Predict the likelihood of being a consolidator based on time in each sleep stage:
+log_model <- glm(
+  consolidator_status ~ as.numeric(sleep_data$N1) + as.numeric(sleep_data$N2) + as.numeric(sleep_data$N3) + as.numeric(sleep_data$R),
+  data = sleep_data,
+  family = binomial
+)
+summary(log_model)
+
+# Linear Regression - Predict recovery as a continuous variable based on sleep metrics:
+lin_model <- lm(
+  recovery ~ as.numeric(sleep_data$N1) + as.numeric(sleep_data$N2) + as.numeric(sleep_data$N3) + as.numeric(sleep_data$R),
+  data = sleep_data
+)
+summary(lin_model)
+
+# Look at TST separately since can't put into these models due to multicollinearity (N1 + N2 + N3 + R = TST)
+log_model <- glm(
+  consolidator_status ~ as.numeric(sleep_data$TST),
+  data = sleep_data,
+  family = binomial
+)
+summary(log_model)
+
+lin_model <- lm(
+  recovery ~ as.numeric(sleep_data$TST),
+  data = sleep_data
+)
+summary(lin_model)
+
+
+
+```
+
+
+
+### models including what stage folks woke up out of as a mediating variable 
+```{r}
+n1_model = lm(recovery ~ as.numeric(N1)* last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n1_model)
+
+n2_model = lm(recovery ~ as.numeric(N2) * last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n2_model)
+
+n3_model = lm(recovery ~ as.numeric(N3) * last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n3_model)
+
+r_model = lm(recovery ~ as.numeric(R) * last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(r_model)
+
+n3r_model = lm(recovery ~ as.numeric(N3andR) * last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n3r_model)
+
+spindle_model = lm(recovery ~ as.numeric(Spindles_N2andN3_Count) * last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(spindle_model)
+
+```
+
+### look at how prior nights of sleep impact recovery (without interaction )
+```{r}
+avgsleepmodel = lm(recovery ~ AverageSleep + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(recovery ~ NightBefore_TST + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(recovery ~ average_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(recovery ~ nightbefore_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+```
+
+
+### look at how prior nights of sleep impact recovery (with interaction )
+```{r}
+avgsleepmodel = lm(recovery ~ AverageSleep * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(recovery ~ NightBefore_TST * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(recovery ~ average_sleep_deviation_from_norm * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(recovery ~ nightbefore_sleep_deviation_from_norm * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+```
+
+
+### what about the other difference measures? 
+### start by looking at learning (should be no effect of condition)
+```{r}
+avgsleepmodel = lm(learning ~ AverageSleep, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(learning ~ NightBefore_TST, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(learning ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(learning ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+```
+
+### now look at loss 
+```{r}
+avgsleepmodel = lm(loss ~ AverageSleep, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(loss ~ NightBefore_TST, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(loss ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(loss ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+
+
+```
+
+### now look at maintenance (without interaction)
+```{r}
+avgsleepmodel = lm(maintenance ~ AverageSleep + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(maintenance ~ NightBefore_TST + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(maintenance ~ average_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(maintenance ~ nightbefore_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+```
+
+### now look at maintenance (with interaction)
+```{r}
+avgsleepmodel = lm(maintenance ~ AverageSleep * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(maintenance ~ NightBefore_TST * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(maintenance ~ average_sleep_deviation_from_norm * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(maintenance ~ nightbefore_sleep_deviation_from_norm * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+```
+### now look at long term recovery (without interaction)
+```{r}
+avgsleepmodel = lm(longtermrecovery ~ AverageSleep + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(longtermrecovery ~ NightBefore_TST + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(longtermrecovery ~ average_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(longtermrecovery ~ nightbefore_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+```
+
+### now look at protective effect (without interaction)
+```{r}
+avgsleepmodel = lm(protective ~ AverageSleep + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
+
+nightbeforemodel = lm(protective ~ NightBefore_TST + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+avgsleepdevmodel = lm(protective ~ average_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodel = lm(protective ~ nightbefore_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
+```
+
+
+
+
+### does night before tst predict performance on pretest, posttest1, or posttest2 (we cmobine wake and sleep since before intervention)?
+```{r}
+
+block1nightbeforemodel = lm(block1 ~ NightBefore_TST, data = PLPSG_sleep_stats_wider)
+summary(block1nightbeforemodel)
+
+block3nightbeforemodel = lm(block3 ~ NightBefore_TST, data = PLPSG_sleep_stats_wider)
+summary(block3nightbeforemodel)
+
+block4nightbeforemodel = lm(block4 ~ NightBefore_TST, data = PLPSG_sleep_stats_wider)
+summary(block4nightbeforemodel)
+```
+
+### does average tst predict performance on pretest, posttest1, or posttest2 (we cmobine wake and sleep since before intervention)?
+```{r}
+
+block1avgsleepmodel = lm(block1 ~ AverageSleep, data = PLPSG_sleep_stats_wider)
+summary(block1avgsleepmodel)
+
+block3avgsleepmodel = lm(block3 ~ AverageSleep, data = PLPSG_sleep_stats_wider)
+summary(block3avgsleepmodel)
+
+block4avgsleepmodel = lm(block4 ~ AverageSleep, data = PLPSG_sleep_stats_wider)
+summary(block4avgsleepmodel)
+```
+
+### does deviation from normal amount of sleep predict performance on pretest, posttest1, or posttest2 (we cmobine wake and sleep since before intervention)?
+```{r}
+block1nightbefdevsleepmodel = lm(block1 ~ nightbefore_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+summary(block1nightbefdevsleepmodel)
+
+block3nightbefdevsleepmodel = lm(block3 ~ nightbefore_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+summary(block3nightbefdevsleepmodel)
+
+block4nightbefdevsleepmodel = lm(block4 ~ nightbefore_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+summary(block4nightbefdevsleepmodel)
+
+```
+
+
+### does deviation from normal amount of sleep predict performance on pretest, posttest1, or posttest2 (we combine wake and sleep since before intervention)?
+```{r}
+block1avgdevsleepmodel = lm(block1 ~ average_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+summary(block1avgdevsleepmodel)
+
+block3avgdevsleepmodel = lm(block3 ~ average_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+summary(block3avgdevsleepmodel)
+
+block4avgdevsleepmodel = lm(block4 ~ average_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+summary(block4avgdevsleepmodel)
+
+```
+
+#investigate if there's anything different between subjects who got all cycles of sleep vs didn't 
+```{r}
+PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% mutate(allcycles = ifelse(R > 0 & N3 > 0, 1, 0))
+
+t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$allcycles == 0 & PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$allcycles == 1 & PLPSG_sleep_stats_wider$condition == "sleep"])
+
+sum(PLPSG_sleep_stats_wider$allcycles == 0 & PLPSG_sleep_stats_wider$condition == "sleep")
+```
+
+#investigate if there's anything different between consolidators and nonconsolidators
+```{r}
+t.test(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$perN1[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$perN1[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$perN2[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$perN2[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$perN3[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$perN3[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$perR[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$perR[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$TST[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$TST[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$SL[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$SL[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$SE[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$SE[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$WASO[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$WASO[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$number_fragmentations[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$number_fragmentations[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N1" & PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N2" & PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" & PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "R" & PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N1" & PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N2" & PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" & PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "R" & PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep")
+
+```

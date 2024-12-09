@@ -16,7 +16,8 @@ demographics$Subject = as.character(demographics$Subject)
 
 #language experience questionnaire 
 languageexperience = read.csv("LanguageExperienceQuestionnaire.csv")
-languageexperience = languageexperience %>% select(-c(Age, Gender)) %>% mutate_at("Subject", as.character) %>%
+languageexperience = languageexperience %>% dplyr::select(-Age, -Gender)
+languageexperience = languageexperience %>% mutate_at("Subject", as.character) %>%
   rename("LanguageExperienceNotes" = "Notes") %>% rename_with(.fn = ~gsub("_years$", "_place_lived_years", .) %>%
   gsub("_lived$", "_place_lived", .), .cols = everything())
 names(languageexperience)<-sapply(str_remove_all(colnames(languageexperience),"X"),"[") 
@@ -76,7 +77,7 @@ YASA_spindles_wider <- YASA_spindles_wider %>% mutate(Spindles_N2andN3_Count =
 #the file data.csv that was exported to ~/Documents/PLPSG_sleep_analysis/PLPSG_behavioral_results/Scored_Final/ by these scripts is the SAME FILE as the file being loaded
 behavioral = read.csv("PLPSG_PerceptualLearning_Longer.csv")
 behavioral$subject = gsub("subj","",as.character(behavioral$subject))
-behavioral = behavioral %>% arrange(subject, block) %>% select(-X) %>% 
+behavioral = behavioral %>% arrange(subject, block) %>% dplyr::select(-X) %>% 
   rename("Subject"="subject") %>% mutate(block = as.factor(block))
 
 #now switch working directories to recursively read in information from the hypnograms (sleep statistics)
@@ -84,7 +85,7 @@ setwd("~/repos/PL_Sleep_PSG/Sleep_Scoring/sleepscoredfiles/files_organized_for_s
 filelist = list.files(pattern = "*.txt")
 
 PLPSG_sleep_stats_wider = behavioral %>% 
-  select(c(Subject,block,score)) %>%
+  dplyr::select(c(Subject,block,score)) %>%
   pivot_wider(names_from = block,
               values_from = score) %>% 
   mutate(learning = (block3-block1),
@@ -94,6 +95,9 @@ PLPSG_sleep_stats_wider = behavioral %>%
          protective = (block6-block3),
          longtermrecovery = (block6 - block4),
          retention = (block6-block1),
+         consolidator_status <- ifelse(
+           recovery > 0, 1, 0
+         ),
          condition = "",
          lightsoff = "",
          lightson = "",
@@ -401,10 +405,10 @@ PLPSG_sleep_stats_wider <- PLPSG_sleep_stats_wider %>%
   
 #now create a dataset that is abbreviated (friendlier for looking at when analyzing data that we're more interested in (at this time))
 PLPSG_sleep_stats_wider_abbrev <- PLPSG_sleep_stats_wider %>%
-  select(-c(Major_Department, Year_Student, LanguageExperienceNotes, 
+  dplyr::select(-c(Major_Department, Year_Student, LanguageExperienceNotes, 
             DepthOfSleep, FallAsleepEasily, SleepDisorder, Disabilities, SubstanceAbuseOrMentalIllness,
             NormalCaffeinePerDay)) %>%
-  select(-contains(c('_Duration', '_Amplitude', '_RMS', '_AbsPower', '_RelPower', '_Frequency', '_Oscillations', 
+  dplyr::select(-contains(c('_Duration', '_Amplitude', '_RMS', '_AbsPower', '_RelPower', '_Frequency', '_Oscillations', 
                      '_Symmetry', 'Student', '2nd_lang', '3rd_lang', '4th_lang','5th_lang','_lived', 'TimeRange', 
                      'WellRested', 'Medication', '_Bedtime','_TTS','_OOB','_Arousals','Before_WASO', '_hit', 
                      '_miss', '_cr', '_fa', 'nr', 'lights')))
@@ -444,3 +448,4 @@ write.csv(PLPSG_sleep_stats_longer_abbrev,"PLPSG_PL_surveys_and_PSG_longer_abbre
 
 #clear environment
 #rm(list=ls()[-match(c("PLPSG_sleep_stats_wider", "PLPSG_sleep_stats_longer"), ls())])
+

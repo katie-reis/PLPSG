@@ -95,7 +95,7 @@ PLPSG_sleep_stats_wider = behavioral %>%
          protective = (block6-block3),
          longtermrecovery = (block6 - block4),
          retention = (block6-block1),
-         consolidator_status <- ifelse(
+         consolidator_status = ifelse(
            recovery > 0, 1, 0
          ),
          condition = "",
@@ -448,4 +448,3 @@ write.csv(PLPSG_sleep_stats_longer_abbrev,"PLPSG_PL_surveys_and_PSG_longer_abbre
 
 #clear environment
 #rm(list=ls()[-match(c("PLPSG_sleep_stats_wider", "PLPSG_sleep_stats_longer"), ls())])
-

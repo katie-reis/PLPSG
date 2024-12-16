@@ -575,6 +575,62 @@ ggviolin(temp, x="condition",y="protective") +
 ```
 
 
+### look at the correlation between block 1 and block 3
+```{r}
+fitboth = lm(as.numeric(block3) ~ as.numeric(block1), subset(PLPSG_sleep_stats_wider))
+#for both sleep and wake subjects together
+ggplot(data = PLPSG_sleep_stats_wider) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+    geom_label(aes(x = 0.35, y = 0.3),
+               hjust = 0, size = 3,
+               label = paste("p =", signif(summary(fitboth)$coef[2, 4], 5)),
+               inherit.aes = FALSE)
+
+#for just sleep subjects
+fitsleep = lm(as.numeric(block3) ~ as.numeric(block1), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  ggtitle("sleep") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+    geom_label(aes(x = 0.3, y = 0.31),
+               hjust = 0, size = 3,
+               label = paste("p =", signif(summary(fitsleep)$coef[2, 4], 5)),
+               inherit.aes = FALSE)
+
+#for just wake subjects
+fitwake = lm(as.numeric(block3) ~ as.numeric(block1), subset(PLPSG_sleep_stats_wider, condition == "wake"))
+
+plot_wake = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "wake")) + 
+  aes(x = as.numeric(block1), y = as.numeric(block3),
+      na.rm = TRUE) + 
+  xlab("block1") + 
+  ylab("block3") +
+  ggtitle("wake") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+    geom_label(aes(x = 0.3, y = 0.25),
+               hjust = 0, size = 3,
+               label = paste("p =", signif(summary(fitwake)$coef[2, 4], 5)),
+               inherit.aes = FALSE) 
+
+figure <- ggarrange(plot_sleep, plot_wake,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+figure
+```
 
 
 

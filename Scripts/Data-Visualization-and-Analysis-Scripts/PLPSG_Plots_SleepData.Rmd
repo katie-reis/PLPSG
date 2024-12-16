@@ -7,11 +7,15 @@ date: '2022-10-05'
 ### import packages
 ```{r, message=FALSE}
 library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+library(tidyr)
+
 ```
 
 ### import data files
 ```{r}
 source("PLPSG_ImportData.R")
+
 ```
 
 
@@ -23,9 +27,7 @@ plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   theme(axis.title.x = element_text(size = 9)) + 
   ylim(0, 60) +
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
@@ -41,9 +43,7 @@ plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   ylab("N2 (minutes)") + 
   theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
@@ -57,9 +57,7 @@ plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   ylab("N3 (minutes)") + 
   theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
@@ -73,9 +71,7 @@ plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   ylab("R (minutes)") + 
   theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
@@ -90,476 +86,90 @@ figure
 
 ```
 
-### visualize with dot-plot - amount of time spent in each stage correlated with recovery (our measure of consolidation) 
+
+### histograms instead
 ```{r}
-fit_n1 = lm(as.numeric(recovery) ~ as.numeric(N1), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+# Create a function for consistent histogram plots
+create_histogram <- function(data, y_var, y_label) {
+  ggplot(data = data) + 
+    aes(x = as.numeric(.data[[y_var]])) + 
+    xlab(y_label) +
+    ylab("Count") +
+    theme(axis.title.x = element_text(size = 9)) + 
+    geom_histogram(position = "identity", 
+                   bins = 10, 
+                   alpha = 0.5,  # Transparency for overlap
+                   color = "black") +
+    theme(legend.position = "none")  # Disable individual legends
+}
 
-plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N1), y = recovery,
-      na.rm = TRUE) + 
-  xlab("N1 Duration (minutes)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 27,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_n1)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
+# Generate the histogram plots
+plot_N1 <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N1", "N1 (minutes)")
+plot_N2 <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N2", "N2 (minutes)")
+plot_N3 <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N3", "N3 (minutes)")
+plot_R <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "R", "R (minutes)")
 
-fit_n2 = lm(as.numeric(recovery) ~ as.numeric(N2), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+# Combine the plots with a common legend
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")
 
-plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N2), y = recovery,
-      na.rm = TRUE) +
-  xlab("N2 Duration (minutes)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 45,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_n2)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_n3 = lm(as.numeric(recovery) ~ as.numeric(N3), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3), y = recovery,
-      na.rm = TRUE) +
-  xlab("SWS Duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 9, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 38,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_n3)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_r = lm(as.numeric(recovery) ~ as.numeric(R), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R), y = recovery,
-      na.rm = TRUE) +
-  xlab("REM Duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 9, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 27,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_r)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
- 
-fit_n3andR = lm(as.numeric(recovery) ~ as.numeric(N3andR), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_N3andR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = (as.numeric(N3andR)), y = recovery,
-      na.rm = TRUE) +
-  xlab("SWS and REM Duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 9, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 40,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_n3andR)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R, plot_N3andR,
-                    ncol = 3, nrow = 2)
 figure
 
+
 ```
 
+```{r}
+# Create a function for consistent density plots
+create_density <- function(data, y_var, y_label) {
+  ggplot(data = data) + 
+    aes(x = as.numeric(.data[[y_var]])) + 
+    xlab(y_label) +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) + 
+    geom_density(alpha = 0.5,  # Transparency for overlap
+                 adjust = 1) +
+    theme(legend.position = "none")  # Disable individual legends
+}
 
-### visualize with dot-plot - percent of time spent in each stage correlated with recovery (our measure of consolidation) 
-```{r, message = FALSE}
-fit_perN1 = lm(as.numeric(recovery) ~ as.numeric(perN1), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+# Generate the density plots
+plot_N1 <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N1", "N1 (minutes)")
+plot_N2 <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N2", "N2 (minutes)")
+plot_N3 <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N3", "N3 (minutes)")
+plot_R <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "R", "R (minutes)")
 
-plot_perN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN1), y = recovery,
-      na.rm = TRUE) + 
-  xlab("N1 (percent)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 35,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_perN1)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
+# Combine the plots with a common legend
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")
 
-fit_perN2 = lm(as.numeric(recovery) ~ as.numeric(perN2), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_perN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN2), y = recovery,
-      na.rm = TRUE) +
-  xlab("N2 (percent)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 70,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_perN2)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_perN3 = lm(as.numeric(recovery) ~ as.numeric(perN3), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_perN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN3), y = recovery,
-      na.rm = TRUE) +
-  xlab("N3 (percent)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 40,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_perN3)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_perR = lm(as.numeric(recovery) ~ as.numeric(perR), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_perR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perR), y = recovery,
-      na.rm = TRUE) +
-  xlab("R (percent)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 30,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_perR)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_perN3andR = lm(as.numeric(recovery) ~ as.numeric(perN3andR), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_perN3andR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN3andR), y = recovery,
-      na.rm = TRUE) +
-  xlab("N3 and R (percent)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 55,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_perN3andR)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-figure <- ggarrange(plot_perN1, plot_perN2, plot_perN3, plot_perR, plot_perN3andR,
-                    ncol = 3, nrow = 2)
 figure
+
+
 ```
 
-### visualize with dot-plot - latency to each stage correlated with recovery (our measure of consolidation)
-```{r, message = FALSE, warning = FALSE}
-fit_latN1 = lm(as.numeric(recovery) ~ as.numeric(latN1), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_latN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latN1), y = recovery,
-      na.rm = TRUE) + 
-  xlab("N1 latency (minutes)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 25,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_latN1)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_latN2 = lm(as.numeric(recovery) ~ as.numeric(latN2), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_latN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latN2), y = recovery,
-      na.rm = TRUE) +
-  xlab("N2 latency (minutes)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 30,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_latN2)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_latN3 = lm(as.numeric(recovery) ~ as.numeric(latN3), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_latN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latN3), y = recovery,
-      na.rm = TRUE) +
-  xlab("N3 latency (minutes)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 50,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_latN3)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-fit_latR = lm(as.numeric(recovery) ~ as.numeric(latR), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_latR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latR), y = recovery,
-      na.rm = TRUE) +
-  xlab("R latency (minutes)") + 
-  ylab("recovery") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 70,  # Position near the first category
-            y = 0.15,  # Above the data
-            label = paste("p =", signif(summary(fit_latR)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-figure <- ggarrange(plot_latN1, plot_latN2, plot_latN3, plot_latR,
-                    ncol = 2, nrow = 2)
-figure
-```
-
-### visualize total time spent in N3 and R with recovery, in addition to N3 and R separately 
-
-### highlight the folks that got 0 SWS and 0 REM 
+### last sleep epoch
 ```{r}
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3), y = recovery) + 
-  xlab("SWS Duration (minutes)") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 20, family = "Times")) + 
-  geom_point(aes(color = ifelse(N3 == 0, "Red", "Black"))) + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  scale_color_manual(values = c("Red" = "red", "Black" = "black"), guide = "none")
-
-
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R), y = recovery) + 
-  xlab("R Duration (minutes)") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 20, family = "Times")) + 
-  geom_point(aes(color = ifelse(R == 0, "Red", "Black"))) + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  scale_color_manual(values = c("Red" = "red", "Black" = "black"), guide = "none")
-
-```
-### plot only subjects who got both sws and rem 
-```{r}
-fitsws = lm(as.numeric(recovery) ~ as.numeric(N3), 
-            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
-
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
-  aes(x = as.numeric(N3), y = recovery,
-      na.rm = TRUE) +
-  xlab("SWS Duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 20, family = "Times")) +
-  ggtitle("Learning > 0; R > 0; N3 > 0") +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 35,  # Position near the first category
-            y = 0.06,  # Above the data
-            label = paste("p =", signif(summary(fitsws)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 3.5)
-
-fitr = lm(as.numeric(recovery) ~ as.numeric(R), 
-            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
-
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
-  aes(x = as.numeric(R), y = recovery,
-      na.rm = TRUE) +
-  ggtitle("Learning > 0; R > 0; N3 > 0") +
-  xlab("REM Duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 20, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 30,  # Position near the first category
-            y = 0.04,  # Above the data
-            label = paste("p =", signif(summary(fitr)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 3.5)
-
-fitswsandr = lm(as.numeric(recovery) ~ as.numeric(N3andR), 
-            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
-
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
-  aes(x = as.numeric(N3andR), y = recovery,
-      na.rm = TRUE) +
-  ggtitle("Learning > 0; R > 0; N3 > 0") +
-  xlab("SWS and REM Duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 20, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 50,  # Position near the first category
-            y = 0.14,  # Above the data
-            label = paste("p =", signif(summary(fitswsandr)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 3.5)
-
-fitspindle = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), 
-            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
-
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
-  aes(x = as.numeric(Spindles_N2andN3_Count), y = recovery,
-      na.rm = TRUE) +
-  ggtitle("Learning > 0; R > 0; N3 > 0") +
-  xlab("Spindle Count") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 20, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 700,  # Position near the first category
-            y = 0.03,  # Above the data
-            label = paste("p =", signif(summary(fitspindle)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 3.5, fill = "yellow")
-```
-
-### other plots if we remove folks that didn't get any REM or SWS - it actually makes the most sense for testing the sequential hypothesis to remove folks that didn't experience N3 and R
-```{r}
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0)) + 
-  aes(x = as.numeric(N3), y = recovery,
-      na.rm = TRUE) +
-  ggtitle("Learning > 0; N3 > 0") +
-  xlab("SWS Duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 20, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0)) + 
-  aes(x = as.numeric(R), y = recovery,
-      na.rm = TRUE) +
-  ggtitle("Learning > 0; R > 0") +
-  xlab("REM duration (minutes)") + 
-  ylab("Recovery") +
-  theme(axis.title = element_text(size = 20, family = "Times")) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
- 
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(N3andR), y = recovery) + 
-  ggtitle("Learning > 0; N3 > 0; R > 0") +
-  xlab("SWS and REM Duration (minutes)") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 20, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = paste("N3:", N3, "R:", R)), 
-            hjust = -0.1, vjust = -0.5, size = 3)
-
+ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), aes(x = last_sleep_epoch)) + 
+  geom_bar() +
+  labs( 
+    title = "Last Sleep Epoch", 
+    x = "Last Sleep Epoch", 
+    y = "Count" 
+  ) + ylim(0,15) +
+  theme_minimal()
 
 ```
 
 
-### visualize with dot-plot - WASO (wake after sleep onset) correlated with recovery (our measure of consolidation)
-```{r, message = FALSE}
-fitwaso = lm(as.numeric(recovery) ~ as.numeric(WASO), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 
-wasoplot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(WASO), y = as.numeric(recovery),
-      na.rm = TRUE) + 
-  xlab("WASO (minutes)") + 
-  ylab("recovery") +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 35,  # Position near the first category
-            y = 0.02,  # Above the data
-            label = paste("p =", signif(summary(fitwaso)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
 
-#yeah.. this is definitely not what I would predict
-```
 
-### visualize with dot-plot - TST (total sleep time) correlated with recovery (our measure of consolidation)
-```{r, message = FALSE}
-fittst = lm(as.numeric(recovery) ~ as.numeric(TST), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 
-tstplot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(TST), y = recovery,
-      na.rm = TRUE) + 
-  xlab("TST (minutes)") + 
-  ylab("recovery") +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 45,  # Position near the first category
-            y = 0.02,  # Above the data
-            label = paste("p =", signif(summary(fittst)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
 
-#this is also not what I would predict necessarily
-```
 
-### visualize with dot-plot - SE (sleep efficiency) correlated with recovery (our measure of consolidation)
-```{r, message = FALSE}
-fitse = lm(as.numeric(recovery) ~ as.numeric(SE), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-seplot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(SE), y = recovery,
-      na.rm = TRUE) + 
-  xlab("SE (percent)") + 
-  ylab("recovery") +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(
-        aes(x = 50,  # Position near the first category
-            y = 0.0,  # Above the data
-            label = paste("p =", signif(summary(fitse)$coef[2, 4], 5))),
-        inherit.aes = FALSE,
-        size = 2.5)
-
-#yeah.. this is not what I would predict either
-```
-### combine those three plots for summarizing 
-```{r}
-figure <- ggarrange(wasoplot, tstplot, seplot,
-                    labels = c("A", "B", "C"),
-                    ncol = 3, nrow = 1)
-figure
-```
 
 
 ### visualize with dot-plot - spindles correlated with recovery (our measure of consolidation )
@@ -678,89 +288,44 @@ plot_N2andN3_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sl
   ylab("N2andN3 - F3") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 800,  # Above the data
-            label = paste("p =", signif(t_test_N2andN3_F3$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 plot_N2andN3_F4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2andN3_F4_Count), x = condition, na.rm = TRUE) + 
   ylab("N2andN3 - F4") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 800,  # Above the data
-            label = paste("p =", signif(t_test_N2andN3_F4$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 plot_N2andN3_C3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2andN3_C3_Count), x = condition, na.rm = TRUE) + 
   ylab("N2andN3 - C3") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 800,  # Above the data
-            label = paste("p =", signif(t_test_N2andN3_C3$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 plot_N2andN3_C4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2andN3_C4_Count), x = condition, na.rm = TRUE) + 
   ylab("N2andN3 - C4") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 800,  # Above the data
-            label = paste("p =", signif(t_test_N2andN3_C4$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
-
+               width = 0.2) 
 
 figure <- ggarrange(plot_N2andN3_F3, plot_N2andN3_F4, plot_N2andN3_C3, plot_N2andN3_C4,
                     labels = c("A", "B", "C", "D"),
@@ -770,6 +335,7 @@ figure
 
 ```
 
+
 ### visualize number of spindles detected during N2 
 ```{r}
 plot_N2_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
@@ -777,88 +343,44 @@ plot_N2_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")
   ylab("N2 - F3") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N2_F3$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 plot_N2_F4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2_F4_Count), x = condition, na.rm = TRUE) + 
   ylab("N2 - F4") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N2_F4$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 plot_N2_C3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2_C3_Count), x = condition, na.rm = TRUE) + 
   ylab("N2 - C3") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N2_C3$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2)
 
 plot_N2_C4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N2_C4_Count), x = condition, na.rm = TRUE) + 
   ylab("N2 - C4") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N2_C4$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 
 figure <- ggarrange(plot_N2_F3, plot_N2_F4, plot_N2_C3, plot_N2_C4,
@@ -876,90 +398,44 @@ plot_N3_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")
   ylab("N3 - F3") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N3_F3$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 plot_N3_F4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N3_F4_Count), x = condition, na.rm = TRUE) + 
   ylab("N3 - F4") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N3_F4$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2)
 
 plot_N3_C3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(y = as.numeric(Spindles_N3_C3_Count), x = condition, na.rm = TRUE) + 
   ylab("N3 - C3") + 
   theme(axis.title.x = element_text(size = 9)) + 
   geom_violin() + 
-  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
-               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
   stat_summary(fun.data = "mean_cl_boot",
                geom = "crossbar",
                colour = "grey",
-               width = 0.2) +
-  geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N3_C3$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-  scale_color_identity() +  # Ensures the color mapping is recognized
-  scale_fill_identity()     # Ensures the fill mapping is recognized
+               width = 0.2) 
 
 plot_N3_C4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
     aes(y = as.numeric(Spindles_N3_C4_Count), x = condition, na.rm = TRUE) +
     ylab("N3 - C4") +
     theme(axis.title.x = element_text(size = 9)) +
     geom_violin() +
-    geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
-                     fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")),
-                 binaxis = 'y', stackdir = 'center', dotsize = 0.5) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5) +
     stat_summary(fun.data = "mean_cl_boot",
                  geom = "crossbar",
                  colour = "grey",
-                 width = 0.2) +
-    geom_label(
-        aes(x = 1,  # Position near the first category
-            y = 645,  # Above the data
-            label = paste("p =", signif(t_test_N3_C4$p.value, 5))),
-        inherit.aes = FALSE,
-        size = 2.5
-    ) +
-    scale_color_identity() +  # Ensures the color mapping is recognized
-    scale_fill_identity()
-
-
+                 width = 0.2) 
 
 figure <- ggarrange(plot_N3_F3, plot_N3_F4, plot_N3_C3, plot_N3_C4,
                     labels = c("A", "B", "C", "D"),
@@ -979,361 +455,11 @@ figure <- ggarrange(plot_N2andN3_F3, plot_N2_F3, plot_N3_F3,
 figure
 ```
 
-### Density plots of N2 and N3 spindles for consolidators and non-consolidators (recovery)
-```{r}
-t_test_N2andN3_F3 <- t.test(Spindles_N2andN3_F3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N2andN3_F4 <- t.test(Spindles_N2andN3_F4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N2andN3_C3 <- t.test(Spindles_N2andN3_C3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N2andN3_C4 <- t.test(Spindles_N2andN3_C4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-# Plot for N2 and N3 - F3
-plot_N2andN3_F3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2andN3_F3_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 and N3 - F3") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group") +
-    geom_label(aes(x = 500,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2andN3_F3$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Plot for N2 and N3 - F4
-plot_N2andN3_F4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2andN3_F4_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 and N3 - F4") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group") +
-    geom_label(aes(x = 500,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2andN3_F4$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Plot for N2 and N3 - C3
-plot_N2andN3_C3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2andN3_C3_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 and N3 - C3") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group") +
-    geom_label(aes(x = 500,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2andN3_C3$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Plot for N2 and N3 - C4
-plot_N2andN3_C4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2andN3_C4_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 and N3 - C4") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group") +
-    geom_label(aes(x = 500,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2andN3_C4$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Arrange the plots
-figure <- ggarrange(plot_N2andN3_F3, plot_N2andN3_F4, plot_N2andN3_C3, plot_N2andN3_C4,
-                    labels = c("A", "B", "C", "D"),
-                    ncol = 4, nrow = 1,
-                    common.legend = TRUE, legend = "bottom")  # Adds a common legend
-figure
-
-
-```
-
-### Density plots of N2 spindles for consolidators and non-consolidators (recovery)
-```{r}
-t_test_N2_F3 <- t.test(Spindles_N2_F3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N2_F4 <- t.test(Spindles_N2_F4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N2_C3 <- t.test(Spindles_N2_C3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N2_C4 <- t.test(Spindles_N2_C4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-# Plot for N2 - F3
-plot_N2_F3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2_F3_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 - F3") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group")  +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2_F3$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Plot for N2 - F4
-plot_N2_F4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2_F4_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 - F4") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group") +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2_F4$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Plot for N2 - C3
-plot_N2_C3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2_C3_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 - C3") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group") +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2_C3$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Plot for N2 - C4
-plot_N2_C4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2_C4_Count), 
-      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 - C4") + 
-  ylab("Density") + 
-  theme(axis.title.x = element_text(size = 9)) + 
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                    name = "Group") +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N2_C4$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Arrange the plots
-figure <- ggarrange(plot_N2_F3, plot_N2_F4, plot_N2_C3, plot_N2_C4,
-                    labels = c("A", "B", "C", "D"),
-                    ncol = 4, nrow = 1,
-                    common.legend = TRUE, legend = "bottom")  # Adds a common legend
-figure
-
-
-```
 
 
 
-### Density plots of N3 spindles for consolidators and non-consolidators (recovery)
-```{r}
-# Perform t-tests
-t_test_N3_F3 <- t.test(Spindles_N3_F3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N3_F4 <- t.test(Spindles_N3_F4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N3_C3 <- t.test(Spindles_N3_C3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-t_test_N3_C4 <- t.test(Spindles_N3_C4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
-                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-# Add p-values to plots
-plot_N3_F3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
-    aes(x = as.numeric(Spindles_N3_F3_Count),
-        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
-    xlab("N3 - F3") +
-    ylab("Density") +
-    theme(axis.title.x = element_text(size = 9)) +
-    geom_density(alpha = 0.5) +
-    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                      name = "Group") +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N3_F3$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-    ylim(0,0.0041)
 
 
-plot_N3_F4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
-    aes(x = as.numeric(Spindles_N3_F4_Count),
-        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
-    xlab("N3 - F4") +
-    ylab("Density") +
-    theme(axis.title.x = element_text(size = 9)) +
-    geom_density(alpha = 0.5) +
-    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                      name = "Group") +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N3_F4$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-    ylim(0,0.0041)
-
-
-plot_N3_C3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
-    aes(x = as.numeric(Spindles_N3_C3_Count),
-        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
-    xlab("N3 - C3") +
-    ylab("Density") +
-    theme(axis.title.x = element_text(size = 9)) +
-    geom_density(alpha = 0.5) +
-    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                      name = "Group") +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N3_C3$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-    ylim(0,0.0041)
-
-
-plot_N3_C4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
-    aes(x = as.numeric(Spindles_N3_C4_Count),
-        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
-    xlab("N3 - C4") +
-    ylab("Density") +
-    theme(axis.title.x = element_text(size = 9)) +
-    geom_density(alpha = 0.5) +
-    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
-                      name = "Group") +
-    geom_label(aes(x = 400,
-                   y = 0.004,
-                   label = paste("p =", signif(t_test_N3_C4$p.value, 5))),
-               inherit.aes = FALSE,
-               size = 2.5) +
-  ylim(0,0.0041)
-
-# Arrange the plots
-figure <- ggarrange(plot_N3_F3, plot_N3_F4, plot_N3_C3, plot_N3_C4,
-                    labels = c("A", "B", "C", "D"),
-                    ncol = 4, nrow = 1,
-                    common.legend = TRUE, legend = "bottom")
-
-# Display the figure
-figure
-
-
-
-```
-
-### all together 
-```{r}
-figure <- ggarrange(plot_N2andN3_F3, plot_N2andN3_F4, plot_N2andN3_C3, plot_N2andN3_C4,
-                    plot_N2_F3, plot_N2_F4, plot_N2_C3, plot_N2_C4,
-                    plot_N3_F3, plot_N3_F4, plot_N3_C3, plot_N3_C4,
-                    ncol = 4, nrow = 3,
-                    common.legend = TRUE, legend = "bottom")
-figure
-```
-
-### plot the average across all 4 channels 
-```{r}
-fitn2andn3 = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-n2andn3_plot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2andN3_Count), y = recovery,
-      na.rm = TRUE) + 
-  xlab("N2 & N3 Count") + 
-  ylab("recovery") +
-  geom_point(size = 0.5) +
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_label(aes(x =500, y = 0.03), 
-               hjust = 0, size = 2, 
-               label = paste("p =", signif(summary(fitn2andn3)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) 
-
-fitn2 = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-n2_plot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2_Count), y = recovery,
-      na.rm = TRUE) + 
-  xlab("N2 Count") + 
-  ylab("recovery") +
-  geom_point(size = 0.5) +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(aes(x =400, y = 0.03), 
-               hjust = 0, size = 2, 
-               label = paste("p =", signif(summary(fitn2)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) 
-
-fitn3 = lm(as.numeric(recovery) ~ as.numeric(Spindles_N3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-n3_plot = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N3_Count), y = recovery,
-      na.rm = TRUE) + 
-  xlab("N3 Count") + 
-  ylab("recovery") +
-  geom_point(size = 0.5) +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_label(aes(x =420, y = 0.03), 
-               hjust = 0, size = 2, 
-               label = paste("p =", signif(summary(fitn3)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) 
-
-# Arrange the plots
-figure <- ggarrange(n2andn3_plot, n2_plot, n3_plot,
-                    labels = c("A", "B", "C"),
-                    ncol = 3, nrow = 1,
-                    common.legend = TRUE, legend = "bottom")  # Adds a common legend
-figure
-
-```
-
-### just N2 and N3 spindles by itself -- we will call this the total spindle count 
-```{r}
-fitspindle = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(Spindles_N2andN3_Count), y = recovery, na.rm = TRUE) + 
-  xlab("Spindle Count") + 
-  ylab("Recovery") +
-  geom_point(size = 2) + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_label(aes(x =625, y = 0.04), 
-               hjust = 0, size = 4, 
-               label = paste("p =", signif(summary(fitspindle)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) +
-  theme(
-    axis.title = element_text(size = 20, family = "Times")  # Adjust size as needed
-  )
-
-```
 
 
 
@@ -1356,374 +482,24 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
 
 ```
 
-### now spindle count excluding the subjects who didn't go into sws or rem 
-```{r}
-ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
-  aes(y = as.numeric(Spindles_N2andN3_Count), x = condition, na.rm = TRUE) + 
-  ggtitle("learning > 0; R > 0; N3 > 0") +
-  ylab("Spindle Count") + 
-  xlab("Condition") +
-  geom_violin(fill = "lightgrey", color = "black", width = 0.7) + 
-  geom_boxplot(width = 0.3, fill = "white", color = "black", outlier.shape = NA) + 
-  geom_jitter(width = 0.05, height = 0, size = 2, color = "black") + 
-  scale_color_identity() + 
-  scale_fill_identity() + 
-  theme(
-    aspect.ratio = 2,
-    axis.title = element_text(size = 16, family = "Times New Roman")  # Set font size and family
-  )
 
 
 
-```
-
-### visualize with dot-plot - amount of time spent in each stage correlated with maintenance
-```{r, message = FALSE}
-plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N1), y = maintenance,
-      na.rm = TRUE) + 
-  xlab("N1 (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N2), y = maintenance,
-      na.rm = TRUE) +
-  xlab("N2 (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3), y = maintenance,
-      na.rm = TRUE) +
-  xlab("N3 (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R), y = maintenance,
-      na.rm = TRUE) +
-  xlab("R (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
-                    labels = c("A", "B", "C", "D"),
-                    ncol = 2, nrow = 2)
-figure
-```
-
-### visualize with dot-plot - percent of time spent in each stage correlated with maintenance
-```{r, message = FALSE}
-plot_perN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN1), y = maintenance,
-      na.rm = TRUE) + 
-  xlab("N1 (percent)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_perN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN2), y = maintenance,
-      na.rm = TRUE) +
-  xlab("N2 (percent)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_perN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN3), y = maintenance,
-      na.rm = TRUE) +
-  xlab("N3 (percent)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_perR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perR), y = maintenance,
-      na.rm = TRUE) +
-  xlab("R (percent)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-figure <- ggarrange(plot_perN1, plot_perN2, plot_perN3, plot_perR,
-                    labels = c("A", "B", "C", "D"),
-                    ncol = 2, nrow = 2)
-figure
-```
-
-### visualize with dot-plot - latency to each stage correlated with maintenance
-```{r}
-plot_latN1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latN1), y = maintenance,
-      na.rm = TRUE) + 
-  xlab("N1 (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_latN2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latN2), y = maintenance,
-      na.rm = TRUE) +
-  xlab("N2 (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_latN3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latN3), y = maintenance,
-      na.rm = TRUE) +
-  xlab("N3 (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-plot_latR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(latR), y = maintenance,
-      na.rm = TRUE) +
-  xlab("R (minutes)") + 
-  ylab("maintenance") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-figure <- ggarrange(plot_latN1, plot_latN2, plot_latN3, plot_latR,
-                    labels = c("A", "B", "C", "D"),
-                    ncol = 2, nrow = 2)
-figure
-
-```
-
-### look at the correlation between block 1 and block 3
-```{r}
-fitboth = lm(as.numeric(block3) ~ as.numeric(block1), subset(PLPSG_sleep_stats_wider))
-#for both sleep and wake subjects together
-ggplot(data = PLPSG_sleep_stats_wider) + 
-  aes(x = as.numeric(block1), y = as.numeric(block3),
-      na.rm = TRUE) + 
-  xlab("block1") + 
-  ylab("block3") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 0.35, y = 0.3),
-               hjust = 0, size = 3,
-               label = paste("p =", signif(summary(fitboth)$coef[2, 4], 5)),
-               inherit.aes = FALSE)
-
-#for just sleep subjects
-fitsleep = lm(as.numeric(block3) ~ as.numeric(block1), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(block1), y = as.numeric(block3),
-      na.rm = TRUE) + 
-  xlab("block1") + 
-  ylab("block3") +
-  ggtitle("sleep") + 
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 0.3, y = 0.31),
-               hjust = 0, size = 3,
-               label = paste("p =", signif(summary(fitsleep)$coef[2, 4], 5)),
-               inherit.aes = FALSE)
-
-#for just wake subjects
-fitwake = lm(as.numeric(block3) ~ as.numeric(block1), subset(PLPSG_sleep_stats_wider, condition == "wake"))
-
-plot_wake = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "wake")) + 
-  aes(x = as.numeric(block1), y = as.numeric(block3),
-      na.rm = TRUE) + 
-  xlab("block1") + 
-  ylab("block3") +
-  ggtitle("wake") +
-  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 0.3, y = 0.25),
-               hjust = 0, size = 3,
-               label = paste("p =", signif(summary(fitwake)$coef[2, 4], 5)),
-               inherit.aes = FALSE) 
-
-figure <- ggarrange(plot_sleep, plot_wake,
-                    labels = c("A", "B"),
-                    ncol = 2, nrow = 1)
-figure
-```
-
-
-### sleep history now - average
-```{r}
-# Fit models for p-value calculation
-fitsleep_avg_tst <- lm(as.numeric(recovery) ~ as.numeric(AverageSleep), 
-                       subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-fitwake_avg_tst <- lm(as.numeric(recovery) ~ as.numeric(AverageSleep), 
-                      subset(PLPSG_sleep_stats_wider, condition == "wake"))
-
-# Create the plot
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = as.numeric(AverageSleep), 
-        y = recovery, 
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Average Sleep TST") +
-    ylab("recovery") +
-    geom_point(size = 1) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = max(as.numeric(AverageSleep), na.rm = TRUE) - 1, y = 0.03),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitsleep_avg_tst)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    geom_label(aes(x = max(as.numeric(AverageSleep), na.rm = TRUE) - 1, y = -0.08),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitwake_avg_tst)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"), 
-                       labels = c("sleep", "wake")) +
-    guides(color = guide_legend(title = "Condition"))
-
-
-```
-### sleep history now - night before
-```{r}
-
-# Fit models for p-value calculation
-fitsleep_tst <- lm(as.numeric(recovery) ~ as.numeric(NightBefore_TST), 
-                   subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-fitwake_tst <- lm(as.numeric(recovery) ~ as.numeric(NightBefore_TST), 
-                  subset(PLPSG_sleep_stats_wider, condition == "wake"))
-
-# Create the plot
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = as.numeric(NightBefore_TST),
-        y = recovery,
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Night Before TST") +
-    ylab("recovery") +
-    geom_point(size = 1) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 8.5, y = 0.04), 
-               hjust = 0, size = 2, 
-               label = paste("p =", signif(summary(fitsleep_tst)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) +
-    geom_label(aes(x = 9.4, y = -0.01), 
-               hjust = 0, size = 2, 
-               label = paste("p =", signif(summary(fitwake_tst)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
-
-
-```
-
-
-### sleep history now - night before and two night before average sleep deviation from normal sleep length - a value of -2 here means that they got an average of 2 hours less sleep the nights leading up to the experiment than they normally do, a value of +2 means that they got an average of 2 hours more sleep the nights leading up to the experiment than they normally do 
-```{r}
-
-# Fit models for p-value calculation
-fitsleep_avg <- lm(as.numeric(recovery) ~ as.numeric(average_sleep_deviation_from_norm), 
-                   subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-fitwake_avg <- lm(as.numeric(recovery) ~ as.numeric(average_sleep_deviation_from_norm), 
-                  subset(PLPSG_sleep_stats_wider, condition == "wake"))
-
-# Create the plot
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = (as.numeric(UsualSleepLengthHours) - as.numeric(AverageSleep)),
-        y = recovery,
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Average sleep deviation from Normal Sleep Length") +
-    ylab("recovery") +
-    geom_point(size = 1) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 2.3, y = 0.01),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitsleep_avg)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    geom_label(aes(x = 2.3, y = -0.07),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitwake_avg)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
-
-```
-
-### sleep history now - LAST NIGHT SLEEP deviation from normal sleep length - a value of -2 here means that they got an average of 2 hours less sleep the nights leading up to the experiment than they normally do, a value of +2 means that they got an average of 2 hours more sleep the nights leading up to the experiment than they normally do 
-```{r}
-fitsleep <- lm(as.numeric(recovery) ~ as.numeric(nightbefore_sleep_deviation_from_norm), subset(PLPSG_sleep_stats_wider, condition == "sleep"))  
-
-fitwake <- lm(as.numeric(recovery) ~ as.numeric(nightbefore_sleep_deviation_from_norm), subset(PLPSG_sleep_stats_wider, condition == "wake"))
-
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = (as.numeric(UsualSleepLengthHours) - as.numeric(NightBefore_TST)),
-        y = recovery,
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Night before deviation from Normal Sleep Length") +
-    ylab("recovery") +
-    geom_point(size = 1) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 2.9, y = 0.03),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitsleep)$coef[2,4], 5)),
-               inherit.aes = FALSE) +
-    geom_label(aes(x = 2.9, y = -0.08),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitwake)$coef[2,4], 5)),
-               inherit.aes = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
-
-```
-
-```{r}
-library(dplyr)
-
-PLPSG_sleep_stats_wider <- PLPSG_sleep_stats_wider %>%
-  mutate(swsandrem = case_when(
-    R != 0 & N3 != 0 ~ "SWSandREM",
-    R == 0 & N3 != 0 ~ "justSWS",
-    R != 0 & N3 == 0 ~ "justREM",
-    R == 0 & N3 == 0 ~ "neitherSWSorREM"
-  ))
-
-swsandremplot <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"),   
-                        aes(x = swsandrem, y = recovery, 
-                            label = paste("R:", R, "N3:", N3))) +
-  ggtitle("SWS or REM") +
-  geom_bar(stat = "summary", fun = "mean", fill = "skyblue", alpha = 0.5) +
-  geom_jitter(width = 0.1, size = 1, color = "black") +
-  stat_summary(fun.data = "mean_cl_boot", 
-               geom = "errorbar", 
-               colour = "red", 
-               width = 0.2) 
-#+ geom_text(vjust = -0.5, size = 3)  # Label each point with R and N3 values
-
-swsandremplot
 
 
 
-```
+
+
+
+
+
+
+
+
 
 ### how much time spent in each stage - stacked plot
 ```{r}
 library(ggplot2)
-library(tidyr)
 library(dplyr)
 
 # Filter data for 'sleep' condition and reshape it to long format
@@ -1769,137 +545,22 @@ ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = as.numeric(perce
 
 ```
 
-#PERCENTAGES NOW
-```{r}
-# Plot 1: SWS Percentage of TST vs Recovery
-plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN3), y = recovery, na.rm = TRUE) + 
-  xlab("SWS Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 2: REM Percentage of TST vs Recovery
-plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perR), y = recovery, na.rm = TRUE) + 
-  xlab("REM Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 3: SWS and REM Percentage of TST vs Recovery
-plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN3andR), y = recovery, na.rm = TRUE) + 
-  xlab("SWS and REM Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
 
 
-plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(perN2), y = recovery, na.rm = TRUE) + 
-  xlab("N2 Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-figure <- ggarrange(plotn2, plotsws, plotr, plotswsandrem,
-                    ncol = 2, nrow = 2)
-figure
-
-```
 
 
-### now remove 0 rem and 0 sws people 
-```{r}
-# Plot 1: SWS Percentage of TST vs Recovery
-plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(perN3), y = recovery, na.rm = TRUE) + 
-  xlab("SWS Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 2: REM Percentage of TST vs Recovery
-plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(perR), y = recovery, na.rm = TRUE) + 
-  xlab("REM Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 3: SWS and REM Percentage of TST vs Recovery
-plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(perN3andR), y = recovery, na.rm = TRUE) + 
-  xlab("SWS and REM Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-
-plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(perN2), y = recovery, na.rm = TRUE) + 
-  xlab("N2 Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-figure <- ggarrange(plotn2, plotsws, plotr, plotswsandrem,
-                    ncol = 2, nrow = 2)
-annotate_figure(figure, top = text_grob("learning > 0, R > 0; N3 > 0"))
-
-```
 
 ### again for duration - not removing anyone 
-#PERCENTAGES NOW
 ```{r}
-# Plot 1: SWS  vs Recovery
-plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3), y = recovery, na.rm = TRUE) + 
-  xlab("SWS Duration") + 
+plotn1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1), y = recovery, na.rm = TRUE) + 
+  xlab("N1 Duration") + 
   ylab("Recovery") + 
   theme(axis.title = element_text(size = 10, family = "Times")) + 
   geom_point() + 
   geom_smooth(method = "lm", se = FALSE) + 
   geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
 
-# Plot 2: REM vs Recovery
-plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R), y = recovery, na.rm = TRUE) + 
-  xlab("REM Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 3: SWS and REM vs Recovery
-plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3andR), y = recovery, na.rm = TRUE) + 
-  xlab("SWS and REM Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# plot 4: n2 vs recovery
 plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
   aes(x = as.numeric(N2), y = recovery, na.rm = TRUE) + 
   xlab("N2 Duration") + 
@@ -1909,247 +570,44 @@ plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   geom_smooth(method = "lm", se = FALSE) + 
   geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
 
-figure <- ggarrange(plotn2, plotsws, plotr, plotswsandrem,
-                    ncol = 2, nrow = 2)
+plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), y = recovery, na.rm = TRUE) + 
+  xlab("SWS Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
+
+plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), y = recovery, na.rm = TRUE) + 
+  xlab("REM Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
+
+plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3andR), y = recovery, na.rm = TRUE) + 
+  xlab("SWS and REM Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
+
+
+
+figure <- ggarrange(plotn1, plotn2, plotsws, plotr, plotswsandrem,
+                    ncol = 3, nrow = 2)
 figure
 
 ```
 
-### what if i remove people that didn't cycle through everything 
-```{r}
-# Plot 1: SWS  vs Recovery
-plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(N3), y = recovery, na.rm = TRUE) + 
-  xlab("SWS Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 2: REM vs Recovery
-plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(R), y = recovery, na.rm = TRUE) + 
-  xlab("REM Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 3: SWS and REM vs Recovery
-plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(N3andR), y = recovery, na.rm = TRUE) + 
-  xlab("SWS and REM Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# plot 4: n2 vs recovery
-plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
-  aes(x = as.numeric(N2), y = recovery, na.rm = TRUE) + 
-  xlab("N2 Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-figure <- ggarrange(plotn2, plotsws, plotr, plotswsandrem,
-                    ncol = 2, nrow = 2)
-annotate_figure(figure, top = text_grob("learning > 0, R > 0; N3 > 0"))
-
-```
-
-### looking at those with 0sws 0rem: recovery x duration; with p values listed
-```{r}
-
-# Plot 1: SWS  vs Recovery
-fitsws <- lm(as.numeric(recovery) ~ as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N3), y = recovery, na.rm = TRUE) + 
-  xlab("SWS Duration") + 
-  ylab("Recovery") + 
-  xlim(0,50) + ylim(-0.2,0.2) +
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-    geom_label(aes(x = 20, y = 0.2), hjust = 0, size = 2,
-             label = paste("p =",signif(summary(fitsws)$coef[2,4], 5)))
-
-# Plot 2: REM vs Recovery
-fitr <- lm(as.numeric(recovery) ~ as.numeric(R), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(R), y = recovery, na.rm = TRUE) + 
-  xlab("REM Duration") + 
-  ylab("Recovery") + 
-  xlim(0,20) + ylim(-0.2,0.2) +
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-    geom_label(aes(x = 8, y = 0.2), hjust = 0, size = 2,
-             label = paste("p =",signif(summary(fitr)$coef[2,4], 5)))
-
-# Plot 3: SWS and REM vs Recovery
-fitswsandr <- lm(as.numeric(recovery) ~ as.numeric(N3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N3andR), y = recovery, na.rm = TRUE) + 
-  xlab("SWS and REM Duration") + 
-  ylab("Recovery") + 
-  xlim(0,50) + ylim(-0.2,0.2) +
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-    geom_label(aes(x = 20, y = 0.2), hjust = 0, size = 2,
-             label = paste("p =",signif(summary(fitswsandr)$coef[2,4], 5)))
-
-# plot 4: n2 vs recovery
-fitn2 <- lm(as.numeric(recovery) ~ as.numeric(N2), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N2), y = recovery, na.rm = TRUE) + 
-  xlab("N2 Duration") + 
-  ylab("Recovery") + 
-  xlim(0,50) + ylim(-0.2,0.2) +
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-    geom_label(aes(x = 20, y = 0.2), hjust = 0, size =2,
-             label = paste("p =",signif(summary(fitn2)$coef[2,4], 5)))
-
-#plot 5: n1 vs recovery 
-fitn1 <- lm(as.numeric(recovery) ~ as.numeric(N1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-
-plotn1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N1), y = recovery, na.rm = TRUE) + 
-  xlab("N1 Duration") + 
-  ylab("Recovery") + 
-  xlim(0,35) + ylim(-0.2,0.2) +
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-    geom_label(aes(x = 15, y = 0.18), hjust = 0, size = 2,
-             label = paste("p =",signif(summary(fitn1)$coef[2,4], 5)))
-
-figure <- ggarrange(plotn1, plotn2, plotsws, plotr, plotswsandrem,
-                    ncol = 3, nrow = 2)
-annotate_figure(figure, top = text_grob("learning > 0, R < 0; N3 < 0"))
 
 
-```
 
-### looking at just the 0 rem and 0 sws people  recovery x stage durations; with subject datapoint labels.
-```{r}
-# Plot 1: SWS  vs Recovery
-plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N3), y = recovery, na.rm = TRUE) + 
-  xlab("SWS Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 2: REM vs Recovery
-plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(R), y = recovery, na.rm = TRUE) + 
-  xlab("REM Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 3: SWS and REM vs Recovery
-plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N3andR), y = recovery, na.rm = TRUE) + 
-  xlab("SWS and REM Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# plot 4: n2 vs recovery
-plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N2), y = recovery, na.rm = TRUE) + 
-  xlab("N2 Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-plotn1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(N1), y = recovery, na.rm = TRUE) + 
-  xlab("N1 Duration") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-figure <- ggarrange(plotn1, plotn2, plotsws, plotr, plotswsandrem,
-                    ncol = 3, nrow = 2)
-annotate_figure(figure, top = text_grob("learning > 0, R < 0; N3 < 0"))
-
-
-```
-
-
-### looking at just the 0 rem and 0 sws people now for percentage too
-```{r}
-# Plot 1: SWS  vs Recovery
-plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(perN3), y = recovery, na.rm = TRUE) + 
-  xlab("SWS Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 2: REM vs Recovery
-plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(perR), y = recovery, na.rm = TRUE) + 
-  xlab("REM Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# Plot 3: SWS and REM vs Recovery
-plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(perN3andR), y = recovery, na.rm = TRUE) + 
-  xlab("SWS and REM Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-# plot 4: n2 vs recovery
-plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
-  aes(x = as.numeric(perN2), y = recovery, na.rm = TRUE) + 
-  xlab("N2 Percentage of TST") + 
-  ylab("Recovery") + 
-  theme(axis.title = element_text(size = 10, family = "Times")) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2)
-
-figure <- ggarrange(plotn2, plotsws, plotr, plotswsandrem,
-                    ncol = 2, nrow = 2)
-annotate_figure(figure, top = text_grob("learning > 0, R < 0; N3 < 0"))
-
-
-```
 
 ### plot of sws against rem 
 ```{r}
@@ -2168,133 +626,7 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
              label = paste("p =",signif(summary(fit1)$coef[2,4], 5)))
 ```
 
-```{r}
-lastepoch <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"),   
-                        aes(x = last_sleep_epoch, y = recovery)) +
-  ggtitle("What stage subjects woke up out of") +
-  geom_bar(stat = "summary", fun = "mean", fill = "skyblue", alpha = 0.5) +
-  geom_jitter(width = 0.1, size = 1, color = "black") +
-  stat_summary(fun.data = "mean_cl_boot", 
-               geom = "errorbar", 
-               colour = "red", 
-               width = 0.2) 
-
-lastepoch
-
-
-```
 
 
 
-### visualize with dot-plot - spindles correlated with recovery (our measure of consolidation )
-```{r, message = FALSE}
-#n1 start
-n1ton2 =ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
-    aes(x = as.numeric(N1_to_N2_transitions),
-        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
-    xlab("N1 to N2") +
-    ylab("Density") +
-    theme(axis.title.x = element_text(size = 9)) +
-    geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
 
-n1ton3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N1_to_N3_transitions),fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N1 to N3") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) + 
-  theme(legend.title = element_blank()) +
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), color = "black", linetype = "solid")  # Vertical line at x = 0
-
-n1tor = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N1_to_R_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N1 to R") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-#n2 start
-n2ton1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N2_to_N1_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 to N1") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-n2ton3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N2_to_N3_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 to N3") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-n2tor = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N2_to_R_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N2 to R") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-#n3 start 
-n3ton1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3_to_N1_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N3 to N1") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-n3ton2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3_to_N2_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N3 to N2") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-n3tor = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(N3_to_R_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("N3 to R") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-#r start 
-rton1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R_to_N1_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("R to N1") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-rton2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R_to_N2_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("R to N2") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank())
-
-rton3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
-  aes(x = as.numeric(R_to_N3_transitions), fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
-  xlab("R to N3") + 
-  ylab("Density") +
-  theme(axis.title.x = element_text(size = 9)) +
-  geom_density(alpha = 0.5) +
-  theme(legend.title = element_blank()) +
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), color = "black", linetype = "solid")  # Vertical line at x = 0
-
-figure <- ggarrange(n1ton2, n1ton3, n1tor,
-                    n2ton1, n2ton3, n2tor,
-                    n3ton1, n3ton2, n3tor,
-                    rton1, rton2, rton3,
-                    ncol = 3, nrow = 4, common.legend = TRUE)
-figure
-```

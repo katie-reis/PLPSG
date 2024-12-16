@@ -1,0 +1,856 @@
+---
+title: "PLPSG_Plots_ConsolidatorsvsNon"
+author: "Katie Reis"
+date: "2024-12-16"
+output: html_document
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+
+```
+
+### visualize with histogram - amount of time spent in each stage of sleep 
+```{r}
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(N1), x = condition, na.rm = TRUE) + 
+  ylab("N1 (minutes)") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  ylim(0, 60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+
+
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(N2), x = condition,
+      na.rm = TRUE) +
+  ylab("N2 (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(N3), x = condition,
+      na.rm = TRUE) +
+  ylab("N3 (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(R), x = condition,
+      na.rm = TRUE) +
+  ylab("R (minutes)") + 
+  theme(axis.title.x = element_text(size=9)) + ylim(0,60) +
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1)
+figure
+
+```
+### visualize with side by side violin plots for consolidators vs nonconsolidators 
+```{r}
+# Create a function for consistent plots
+create_plot <- function(data, y_var, y_label) {
+  ggplot(data = data) + 
+    aes(y = as.numeric(.data[[y_var]]), 
+        x = condition, 
+        color = ifelse(recovery > 0, "Consolidators", "Non-Consolidators"), 
+        fill = ifelse(recovery > 0, "Consolidators", "Non-Consolidators")) + 
+    ylab(y_label) + 
+    theme(axis.title.x = element_text(size = 9)) + 
+    ylim(0, 60) +
+    geom_violin(alpha = 0.5, color = "black") +  # Transparent violin plot
+    stat_summary(fun.data = "mean_cl_boot",
+                 geom = "crossbar",
+                 colour = "grey",
+                 alpha = 0.5,  # Add transparency to box plot
+                 width = 0.2,
+                 position = position_dodge(width = 0.9)) +  # Align box plots with violins
+    geom_dotplot(binaxis = 'y', 
+                 stackdir = 'center', 
+                 dotsize = 0.5, 
+                 position = position_dodge(0.9),  # Align dots with violin plots
+                 alpha = 0.8) +  # Plot dots on top of box plots
+    scale_color_manual(values = c("Consolidators" = "deepskyblue4", 
+                                  "Non-Consolidators" = "indianred3"), 
+                       name = "Group") +
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                                 "Non-Consolidators" = "indianred3"), 
+                      name = "Group") +
+    theme(legend.position = "none")  # Disable individual legends
+}
+
+# Generate the plots
+plot_N1 <- create_plot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N1", "N1 (minutes)")
+plot_N2 <- create_plot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N2", "N2 (minutes)")
+plot_N3 <- create_plot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N3", "N3 (minutes)")
+plot_R <- create_plot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "R", "R (minutes)")
+
+# Combine the plots with a common legend
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")
+
+figure
+
+
+```
+
+
+### histograms instead
+```{r}
+# Create a function for consistent histogram plots
+create_histogram <- function(data, y_var, y_label) {
+  ggplot(data = data) + 
+    aes(x = as.numeric(.data[[y_var]]), 
+        fill = ifelse(recovery > 0, "Consolidators", "Non-Consolidators"), 
+        color = ifelse(recovery > 0, "Consolidators", "Non-Consolidators")) + 
+    xlab(y_label) +
+    ylab("Count") +
+    theme(axis.title.x = element_text(size = 9)) + 
+    geom_histogram(position = "identity", 
+                   bins = 10, 
+                   alpha = 0.5,  # Transparency for overlap
+                   color = "black") + 
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                                 "Non-Consolidators" = "indianred3"), 
+                      name = "Group") +
+    scale_color_manual(values = c("Consolidators" = "deepskyblue4", 
+                                  "Non-Consolidators" = "indianred3"), 
+                       name = "Group") +
+    theme(legend.position = "none")  # Disable individual legends
+}
+
+# Generate the histogram plots
+plot_N1 <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N1", "N1 (minutes)")
+plot_N2 <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N2", "N2 (minutes)")
+plot_N3 <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N3", "N3 (minutes)")
+plot_R <- create_histogram(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "R", "R (minutes)")
+
+# Combine the plots with a common legend
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")
+
+figure
+
+
+```
+
+#density
+```{r}
+# Create a function for consistent density plots
+create_density <- function(data, y_var, y_label) {
+  ggplot(data = data) + 
+    aes(x = as.numeric(.data[[y_var]]), 
+        fill = ifelse(recovery > 0, "Consolidators", "Non-Consolidators"), 
+        color = ifelse(recovery > 0, "Consolidators", "Non-Consolidators")) + 
+    xlab(y_label) +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) + 
+    geom_density(alpha = 0.5,  # Transparency for overlap
+                 adjust = 1) +  # Smoothing factor, adjust as needed
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                                 "Non-Consolidators" = "indianred3"), 
+                      name = "Group") +
+    scale_color_manual(values = c("Consolidators" = "deepskyblue4", 
+                                  "Non-Consolidators" = "indianred3"), 
+                       name = "Group") +
+    theme(legend.position = "none")  # Disable individual legends
+}
+
+# Generate the density plots
+plot_N1 <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N1", "N1 (minutes)")
+plot_N2 <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N2", "N2 (minutes)")
+plot_N3 <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N3", "N3 (minutes)")
+plot_R <- create_density(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "R", "R (minutes)")
+
+# Combine the plots with a common legend
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")
+
+figure
+
+
+```
+
+
+```{r}
+# Observed data
+categories <- c("N1", "N2", "N3", "R")
+consolidators <- c(3, 5, 6, 4)
+non_consolidators <- c(1, 8, 0, 1)
+
+# Create a data frame for ggplot
+data <- data.frame(
+  Epoch = rep(categories, each = 2),
+  Status = rep(c("Consolidators", "Non-Consolidators"), times = 4),
+  Count = c(consolidators, non_consolidators)
+)
+
+# Plot the stacked bar chart with fixed y-axis range
+ggplot(data, aes(x = Epoch, y = Count, fill = Status)) + 
+  geom_bar(stat = "identity", position = "stack") + 
+  scale_y_continuous( 
+    breaks = seq(0, max(data$Count) + 2, by = 1),  # Whole-number ticks
+    limits = c(0, max(data$Count) + 2)             # Ensure proper range
+  ) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                               "Non-Consolidators" = "indianred3")) +  # Set custom colors
+  labs( 
+    title = "Consolidators vs. Non-Consolidators by Last Sleep Epoch", 
+    x = "Last Sleep Epoch", 
+    y = "Count", 
+    fill = "Status" 
+  ) + 
+  theme_minimal()
+
+
+```
+
+
+
+### visualize number of spindles detected during N2 and N3 
+```{r}
+t_test_N2andN3_F3 <- t.test(Spindles_N2andN3_F3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N2andN3_F4 <- t.test(Spindles_N2andN3_F4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N2andN3_C3 <- t.test(Spindles_N2andN3_C3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N2andN3_C4 <- t.test(Spindles_N2andN3_C4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+plot_N2andN3_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2andN3_F3_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2andN3 - F3") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 800,  # Above the data
+            label = paste("p =", signif(t_test_N2andN3_F3$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N2andN3_F4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2andN3_F4_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2andN3 - F4") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 800,  # Above the data
+            label = paste("p =", signif(t_test_N2andN3_F4$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N2andN3_C3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2andN3_C3_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2andN3 - C3") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 800,  # Above the data
+            label = paste("p =", signif(t_test_N2andN3_C3$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N2andN3_C4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2andN3_C4_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2andN3 - C4") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 800,  # Above the data
+            label = paste("p =", signif(t_test_N2andN3_C4$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+
+figure <- ggarrange(plot_N2andN3_F3, plot_N2andN3_F4, plot_N2andN3_C3, plot_N2andN3_C4,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1)
+figure
+
+
+```
+
+
+### visualize number of spindles detected during N2 
+```{r}
+t_test_N2_F3 <- t.test(Spindles_N2_F3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N2_F4 <- t.test(Spindles_N2_F4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N2_C3 <- t.test(Spindles_N2_C3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N2_C4 <- t.test(Spindles_N2_C4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+plot_N2_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2_F3_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2 - F3") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N2_F3$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N2_F4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2_F4_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2 - F4") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N2_F4$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N2_C3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2_C3_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2 - C3") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N2_C3$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N2_C4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N2_C4_Count), x = condition, na.rm = TRUE) + 
+  ylab("N2 - C4") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N2_C4$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+
+figure <- ggarrange(plot_N2_F3, plot_N2_F4, plot_N2_C3, plot_N2_C4,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1)
+figure
+
+
+```
+
+### visualize number of spindles detected during N3 
+```{r}
+# Perform t-tests
+t_test_N3_F3 <- t.test(Spindles_N3_F3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N3_F4 <- t.test(Spindles_N3_F4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N3_C3 <- t.test(Spindles_N3_C3_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+t_test_N3_C4 <- t.test(Spindles_N3_C4_Count ~ factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators")),
+                       data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+plot_N3_F3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N3_F3_Count), x = condition, na.rm = TRUE) + 
+  ylab("N3 - F3") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N3_F3$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N3_F4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N3_F4_Count), x = condition, na.rm = TRUE) + 
+  ylab("N3 - F4") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N3_F4$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N3_C3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(y = as.numeric(Spindles_N3_C3_Count), x = condition, na.rm = TRUE) + 
+  ylab("N3 - C3") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_violin() + 
+  geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                   fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")), 
+               binaxis = 'y', stackdir = 'center', dotsize = 0.5) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "crossbar",
+               colour = "grey",
+               width = 0.2) +
+  geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N3_C3$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+  scale_color_identity() +  # Ensures the color mapping is recognized
+  scale_fill_identity()     # Ensures the fill mapping is recognized
+
+plot_N3_C4 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
+    aes(y = as.numeric(Spindles_N3_C4_Count), x = condition, na.rm = TRUE) +
+    ylab("N3 - C4") +
+    theme(axis.title.x = element_text(size = 9)) +
+    geom_violin() +
+    geom_dotplot(aes(color = ifelse(recovery > 0, "deepskyblue4", "indianred3"),
+                     fill = ifelse(recovery > 0, "deepskyblue4", "indianred3")),
+                 binaxis = 'y', stackdir = 'center', dotsize = 0.5) +
+    stat_summary(fun.data = "mean_cl_boot",
+                 geom = "crossbar",
+                 colour = "grey",
+                 width = 0.2) +
+    geom_label(
+        aes(x = 1,  # Position near the first category
+            y = 645,  # Above the data
+            label = paste("p =", signif(t_test_N3_C4$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+    scale_color_identity() +  # Ensures the color mapping is recognized
+    scale_fill_identity()
+
+
+
+figure <- ggarrange(plot_N3_F3, plot_N3_F4, plot_N3_C3, plot_N3_C4,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1)
+figure
+
+
+```
+
+# altogether
+```{r}
+figure <- ggarrange(plot_N2andN3_F3, plot_N2_F3, plot_N3_F3,
+                    plot_N2andN3_F4, plot_N2_F4, plot_N3_F4,
+                    plot_N2andN3_C3, plot_N2_C3, plot_N3_C3,
+                    plot_N2andN3_C4, plot_N2_C4, plot_N3_C4,
+                    ncol = 3, nrow = 4)
+figure
+```
+
+
+### Density plots of N2 and N3 spindles for consolidators and non-consolidators (recovery)
+```{r}
+# Plot for N2 and N3 - F3
+plot_N2andN3_F3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2andN3_F3_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 and N3 - F3") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group") +
+    geom_label(aes(x = 500,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2andN3_F3$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Plot for N2 and N3 - F4
+plot_N2andN3_F4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2andN3_F4_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 and N3 - F4") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group") +
+    geom_label(aes(x = 500,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2andN3_F4$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Plot for N2 and N3 - C3
+plot_N2andN3_C3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2andN3_C3_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 and N3 - C3") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group") +
+    geom_label(aes(x = 500,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2andN3_C3$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Plot for N2 and N3 - C4
+plot_N2andN3_C4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2andN3_C4_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 and N3 - C4") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group") +
+    geom_label(aes(x = 500,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2andN3_C4$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Arrange the plots
+figure <- ggarrange(plot_N2andN3_F3, plot_N2andN3_F4, plot_N2andN3_C3, plot_N2andN3_C4,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")  # Adds a common legend
+figure
+
+
+```
+
+
+### Density plots of N2 spindles for consolidators and non-consolidators (recovery)
+```{r}
+# Plot for N2 - F3
+plot_N2_F3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2_F3_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 - F3") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group")  +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2_F3$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Plot for N2 - F4
+plot_N2_F4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2_F4_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 - F4") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group") +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2_F4$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Plot for N2 - C3
+plot_N2_C3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2_C3_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 - C3") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group") +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2_C3$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Plot for N2 - C4
+plot_N2_C4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2_C4_Count), 
+      fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) + 
+  xlab("N2 - C4") + 
+  ylab("Density") + 
+  theme(axis.title.x = element_text(size = 9)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                    name = "Group") +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N2_C4$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Arrange the plots
+figure <- ggarrange(plot_N2_F3, plot_N2_F4, plot_N2_C3, plot_N2_C4,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")  # Adds a common legend
+figure
+
+
+```
+
+
+
+### Density plots of N3 spindles for consolidators and non-consolidators (recovery)
+```{r}
+# Add p-values to plots
+plot_N3_F3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
+    aes(x = as.numeric(Spindles_N3_F3_Count),
+        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
+    xlab("N3 - F3") +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) +
+    geom_density(alpha = 0.5) +
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                      name = "Group") +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N3_F3$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+    ylim(0,0.0041)
+
+
+plot_N3_F4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
+    aes(x = as.numeric(Spindles_N3_F4_Count),
+        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
+    xlab("N3 - F4") +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) +
+    geom_density(alpha = 0.5) +
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                      name = "Group") +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N3_F4$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+    ylim(0,0.0041)
+
+
+plot_N3_C3 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
+    aes(x = as.numeric(Spindles_N3_C3_Count),
+        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
+    xlab("N3 - C3") +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) +
+    geom_density(alpha = 0.5) +
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                      name = "Group") +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N3_C3$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+    ylim(0,0.0041)
+
+
+plot_N3_C4 <- ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
+    aes(x = as.numeric(Spindles_N3_C4_Count),
+        fill = factor(ifelse(recovery > 0, "Consolidators", "Non-Consolidators"))) +
+    xlab("N3 - C4") +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) +
+    geom_density(alpha = 0.5) +
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", "Non-Consolidators" = "indianred3"),
+                      name = "Group") +
+    geom_label(aes(x = 400,
+                   y = 0.004,
+                   label = paste("p =", signif(t_test_N3_C4$p.value, 5))),
+               inherit.aes = FALSE,
+               size = 2.5) +
+  ylim(0,0.0041)
+
+# Arrange the plots
+figure <- ggarrange(plot_N3_F3, plot_N3_F4, plot_N3_C3, plot_N3_C4,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")
+
+# Display the figure
+figure
+
+
+
+```
+
+### all together 
+```{r}
+figure <- ggarrange(plot_N2andN3_F3, plot_N2andN3_F4, plot_N2andN3_C3, plot_N2andN3_C4,
+                    plot_N2_F3, plot_N2_F4, plot_N2_C3, plot_N2_C4,
+                    plot_N3_F3, plot_N3_F4, plot_N3_C3, plot_N3_C4,
+                    ncol = 4, nrow = 3,
+                    common.legend = TRUE, legend = "bottom")
+figure
+```
+
+
+

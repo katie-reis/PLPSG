@@ -1,0 +1,508 @@
+---
+title: "PLPSG_Plots_SleepXBehavioral_Removing0REM0SWS"
+author: "Katie Reis"
+date: "2024-12-16"
+output: html_document
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+```
+
+
+### highlight the folks that got 0 SWS and 0 REM 
+```{r}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), y = recovery) + 
+  xlab("SWS Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 20, family = "Times")) + 
+  geom_point(aes(color = ifelse(N3 == 0, "Red", "Black"))) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  scale_color_manual(values = c("Red" = "red", "Black" = "black"), guide = "none")
+
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), y = recovery) + 
+  xlab("R Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 20, family = "Times")) + 
+  geom_point(aes(color = ifelse(R == 0, "Red", "Black"))) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  scale_color_manual(values = c("Red" = "red", "Black" = "black"), guide = "none")
+
+```
+
+
+### other plots if we remove folks that didn't get any REM or SWS - it actually makes the most sense for testing the sequential hypothesis to remove folks that didn't experience N3 and R
+```{r}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0)) + 
+  aes(x = as.numeric(N3), y = recovery,
+      na.rm = TRUE) +
+  ggtitle("Learning > 0; N3 > 0") +
+  xlab("SWS Duration (minutes)") + 
+  ylab("Recovery") +
+  theme(axis.title = element_text(size = 20, family = "Times")) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0)) + 
+  aes(x = as.numeric(R), y = recovery,
+      na.rm = TRUE) +
+  ggtitle("Learning > 0; R > 0") +
+  xlab("REM duration (minutes)") + 
+  ylab("Recovery") +
+  theme(axis.title = element_text(size = 20, family = "Times")) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+ 
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(N3andR), y = recovery) + 
+  ggtitle("Learning > 0; N3 > 0; R > 0") +
+  xlab("SWS and REM Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 20, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = paste("N3:", N3, "R:", R)), 
+            hjust = -0.1, vjust = -0.5, size = 3)
+
+
+```
+
+
+
+
+### plot only subjects who got both sws and rem 
+```{r}
+fitsws = lm(as.numeric(recovery) ~ as.numeric(N3), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
+  aes(x = as.numeric(N3), y = recovery,
+      na.rm = TRUE) +
+  xlab("SWS Duration (minutes)") + 
+  ylab("Recovery") +
+  theme(axis.title = element_text(size = 20, family = "Times")) +
+  ggtitle("Learning > 0; R > 0; N3 > 0") +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(
+        aes(x = 35,  # Position near the first category
+            y = 0.06,  # Above the data
+            label = paste("p =", signif(summary(fitsws)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 3.5)
+
+fitr = lm(as.numeric(recovery) ~ as.numeric(R), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
+  aes(x = as.numeric(R), y = recovery,
+      na.rm = TRUE) +
+  ggtitle("Learning > 0; R > 0; N3 > 0") +
+  xlab("REM Duration (minutes)") + 
+  ylab("Recovery") +
+  theme(axis.title = element_text(size = 20, family = "Times")) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(
+        aes(x = 30,  # Position near the first category
+            y = 0.04,  # Above the data
+            label = paste("p =", signif(summary(fitr)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 3.5)
+
+fitswsandr = lm(as.numeric(recovery) ~ as.numeric(N3andR), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
+  aes(x = as.numeric(N3andR), y = recovery,
+      na.rm = TRUE) +
+  ggtitle("Learning > 0; R > 0; N3 > 0") +
+  xlab("SWS and REM Duration (minutes)") + 
+  ylab("Recovery") +
+  theme(axis.title = element_text(size = 20, family = "Times")) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(
+        aes(x = 50,  # Position near the first category
+            y = 0.14,  # Above the data
+            label = paste("p =", signif(summary(fitswsandr)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 3.5)
+
+fitspindle = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
+  aes(x = as.numeric(Spindles_N2andN3_Count), y = recovery,
+      na.rm = TRUE) +
+  ggtitle("Learning > 0; R > 0; N3 > 0") +
+  xlab("Spindle Count") + 
+  ylab("Recovery") +
+  theme(axis.title = element_text(size = 20, family = "Times")) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(
+        aes(x = 700,  # Position near the first category
+            y = 0.03,  # Above the data
+            label = paste("p =", signif(summary(fitspindle)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 3.5, fill = "yellow")
+```
+```{r}
+fitn1 = lm(as.numeric(recovery) ~ as.numeric(N1), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitn2 = lm(as.numeric(recovery) ~ as.numeric(N2), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitn3 = lm(as.numeric(recovery) ~ as.numeric(N3), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitr = lm(as.numeric(recovery) ~ as.numeric(R), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitn3andr = lm(as.numeric(recovery) ~ as.numeric(N3andR), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+
+plotn1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(N1), y = recovery, na.rm = TRUE) + 
+  xlab("N1 Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 16,  # Position near the first category
+            y = 0.03,  # Above the data
+            label = paste("p =", signif(summary(fitn1)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+
+plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(N2), y = recovery, na.rm = TRUE) + 
+  xlab("N2 Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 49,  # Position near the first category
+            y = 0.1,  # Above the data
+            label = paste("p =", signif(summary(fitn2)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+
+plotn3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(N3), y = recovery, na.rm = TRUE) + 
+  xlab("SWS Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 32,  # Position near the first category
+            y = 0.14,  # Above the data
+            label = paste("p =", signif(summary(fitn3)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+# Plot 2: REM Percentage of TST vs Recovery
+plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(R), y = recovery, na.rm = TRUE) + 
+  xlab("REM Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 30,  # Position near the first category
+            y = -0.01,  # Above the data
+            label = paste("p =", signif(summary(fitr)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+# Plot 3: SWS and REM Percentage of TST vs Recovery
+plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(N3andR), y = recovery, na.rm = TRUE) + 
+  xlab("SWS and REM Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 48,  # Position near the first category
+            y = 0,  # Above the data
+            label = paste("p =", signif(summary(fitn3andr)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+
+
+figure <- ggarrange(plotn1, plotn2, plotn3, plotr, plotswsandrem,
+                    ncol = 3, nrow = 2)
+annotate_figure(figure, top = text_grob("learning > 0, R > 0; N3 > 0"))
+
+```
+
+### now remove 0 rem and 0 sws people 
+```{r}
+fitn1 = lm(as.numeric(recovery) ~ as.numeric(perN1), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitn2 = lm(as.numeric(recovery) ~ as.numeric(perN2), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitn3 = lm(as.numeric(recovery) ~ as.numeric(perN3), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitr = lm(as.numeric(recovery) ~ as.numeric(perR), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+fitn3andr = lm(as.numeric(recovery) ~ as.numeric(perN3andR), 
+            subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0))
+
+plotn1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(perN1), y = recovery, na.rm = TRUE) + 
+  xlab("N1 Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 16,  # Position near the first category
+            y = 0.03,  # Above the data
+            label = paste("p =", signif(summary(fitn1)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+
+plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(perN2), y = recovery, na.rm = TRUE) + 
+  xlab("N2 Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 65,  # Position near the first category
+            y = 0.14,  # Above the data
+            label = paste("p =", signif(summary(fitn2)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+
+plotn3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(perN3), y = recovery, na.rm = TRUE) + 
+  xlab("SWS Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 40,  # Position near the first category
+            y = 0.14,  # Above the data
+            label = paste("p =", signif(summary(fitn3)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+# Plot 2: REM Percentage of TST vs Recovery
+plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(perR), y = recovery, na.rm = TRUE) + 
+  xlab("REM Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 35,  # Position near the first category
+            y = 0,  # Above the data
+            label = paste("p =", signif(summary(fitr)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+# Plot 3: SWS and REM Percentage of TST vs Recovery
+plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0)) + 
+  aes(x = as.numeric(perN3andR), y = recovery, na.rm = TRUE) + 
+  xlab("SWS and REM Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) +
+  geom_label(
+        aes(x = 55,  # Position near the first category
+            y = 0,  # Above the data
+            label = paste("p =", signif(summary(fitn3andr)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2)
+
+
+
+figure <- ggarrange(plotn1, plotn2, plotn3, plotr, plotswsandrem,
+                    ncol = 3, nrow = 2)
+annotate_figure(figure, top = text_grob("learning > 0, R > 0; N3 > 0"))
+
+```
+
+### looking at just the 0 rem and 0 sws people  recovery x stage durations; with subject datapoint labels.
+```{r}
+fitn1 <- lm(as.numeric(recovery) ~ as.numeric(N1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitn2 <- lm(as.numeric(recovery) ~ as.numeric(N2), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitsws <- lm(as.numeric(recovery) ~ as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitr <- lm(as.numeric(recovery) ~ as.numeric(R), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitswsandr <- lm(as.numeric(recovery) ~ as.numeric(N3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+
+plotn1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(N1), y = recovery, na.rm = TRUE) + 
+  xlab("N1 Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + xlim(0,35) + ylim(-0.2,0.2) +
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 15, y = 0.18), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitn1)$coef[2,4], 5)))
+
+plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(N2), y = recovery, na.rm = TRUE) + 
+  xlab("N2 Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + xlim(0,50) + ylim(-0.2,0.2) +
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 20, y = 0.2), hjust = 0, size =2,
+             label = paste("p =",signif(summary(fitn2)$coef[2,4], 5)))
+
+plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(N3), y = recovery, na.rm = TRUE) + 
+  xlab("SWS Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + xlim(0,50) + ylim(-0.2,0.2) +
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 20, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitsws)$coef[2,4], 5)))
+
+plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(R), y = recovery, na.rm = TRUE) + 
+  xlab("REM Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + xlim(0,20) + ylim(-0.2,0.2) +
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 8, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitr)$coef[2,4], 5)))
+
+plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(N3andR), y = recovery, na.rm = TRUE) + 
+  xlab("SWS and REM Duration") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + xlim(0,50) + ylim(-0.2,0.2) +
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 20, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitswsandr)$coef[2,4], 5)))
+
+
+figure <- ggarrange(plotn1, plotn2, plotsws, plotr, plotswsandrem,
+                    ncol = 3, nrow = 2)
+annotate_figure(figure, top = text_grob("learning > 0, R < 0; N3 < 0"))
+
+
+```
+
+
+
+### looking at just the 0 rem and 0 sws people now for percentage too
+```{r}
+fitn1 <- lm(as.numeric(recovery) ~ as.numeric(perN1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitn2 <- lm(as.numeric(recovery) ~ as.numeric(perN2), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitsws <- lm(as.numeric(recovery) ~ as.numeric(perN3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitr <- lm(as.numeric(recovery) ~ as.numeric(perR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+fitswsandr <- lm(as.numeric(recovery) ~ as.numeric(perN3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0)))
+
+plotn1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(perN1), y = recovery, na.rm = TRUE) + 
+  xlab("N1 Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 20, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitn1)$coef[2,4], 5)))
+
+plotn2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(perN2), y = recovery, na.rm = TRUE) + 
+  xlab("N2 Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 50, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitn2)$coef[2,4], 5)))
+
+plotsws = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(perN3), y = recovery, na.rm = TRUE) + 
+  xlab("SWS Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 20, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitsws)$coef[2,4], 5)))
+
+plotr = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(perR), y = recovery, na.rm = TRUE) + 
+  xlab("REM Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 12, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitr)$coef[2,4], 5)))
+
+plotswsandrem = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & (N3 == 0 | R == 0))) + 
+  aes(x = as.numeric(perN3andR), y = recovery, na.rm = TRUE) + 
+  xlab("SWS and REM Percentage of TST") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 10, family = "Times")) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_text(aes(label = Subject), hjust = -0.1, vjust = -0.5, size = 2) + 
+    geom_label(aes(x = 20, y = 0.2), hjust = 0, size = 2,
+             label = paste("p =",signif(summary(fitswsandr)$coef[2,4], 5)))
+
+
+
+figure <- ggarrange(plotn1, plotn2, plotsws, plotr, plotswsandrem,
+                    ncol = 3, nrow = 2)
+annotate_figure(figure, top = text_grob("learning > 0, R < 0; N3 < 0"))
+
+
+```
+
+
+
+
+

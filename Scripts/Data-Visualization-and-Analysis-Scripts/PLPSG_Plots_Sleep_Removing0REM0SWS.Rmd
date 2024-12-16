@@ -1,0 +1,39 @@
+---
+title: "PLPSG_Plots_Sleep_Removing0REM0SWS"
+author: "Katie Reis"
+date: "2024-12-16"
+output: html_document
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+```
+
+
+### now spindle count excluding the subjects who didn't go into sws or rem 
+```{r}
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 > 0)) + 
+  aes(y = as.numeric(Spindles_N2andN3_Count), x = condition, na.rm = TRUE) + 
+  ggtitle("learning > 0; R > 0; N3 > 0") +
+  ylab("Spindle Count") + 
+  xlab("Condition") +
+  geom_violin(fill = "lightgrey", color = "black", width = 0.7) + 
+  geom_boxplot(width = 0.3, fill = "white", color = "black", outlier.shape = NA) + 
+  geom_jitter(width = 0.05, height = 0, size = 2, color = "black") + 
+  scale_color_identity() + 
+  scale_fill_identity() + 
+  theme(
+    aspect.ratio = 2,
+    axis.title = element_text(size = 16, family = "Times New Roman")  # Set font size and family
+  )
+
+
+
+```

@@ -1,0 +1,257 @@
+---
+title: "PLPSG_Plots_SleepXBehavioral_ConsolidatorsVsNon"
+author: "Katie Reis"
+date: "2024-12-16"
+output: html_document
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+```
+
+
+### separate based on consolidator status
+```{r}
+# Fit models
+fit_n1 = lm(as.numeric(recovery) ~ as.numeric(N1), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_n2 = lm(as.numeric(recovery) ~ as.numeric(N2), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_n3 = lm(as.numeric(recovery) ~ as.numeric(N3), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_r = lm(as.numeric(recovery) ~ as.numeric(R), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_n3andR = lm(as.numeric(recovery) ~ as.numeric(N3andR), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+
+fit_n1_non = lm(as.numeric(recovery) ~ as.numeric(N1), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_n2_non = lm(as.numeric(recovery) ~ as.numeric(N2), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_n3_non = lm(as.numeric(recovery) ~ as.numeric(N3), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_r_non = lm(as.numeric(recovery) ~ as.numeric(R), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_n3andR_non = lm(as.numeric(recovery) ~ as.numeric(N3andR), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+
+# Ensure consolidator_status is a factor with proper levels
+PLPSG_sleep_stats_wider$consolidator_status <- factor(PLPSG_sleep_stats_wider$consolidator_status)
+
+# Define the plot for N1
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N1), y = recovery, color = consolidator_status) + 
+  xlab("N1 Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(aes(x = 27, y = 0.15, label = paste("p =", signif(summary(fit_n1)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
+  geom_label(aes(x = 27, y = -.1, label = paste("p =", signif(summary(fit_n1_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+
+# Define the plot for N2
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N2), y = recovery, color = consolidator_status) + 
+  xlab("N2 Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(aes(x = 45, y = 0.15, label = paste("p =", signif(summary(fit_n2)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
+  geom_label(aes(x = 45, y = -.15, label = paste("p =", signif(summary(fit_n2_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Define the plot for N3
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3), y = recovery, color = consolidator_status) + 
+  xlab("SWS Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 9, family = "Times")) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(aes(x = 38, y = 0.15, label = paste("p =", signif(summary(fit_n3)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
+  geom_label(aes(x = 38, y = -0.03, label = paste("p =", signif(summary(fit_n3_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Define the plot for REM
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(R), y = recovery, color = consolidator_status) + 
+  xlab("REM Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 9, family = "Times")) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status 
+  geom_label(aes(x = 27, y = 0.15, label = paste("p =", signif(summary(fit_r)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
+  geom_label(aes(x = 27, y = -.1, label = paste("p =", signif(summary(fit_r_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Define the plot for N3 and REM combined
+plot_N3andR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(N3andR), y = recovery, color = consolidator_status) + 
+  xlab("SWS and REM Duration (minutes)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 9, family = "Times")) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(aes(x = 40, y = 0.15, label = paste("p =", signif(summary(fit_n3andR)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
+  geom_label(aes(x = 45, y = -.13, label = paste("p =", signif(summary(fit_n3andR_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Arrange the plots in a 3x2 grid and add a common legend at the top
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R, plot_N3andR,
+                    ncol = 3, nrow = 2, 
+                    common.legend = TRUE, legend = "top")
+
+# Show the plot
+figure
+```
+
+
+
+
+### consolidators vs nonconsolidators for percentage
+```{r}
+# Fit models
+fit_pern1 = lm(as.numeric(recovery) ~ as.numeric(perN1), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_pern2 = lm(as.numeric(recovery) ~ as.numeric(perN2), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_pern3 = lm(as.numeric(recovery) ~ as.numeric(perN3), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_perr = lm(as.numeric(recovery) ~ as.numeric(perR), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_pern3andR = lm(as.numeric(recovery) ~ as.numeric(perN3andR), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+
+fit_pern1_non = lm(as.numeric(recovery) ~ as.numeric(perN1), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_pern2_non = lm(as.numeric(recovery) ~ as.numeric(perN2), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_pern3_non = lm(as.numeric(recovery) ~ as.numeric(perN3), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_perr_non = lm(as.numeric(recovery) ~ as.numeric(perR), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+fit_pern3andR_non = lm(as.numeric(recovery) ~ as.numeric(perN3andR), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
+
+# Define the plot for N1
+plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN1), y = recovery, color = consolidator_status) + 
+  xlab("N1 Duration (percentage)") + 
+  ylab("Recovery") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(
+        aes(x = 35,  # Position near the first category
+            y = 0.15,  # Above the data
+            label = paste("p =", signif(summary(fit_pern1)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  geom_label(
+        aes(x = 35,  # Position near the first category
+            y = -0.1,  # Above the data
+            label = paste("p =", signif(summary(fit_pern1_non)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+
+# Define the plot for N2
+plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN2), y = recovery, color = consolidator_status) + 
+  xlab("N2 Duration (percentage)") + 
+  ylab("Recovery") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(
+        aes(x = 70,  # Position near the first category
+            y = 0.15,  # Above the data
+            label = paste("p =", signif(summary(fit_pern2)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  geom_label(
+        aes(x = 73,  # Position near the first category
+            y = -0.04,  # Above the data
+            label = paste("p =", signif(summary(fit_pern2_non)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Define the plot for N3
+plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN3), y = recovery, color = consolidator_status) + 
+  xlab("SWS Duration (percentage)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 9, family = "Times")) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(
+        aes(x = 40,  # Position near the first category
+            y = 0.15,  # Above the data
+            label = paste("p =", signif(summary(fit_pern3)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  geom_label(
+        aes(x = 40,  # Position near the first category
+            y = -0.04,  # Above the data
+            label = paste("p =", signif(summary(fit_pern3_non)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Define the plot for REM
+plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perR), y = recovery, color = consolidator_status) + 
+  xlab("REM Duration (percentage)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 9, family = "Times")) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status 
+  geom_label(
+        aes(x = 30,  # Position near the first category
+            y = 0.15,  # Above the data
+            label = paste("p =", signif(summary(fit_perr)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  geom_label(
+        aes(x = 33,  # Position near the first category
+            y = -0.1,  # Above the data
+            label = paste("p =", signif(summary(fit_perr_non)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Define the plot for N3 and REM combined
+plot_N3andR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(perN3andR), y = recovery, color = consolidator_status) + 
+  xlab("SWS and REM Duration (percentage)") + 
+  ylab("Recovery") + 
+  theme(axis.title = element_text(size = 9, family = "Times")) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(
+        aes(x = 55,  # Position near the first category
+            y = 0.15,  # Above the data
+            label = paste("p =", signif(summary(fit_pern3andR)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  geom_label(
+        aes(x = 55,  # Position near the first category
+            y = -0.02,  # Above the data
+            label = paste("p =", signif(summary(fit_pern3andR_non)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+# Arrange the plots in a 3x2 grid and add a common legend at the top
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R, plot_N3andR,
+                    ncol = 3, nrow = 2, 
+                    common.legend = TRUE, legend = "top")
+
+# Show the plot
+figure
+
+```
+
+

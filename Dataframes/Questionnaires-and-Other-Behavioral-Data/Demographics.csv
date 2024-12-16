@@ -1,60 +1,60 @@
 ﻿Subject,Age,Gender,Handedness,Student,Year_Student,Major_Department
-100,26,Male,Right,no,NA,NA
-102,21,Female,Right,Yes,4,Computer Science
-101,24,Female,right,no,NA,NA
-103,23,Female,left,no,NA,NA
-104,23,Female,right,no,NA,NA
-105,21,Female,right,yes,4,Psychology; Math
-106,21,Female,right,yes,4,Psychology
-107,22,Female,right,no,NA,NA
-109,20,Female,right,yes,3,public policy; economics
-110,21,Female,right,yes,2,Math; economics
-111,20,Female,right,yes,3,economics
-112,25,Male,right,yes,PhD 3,Linguistics 
-113,25,Female,right,yes,PhD 2,Neurobiology
-114,22,Male,right,yes,MA 1,Committee on International Relations 
-115,23,Female,right,no,NA,NA
-116,22,Male,right,no,NA,NA
-117,25,Female,right,yes,PhD 2,Psychology
-118,19,Male,right,yes,2,Public policy; data science
-119,25,Female,right,yes,PhD 4,Psychology
-120,25,Male,right,yes,MA 1,Committee on International Relations 
-121,18,Male,right,yes,2,math
-122,21,Female,right,yes,4,neuroscience
-123,21,Female,right,yes,4,Molecular engineering
-125,29,Female,right,yes,3,environment and urban studies; law letters and society
-126,22,Male,right,yes,MA 1,committee on International Relations 
-127,27,Female,right,yes,PhD 2,psychology
-128,20,Female,left,yes,3,physics
-129,27,Male,right,yes,PhD 6,committee on cancer biology
-130,21,Non-binary,right,yes,4,psychology
-131,29,Female,right,yes,MA 1,public policy
-132,21,Male,right,yes,3,neuroscience
-133,18,Female,right,yes,1,neuroscience
-134,20,Female,right,yes,MA 1,MAPSS psychology (forensic)
+100,26,male,right,no,NA,NA
+102,21,female,right,yes,4,Computer Science
+101,24,female,right,no,NA,NA
+103,23,female,left,no,NA,NA
+104,23,female,right,no,NA,NA
+105,21,female,right,yes,4,Psychology; Math
+106,21,female,right,yes,4,Psychology
+107,22,female,right,no,NA,NA
+109,20,female,right,yes,3,public policy; economics
+110,21,female,right,yes,2,Math; economics
+111,20,female,right,yes,3,economics
+112,25,male,right,yes,PhD 3,Linguistics 
+113,25,female,right,yes,PhD 2,Neurobiology
+114,22,male,right,yes,MA 1,Committee on International Relations 
+115,23,female,right,no,NA,NA
+116,22,male,right,no,NA,NA
+117,25,female,right,yes,PhD 2,Psychology
+118,19,male,right,yes,2,Public policy; data science
+119,25,female,right,yes,PhD 4,Psychology
+120,25,male,right,yes,MA 1,Committee on International Relations 
+121,18,male,right,yes,2,math
+122,21,female,right,yes,4,neuroscience
+123,21,female,right,yes,4,Molecular engineering
+125,29,female,right,yes,3,environment and urban studies; law letters and society
+126,22,male,right,yes,MA 1,committee on International Relations 
+127,27,female,right,yes,PhD 2,psychology
+128,20,female,left,yes,3,physics
+129,27,male,right,yes,PhD 6,committee on cancer biology
+130,21,female,right,yes,4,psychology
+131,29,female,right,yes,MA 1,public policy
+132,21,male,right,yes,3,neuroscience
+133,18,female,right,yes,1,neuroscience
+134,20,female,right,yes,MA 1,MAPSS psychology (forensic)
 135,22,male,right,yes,4,math/ computer science
 136,21,female,right,yes,4,atronomy and astrophysics; physics
-137,20,Female,right,yes,3,creative writing
-138,21,Male,right,yes,3,economics
-139,20,Female,right,yes,2,Environment and urban studies
-140,22,Female,right,yes,5,english
-141,19,Female,left,yes,2,philosophy and psychology
-142,25,Male,right,yes,PhD 3,Physics
-143,20,Female,right,Yes,3,cognitive science
-144,20,Female,right,yes,1,Philosophy and Political Science (potentially)
-145,22,Female,right,yes,4,neuroscience 
-146,30,Female,right,yes,MA 1,Public policy; data science
-147,22,Female,right,no,NA,NA
-148,20,Female,right,yes,3,political science
-149,20,Female,right,yes,3,biology
-150,21,Male,right,yes,3,neuroscience 
-151,19,Female,right,yes,2,physics
-152,23,Female,right,yes,MD 1,school of medicine 
-153,26,Male,right,yes,MA 2,public health sciences
-154,23,Female,right,no,NA,NA (recent grad)
-155,21,Female,right,yes,4,Psychology  
-157,21,Female,right,yes,4,neuroscience and biology
-159,21,Female,right,yes,4,biochemistry
-160,33,Male,right,no,NA,NA
-161,20,Male,left,yes,3,cognitive science
-162,19,Male,right,yes,3,Political Science
+137,20,female,right,yes,3,creative writing
+138,21,male,right,yes,3,economics
+139,20,female,right,yes,2,Environment and urban studies
+140,22,female,right,yes,5,english
+141,19,female,left,yes,2,philosophy and psychology
+142,25,male,right,yes,PhD 3,Physics
+143,20,female,right,Yes,3,cognitive science
+144,20,female,right,yes,1,Philosophy and Political Science (potentially)
+145,22,female,right,yes,4,neuroscience 
+146,30,female,right,yes,MA 1,Public policy; data science
+147,22,female,right,no,NA,NA
+148,20,female,right,yes,3,political science
+149,20,female,right,yes,3,biology
+150,21,male,right,yes,3,neuroscience 
+151,19,female,right,yes,2,physics
+152,23,female,right,yes,MD 1,school of medicine 
+153,26,male,right,yes,MA 2,public health sciences
+154,23,female,right,no,NA,NA (recent grad)
+155,21,female,right,yes,4,Psychology  
+157,21,female,right,yes,4,neuroscience and biology
+159,21,female,right,yes,4,biochemistry
+160,33,male,right,no,NA,NA
+161,20,male,left,yes,3,cognitive science
+162,19,male,right,yes,3,Political Science

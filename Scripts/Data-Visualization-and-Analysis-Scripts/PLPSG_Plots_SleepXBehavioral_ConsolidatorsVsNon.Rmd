@@ -9,6 +9,8 @@ output: html_document
 ```{r, message=FALSE}
 library(ggpubr) #needed for arranging multiple plots and making plots 
 library(ggplot2)
+library(dplyr)
+
 ```
 
 ### import data files
@@ -43,9 +45,9 @@ plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
   geom_point() + 
   geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
-  geom_label(aes(x = 27, y = 0.15, label = paste("p =", signif(summary(fit_n1)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
-  geom_label(aes(x = 27, y = -.1, label = paste("p =", signif(summary(fit_n1_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+  geom_label(aes(x = 27, y = 0.15, label = paste("p =", signif(summary(fit_n1)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkgreen") +
+  geom_label(aes(x = 27, y = -.1, label = paste("p =", signif(summary(fit_n1_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 
@@ -57,9 +59,9 @@ plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
   geom_point() + 
   geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
-  geom_label(aes(x = 45, y = 0.15, label = paste("p =", signif(summary(fit_n2)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
-  geom_label(aes(x = 45, y = -.15, label = paste("p =", signif(summary(fit_n2_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+  geom_label(aes(x = 45, y = 0.15, label = paste("p =", signif(summary(fit_n2)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkgreen") +
+  geom_label(aes(x = 45, y = -.15, label = paste("p =", signif(summary(fit_n2_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkorange") + 
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Define the plot for N3
@@ -70,9 +72,9 @@ plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   theme(axis.title = element_text(size = 9, family = "Times")) +
   geom_point() + 
   geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
-  geom_label(aes(x = 38, y = 0.15, label = paste("p =", signif(summary(fit_n3)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
-  geom_label(aes(x = 38, y = -0.03, label = paste("p =", signif(summary(fit_n3_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+  geom_label(aes(x = 38, y = 0.15, label = paste("p =", signif(summary(fit_n3)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkgreen") +
+  geom_label(aes(x = 38, y = -0.03, label = paste("p =", signif(summary(fit_n3_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkorange") + 
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Define the plot for REM
@@ -83,9 +85,9 @@ plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   theme(axis.title = element_text(size = 9, family = "Times")) +
   geom_point() + 
   geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status 
-  geom_label(aes(x = 27, y = 0.15, label = paste("p =", signif(summary(fit_r)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
-  geom_label(aes(x = 27, y = -.1, label = paste("p =", signif(summary(fit_r_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+  geom_label(aes(x = 27, y = 0.15, label = paste("p =", signif(summary(fit_r)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkgreen") +
+  geom_label(aes(x = 27, y = -.1, label = paste("p =", signif(summary(fit_r_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkorange") + 
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Define the plot for N3 and REM combined
@@ -96,9 +98,9 @@ plot_N3andR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"
   theme(axis.title = element_text(size = 9, family = "Times")) +
   geom_point() + 
   geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
-  geom_label(aes(x = 40, y = 0.15, label = paste("p =", signif(summary(fit_n3andR)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) + 
-  geom_label(aes(x = 45, y = -.13, label = paste("p =", signif(summary(fit_n3andR_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+  geom_label(aes(x = 40, y = 0.15, label = paste("p =", signif(summary(fit_n3andR)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkgreen") + 
+  geom_label(aes(x = 45, y = -.13, label = paste("p =", signif(summary(fit_n3andR_non)$coef[2, 4], 5))), inherit.aes = FALSE, size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Arrange the plots in a 3x2 grid and add a common legend at the top
@@ -141,14 +143,14 @@ plot_N1 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
             y = 0.15,  # Above the data
             label = paste("p =", signif(summary(fit_pern1)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
+        size = 2.5, color = "darkgreen") +
   geom_label(
         aes(x = 35,  # Position near the first category
             y = -0.1,  # Above the data
             label = paste("p =", signif(summary(fit_pern1_non)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+        size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 
@@ -165,14 +167,14 @@ plot_N2 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
             y = 0.15,  # Above the data
             label = paste("p =", signif(summary(fit_pern2)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
+        size = 2.5, color = "darkgreen") +
   geom_label(
         aes(x = 73,  # Position near the first category
             y = -0.04,  # Above the data
             label = paste("p =", signif(summary(fit_pern2_non)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+        size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Define the plot for N3
@@ -188,14 +190,14 @@ plot_N3 = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
             y = 0.15,  # Above the data
             label = paste("p =", signif(summary(fit_pern3)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
+        size = 2.5, color = "darkgreen") +
   geom_label(
         aes(x = 40,  # Position near the first category
             y = -0.04,  # Above the data
             label = paste("p =", signif(summary(fit_pern3_non)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+        size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Define the plot for REM
@@ -211,14 +213,14 @@ plot_R = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
             y = 0.15,  # Above the data
             label = paste("p =", signif(summary(fit_perr)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
+        size = 2.5, color = "darkgreen") +
   geom_label(
         aes(x = 33,  # Position near the first category
             y = -0.1,  # Above the data
             label = paste("p =", signif(summary(fit_perr_non)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+        size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Define the plot for N3 and REM combined
@@ -234,14 +236,14 @@ plot_N3andR = ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"
             y = 0.15,  # Above the data
             label = paste("p =", signif(summary(fit_pern3andR)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
+        size = 2.5, color = "darkgreen") +
   geom_label(
         aes(x = 55,  # Position near the first category
             y = -0.02,  # Above the data
             label = paste("p =", signif(summary(fit_pern3andR_non)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+        size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 # Arrange the plots in a 3x2 grid and add a common legend at the top
@@ -272,16 +274,103 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
             y = 0.15,  # Above the data
             label = paste("p =", signif(summary(fit_spindle)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
+        size = 2.5, color = "darkgreen") +
   geom_label(
         aes(x = 35,  # Position near the first category
             y = -0.1,  # Above the data
             label = paste("p =", signif(summary(fit_spindle_non)$coef[2, 4], 5))),
         inherit.aes = FALSE,
-        size = 2.5) +
-  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+        size = 2.5, color = "darkorange") +
+  scale_color_manual(values = c("0" = "darkorange", "1" = "darkgreen"), 
                      labels = c("Non-Consolidator", "Consolidator"))
 
 
+```
+
+### how much time spent in each stage - stacked plot
+```{r}
+# Filter data for 'sleep' condition and reshape it to long format
+PLPSG_sleep_stats_wider_longertemp <- PLPSG_sleep_stats_wider %>%
+  filter(condition == "sleep" & R > 0 & N3 > 0 & recovery > 0) %>%
+  gather(key = "sleep_stage", value = "time", N1, N2, N3, R)
+
+# Ensure correct order of sleep stages
+PLPSG_sleep_stats_wider_longertemp$sleep_stage <- factor(PLPSG_sleep_stats_wider_longertemp$sleep_stage, 
+                                                          levels = c("R", "N3", "N2", "N1"))
+PLPSG_sleep_stats_wider_longertemp$time <- as.numeric(PLPSG_sleep_stats_wider_longertemp$time)
+
+# Create the stacked bar plot with y-axis range from 0 to 90 using coord_cartesian
+plot1 = ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = time)) +
+  geom_col(aes(fill = sleep_stage)) +
+  labs(y = "Subject", x = "Time spent asleep (minutes)", fill = "Sleep Stage") +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 90)) +
+  #theme(axis.text.y = element_text(angle = 30, hjust = 1)) +
+  scale_fill_manual(values = c("N1" = "lightgoldenrod2", "N2" = "darkseagreen3", "N3" = "deepskyblue4", "R" = "coral2")) + ggtitle("consolidators R>0, N3>0")
+
+# Filter data for 'sleep' condition and reshape it to long format
+PLPSG_sleep_stats_wider_longertemp <- PLPSG_sleep_stats_wider %>%
+  filter(condition == "sleep" & R > 0 & N3 > 0 & recovery <= 0) %>%
+  gather(key = "sleep_stage", value = "time", N1, N2, N3, R)
+
+# Ensure correct order of sleep stages
+PLPSG_sleep_stats_wider_longertemp$sleep_stage <- factor(PLPSG_sleep_stats_wider_longertemp$sleep_stage, 
+                                                          levels = c("R", "N3", "N2", "N1"))
+PLPSG_sleep_stats_wider_longertemp$time <- as.numeric(PLPSG_sleep_stats_wider_longertemp$time)
+
+# Create the stacked bar plot with y-axis range from 0 to 90 using coord_cartesian
+plot2 = ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = time)) +
+  geom_col(aes(fill = sleep_stage)) +
+  labs(y = "Subject", x = "Time spent asleep (minutes)", fill = "Sleep Stage") +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 90)) +
+  #theme(axis.text.y = element_text(angle = 30, hjust = 1)) +
+  scale_fill_manual(values = c("N1" = "lightgoldenrod2", "N2" = "darkseagreen3", "N3" = "deepskyblue4", "R" = "coral2")) +
+  ggtitle("non-consolidators R>0, N3>0")
+
+# Filter data for 'sleep' condition and reshape it to long format
+PLPSG_sleep_stats_wider_longertemp <- PLPSG_sleep_stats_wider %>%
+  filter(condition == "sleep" & (R == 0 | N3 == 0) & recovery > 0) %>%
+  gather(key = "sleep_stage", value = "time", N1, N2, N3, R)
+
+# Ensure correct order of sleep stages
+PLPSG_sleep_stats_wider_longertemp$sleep_stage <- factor(PLPSG_sleep_stats_wider_longertemp$sleep_stage, 
+                                                          levels = c("R", "N3", "N2", "N1"))
+PLPSG_sleep_stats_wider_longertemp$time <- as.numeric(PLPSG_sleep_stats_wider_longertemp$time)
+
+# Create the stacked bar plot with y-axis range from 0 to 90 using coord_cartesian
+plot3 = ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = time)) +
+  geom_col(aes(fill = sleep_stage)) +
+  labs(y = "Subject", x = "Time spent asleep (minutes)", fill = "Sleep Stage") +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 90)) +
+  #theme(axis.text.y = element_text(angle = 30, hjust = 1)) +
+  scale_fill_manual(values = c("N1" = "lightgoldenrod2", "N2" = "darkseagreen3", "N3" = "deepskyblue4", "R" = "coral2")) +
+  ggtitle("consolidators R=0 | N3=0")
+
+# Filter data for 'sleep' condition and reshape it to long format
+PLPSG_sleep_stats_wider_longertemp <- PLPSG_sleep_stats_wider %>%
+  filter(condition == "sleep" & (R == 0 | N3 == 0) & recovery <= 0) %>%
+  gather(key = "sleep_stage", value = "time", N1, N2, N3, R)
+
+# Ensure correct order of sleep stages
+PLPSG_sleep_stats_wider_longertemp$sleep_stage <- factor(PLPSG_sleep_stats_wider_longertemp$sleep_stage, 
+                                                          levels = c("R", "N3", "N2", "N1"))
+PLPSG_sleep_stats_wider_longertemp$time <- as.numeric(PLPSG_sleep_stats_wider_longertemp$time)
+
+# Create the stacked bar plot with y-axis range from 0 to 90 using coord_cartesian
+plot4 = ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = time)) +
+  geom_col(aes(fill = sleep_stage)) +
+  labs(y = "Subject", x = "Time spent asleep (minutes)", fill = "Sleep Stage") +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 90)) +
+  #theme(axis.text.y = element_text(angle = 30, hjust = 1)) +
+  scale_fill_manual(values = c("N1" = "lightgoldenrod2", "N2" = "darkseagreen3", "N3" = "deepskyblue4", "R" = "coral2")) +
+  ggtitle("non-consolidators R=0 | N3=0")
+
+figure = ggarrange(plot1,plot2, plot3, plot4,
+                   ncol = 2, nrow = 2,
+                   common.legend = TRUE, legend = "top")
+figure
 ```
 

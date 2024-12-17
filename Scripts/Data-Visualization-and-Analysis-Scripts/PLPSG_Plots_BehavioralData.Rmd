@@ -32,7 +32,13 @@ PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & s
 
 ### visualize with a boxplot the PLPSG behavioral data all tests
 ```{r}
-ggboxplot(PLPSG_sleep_stats_longer, x="block", y="score", color="condition", add = "jitter")  
+ggboxplot(PLPSG_sleep_stats_longer, 
+          x = "block", 
+          y = "score", 
+          color = "condition", 
+          add = "jitter") +
+  scale_color_manual(values = c("sleep" = "deepskyblue4", "wake" = "indianred3"))
+
 ```
 
 ### line plot of PLPSG performance across tests (sleep vs wake)

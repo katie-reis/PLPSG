@@ -37,3 +37,52 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 
 
 
 ```
+
+
+### how much time spent in each stage - stacked plot
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Filter data for 'sleep' condition and reshape it to long format
+PLPSG_sleep_stats_wider_longertemp <- PLPSG_sleep_stats_wider %>%
+  filter(condition == "sleep" & R > 0 & N3 > 0) %>%
+  gather(key = "sleep_stage", value = "time", N1, N2, N3, R)
+
+# Ensure correct order of sleep stages
+PLPSG_sleep_stats_wider_longertemp$sleep_stage <- factor(PLPSG_sleep_stats_wider_longertemp$sleep_stage, 
+                                                          levels = c("R", "N3", "N2", "N1"))
+PLPSG_sleep_stats_wider_longertemp$time <- as.numeric(PLPSG_sleep_stats_wider_longertemp$time)
+
+# Create the stacked bar plot with y-axis range from 0 to 90 using coord_cartesian
+ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = time)) +
+  geom_col(aes(fill = sleep_stage)) +
+  labs(y = "Subject", x = "Time spent asleep (minutes)", fill = "Sleep Stage") +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 90)) +
+  #theme(axis.text.y = element_text(angle = 30, hjust = 1)) +
+  scale_fill_manual(values = c("N1" = "lightgoldenrod2", "N2" = "darkseagreen3", "N3" = "deepskyblue4", "R" = "coral2"))
+```
+
+### how much time spent in each stage - stacked plot - do percentages now 
+```{r}
+# Filter data for 'sleep' condition and reshape it to long format
+PLPSG_sleep_stats_wider_longertemp <- PLPSG_sleep_stats_wider %>%
+  filter(condition == "sleep" & R > 0 & N3 > 0) %>%
+  gather(key = "sleep_stage", value = "percentage", perN1, perN2, perN3, perR)
+
+# Ensure correct order of sleep stages
+PLPSG_sleep_stats_wider_longertemp$sleep_stage <- factor(
+  PLPSG_sleep_stats_wider_longertemp$sleep_stage,
+  levels = c("perR", "perN3", "perN2", "perN1")
+)
+
+# Create the stacked bar plot with y-axis range from 0 to 100 using coord_cartesian
+ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = as.numeric(percentage))) +
+  geom_col(aes(fill = sleep_stage)) +
+  labs(y = "Subject", x = "Percentage of time spent asleep", fill = "Sleep Stage") +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 100)) +
+  scale_fill_manual(values = c("perN1" = "lightgoldenrod2", "perN2" = "darkseagreen3", "perN3" = "deepskyblue4", "perR" = "coral2"))
+
+```

@@ -18,6 +18,8 @@ Subjects did not leave the lab for the duration of the study. Wake subjects coul
 ```{r, message=FALSE}
 library(ggpubr) #needed for arranging multiple plots and making plots 
 library(ggplot2)
+library(rlang)
+library(dplyr) 
 ```
 
 ### import data files
@@ -43,20 +45,20 @@ ggboxplot(PLPSG_sleep_stats_longer,
 
 ### line plot of PLPSG performance across tests (sleep vs wake)
 ```{r}
-plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "sleep" & block != "block4")) + 
-  aes(x = block, y = score, group = subject, color = subject,
+plot_sleep = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "sleep")) + 
+  aes(x = block, y = score, group = Subject, color = Subject,
       na.rm = TRUE) + 
-  ylim(0.2,0.625) +
+  ylim(0.1,0.65) +
   xlab("block") + 
   ylab("performance") +
   theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
   ggtitle("Sleep") +
   geom_line()
 
-plot_wake = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "wake" & block != "block4")) + 
-  aes(x = block, y = score, group = subject, color = subject,
+plot_wake = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "wake")) + 
+  aes(x = block, y = score, group = Subject, color = Subject,
       na.rm = TRUE) +
-  ylim(0.2,0.625) +
+  ylim(0.1,0.65) +
   xlab("block") + 
   ylab("performance") +
   theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
@@ -65,8 +67,169 @@ plot_wake = ggplot(data = subset(PLPSG_sleep_stats_longer, condition == "wake" &
 
 figure <- ggarrange(plot_sleep, plot_wake,
                     labels = c("A", "B"),
-                    ncol = 2, nrow = 1)
+                    ncol = 1, nrow = 2)
 figure
+```
+```{r}
+# Define the flexible plot creation function
+create_plot <- function(condition_expr, title) {
+  filtered_data <- PLPSG_sleep_stats_longer %>%
+    filter(!!parse_expr(condition_expr))  # Use parse_expr to evaluate the condition
+  
+  ggplot(data = filtered_data) +
+    aes(x = block, y = score, group = Subject, color = Subject, na.rm = TRUE) +
+    coord_cartesian(ylim = c(0.1, 0.65)) +  # Preserve out-of-range data
+    xlab("block") +
+    ylab("score") +
+    ggtitle(title) +
+    geom_line() +
+    theme_minimal() +
+    theme(
+      axis.title.x = element_text(size = 9),
+      axis.title.y = element_text(size = 9),
+      plot.title = element_text(size = 10),
+      legend.text = element_text(size = 5),
+      legend.title = element_text(size = 7),
+      legend.key.size = unit(0.25, "cm")
+    ) +
+    guides(color = guide_legend(ncol = 2))
+}
+
+# Create plot1 to plot8 with specific conditions
+plot1 <- create_plot(
+  "condition == 'sleep' & loss > 0 & recovery > 0", 
+  "Sleep - loss & recovery"
+)
+
+plot2 <- create_plot(
+  "condition == 'wake' & loss > 0 & recovery > 0", 
+  "Wake - loss & recovery"
+)
+
+plot3 <- create_plot(
+  "condition == 'sleep' & loss < 0 & recovery > 0", 
+  "Sleep - no loss & recovery"
+)
+
+plot4 <- create_plot(
+  "condition == 'wake' & loss < 0 & recovery > 0", 
+  "Wake - no loss & recovery"
+)
+
+plot5 <- create_plot(
+  "condition == 'sleep' & loss > 0 & recovery < 0", 
+  "Sleep - loss & no recovery"
+)
+
+plot6 <- create_plot(
+  "condition == 'wake' & loss > 0 & recovery < 0", 
+  "Wake - loss & no recovery"
+)
+
+plot7 <- create_plot(
+  "condition == 'sleep' & loss < 0 & recovery < 0", 
+  "Sleep - no loss & no recovery"
+)
+
+plot8 <- create_plot(
+  "condition == 'wake' & loss < 0 & recovery < 0", 
+  "Wake - no loss & no recovery"
+)
+
+# Arrange the plots in a grid
+figure <- ggarrange(
+  plot1, plot2, plot3, plot4, 
+  plot5, plot6, plot7, plot8, 
+  labels = c("A", "B", "C", "D", "E", "F", "G", "H"), 
+  ncol = 2, nrow = 4
+)
+
+figure
+
+
+
+```
+
+### plots individually
+```{r}
+plot1
+plot2
+plot3
+plot4
+plot5
+plot6
+plot7
+plot8
+
+
+```
+
+### look at these plots a little more in depth 
+```{r}
+
+plot9 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery > 0 | longtermrecovery > 0)", 
+  "Sleep - loss & recovery OR delayed recovery "
+)
+plot10 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery > 0 | longtermrecovery > 0)", 
+  "Wake - loss & recovery OR delayed recovery"
+)
+plot11 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery > 0 & longtermrecovery > 0)", 
+  "Sleep - loss & recovery & delayed recovery"
+)
+plot12 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery > 0 & longtermrecovery > 0)", 
+  "Wake - loss & recovery & delayed recovery"
+)
+plot13 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery > 0 & longtermrecovery < 0)", 
+  "Sleep - loss & recovery & no delayed recovery"
+)
+plot14 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery > 0 & longtermrecovery < 0)", 
+  "Wake - loss & recovery & no delayed recovery"
+)
+plot15 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery < 0 & longtermrecovery > 0)", 
+  "sleep - loss & no recovery & delayed recovery"
+)
+plot16 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery < 0 & longtermrecovery > 0)", 
+  "Wake - loss & no recovery & delayed recovery"
+)
+plot17 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery < 0 & longtermrecovery < 0)", 
+  "sleep - loss & no recovery & no delayed recovery"
+)
+plot18 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery < 0 & longtermrecovery < 0)", 
+  "Wake - loss & no recovery & no delayed recovery"
+)
+
+ggarrange(plot9,plot10,plot11,plot12,
+          ncol=2,nrow=2)
+ggarrange(plot13, plot14,plot15,plot16,
+          nrow=2,ncol=2)
+ggarrange(plot17,plot18,
+          nrow=2,ncol=2)
+```
+#plot individually
+```{r}
+
+plot9
+plot10
+plot11
+plot12
+plot13
+plot14
+plot15
+plot16
+plot17
+plot18
+
+
 ```
 
 ### another way to look at this same data - plot learning, loss, recovery, retention on the x axis

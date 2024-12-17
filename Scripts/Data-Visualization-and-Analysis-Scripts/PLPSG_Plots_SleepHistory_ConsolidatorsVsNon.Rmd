@@ -1,0 +1,133 @@
+---
+title: "PLPSG_Plots_SleepHistory_ConsolidatorsVsNon"
+author: "Katie Reis"
+date: "2024-12-16"
+output: html_document
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+
+```
+
+### set up functions to make violin plots, histograms, and density plots 
+```{r}
+# violin plots 
+create_violin <- function(data, y_var, y_label, ymin, ymax, p) {
+  ggplot(data = data) + 
+    aes(y = as.numeric(.data[[y_var]]), 
+        x = condition, 
+        color = ifelse(recovery > 0, "Consolidators", "Non-Consolidators"), 
+        fill = ifelse(recovery > 0, "Consolidators", "Non-Consolidators")) + 
+    ylab(y_label) + ylim(ymin, ymax) +
+    theme(axis.title.x = element_text(size = 9)) + 
+    geom_violin(alpha = 0.5, color = "black") +  # Transparent violin plot
+    stat_summary(fun.data = "mean_cl_boot",
+                 geom = "crossbar",
+                 colour = "grey",
+                 alpha = 0.5,  # Add transparency to box plot
+                 width = 0.2,
+                 position = position_dodge(width = 0.9)) +  # Align box plots with violins
+    geom_dotplot(binaxis = 'y', 
+                 stackdir = 'center', 
+                 dotsize = 0.5, 
+                 position = position_dodge(0.9),  # Align dots with violin plots
+                 alpha = 0.8) +
+    geom_label(
+        aes(x = 1,  # Position near the first category
+            y = ymax,  # Above the data
+            label = paste("p =", signif(p$p.value, 5))),
+        inherit.aes = FALSE,
+        size = 2.5
+    ) +
+    scale_color_manual(values = c("Consolidators" = "deepskyblue4", 
+                                  "Non-Consolidators" = "indianred3"), 
+                       name = "Group") +
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                                 "Non-Consolidators" = "indianred3"), 
+                      name = "Group") +
+    theme(legend.position = "none")  # Disable individual legends
+}
+
+# histogram plots
+create_histogram <- function(data, y_var, y_label, bins) {
+  ggplot(data = data) + 
+    aes(x = as.numeric(.data[[y_var]]), 
+        fill = ifelse(recovery > 0, "Consolidators", "Non-Consolidators"), 
+        color = ifelse(recovery > 0, "Consolidators", "Non-Consolidators")) + 
+    xlab(y_label) +
+    ylab("Count") +
+    theme(axis.title.x = element_text(size = 9)) + 
+    geom_histogram(position = "identity", 
+                   bins = bins, 
+                   alpha = 0.5,  # Transparency for overlap
+                   color = "black") + 
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                                 "Non-Consolidators" = "indianred3"), 
+                      name = "Group") +
+    scale_color_manual(values = c("Consolidators" = "deepskyblue4", 
+                                  "Non-Consolidators" = "indianred3"), 
+                       name = "Group") +
+    theme(legend.position = "none")  # Disable individual legends
+}
+
+# density plots
+create_density <- function(data, y_var, y_label) {
+  ggplot(data = data) + 
+    aes(x = as.numeric(.data[[y_var]]), 
+        fill = ifelse(recovery > 0, "Consolidators", "Non-Consolidators"), 
+        color = ifelse(recovery > 0, "Consolidators", "Non-Consolidators")) + 
+    xlab(y_label) +
+    ylab("Density") +
+    theme(axis.title.x = element_text(size = 9)) + 
+    geom_density(alpha = 0.5,  # Transparency for overlap
+                 adjust = 1) +  # Smoothing factor, adjust as needed
+    scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                                 "Non-Consolidators" = "indianred3"), 
+                      name = "Group") +
+    scale_color_manual(values = c("Consolidators" = "deepskyblue4", 
+                                  "Non-Consolidators" = "indianred3"), 
+                       name = "Group") +
+    theme(legend.position = "none")  # Disable individual legends
+}
+```
+
+### function for calculating the p value for a t test comparing consolidators and nonconsolidators 
+```{r}
+tt <- function(column_name) {
+  # Subset the data first to avoid discrepancies
+  data_subset <- subset(PLPSG_sleep_stats_wider, condition == "sleep")
+  
+  # Perform the t-test using the specified column
+  t.test(as.numeric(data_subset[[column_name]]) ~ data_subset$consolidator_status)
+}
+
+```
+
+
+### visualize with side by side violin plots for consolidators vs nonconsolidators 
+```{r}
+n1fit = tt("N1")
+n2fit = tt("N2")
+n3fit = tt("N3")
+rfit = tt("R")
+
+plot_nightbeforetst <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "NightBefore_TST", "Night Before TST", 0, 60, n1fit)
+plot_N3 <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N3", "N3 (minutes)", 0, 60, n3fit)
+plot_R <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "R", "R (minutes)", 0, 60, rfit)
+
+# Combine the plots with a common legend
+figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 4, nrow = 1,
+                    common.legend = TRUE, legend = "bottom")
+
+figure
+```

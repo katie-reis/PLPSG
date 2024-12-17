@@ -253,5 +253,35 @@ figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R, plot_N3andR,
 figure
 
 ```
+# spindles
+```{r}
+fit_spindle = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 1))
+fit_spindle_non = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep" & consolidator_status == 0))
 
+
+# Define the plot for N1
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2andN3_Count), y = recovery, color = consolidator_status) + 
+  xlab("Spindle Count (N2 and N3)") + 
+  ylab("Recovery") + 
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE, aes(group = consolidator_status)) + # Grouping by consolidator_status
+  geom_label(
+        aes(x = 35,  # Position near the first category
+            y = 0.15,  # Above the data
+            label = paste("p =", signif(summary(fit_spindle)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  geom_label(
+        aes(x = 35,  # Position near the first category
+            y = -0.1,  # Above the data
+            label = paste("p =", signif(summary(fit_spindle_non)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5) +
+  scale_color_manual(values = c("0" = "indianred3", "1" = "deepskyblue4"), 
+                     labels = c("Non-Consolidator", "Consolidator"))
+
+
+```
 

@@ -114,17 +114,19 @@ tt <- function(column_name) {
 
 ### visualize with side by side violin plots for consolidators vs nonconsolidators 
 ```{r}
-n1fit = tt("N1")
-n2fit = tt("N2")
-n3fit = tt("N3")
-rfit = tt("R")
+nbtstfit = tt("NightBefore_TST")
+avgtstfit = tt("AverageSleep")
+nbdevfit = tt("nightbefore_sleep_deviation_from_norm")
+avgdevfit = tt("average_sleep_deviation_from_norm")
 
-plot_nightbeforetst <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "NightBefore_TST", "Night Before TST", 0, 60, n1fit)
-plot_N3 <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "N3", "N3 (minutes)", 0, 60, n3fit)
-plot_R <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "R", "R (minutes)", 0, 60, rfit)
+plot_nightbeforetst <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "NightBefore_TST", "Night Before TST", 5, 10, nbtstfit)
+plot_avgtst <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "AverageSleep", "Average TST", 5, 10, avgtstfit)
+plot_nightbeforedev <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "nightbefore_sleep_deviation_from_norm", "Night Before Deviation", -3, 3, nbdevfit)
+plot_avgdev <- create_violin(subset(PLPSG_sleep_stats_wider, condition == "sleep"), "average_sleep_deviation_from_norm", "Average Deviation", -3, 3, avgdevfit)
+
 
 # Combine the plots with a common legend
-figure <- ggarrange(plot_N1, plot_N2, plot_N3, plot_R,
+figure <- ggarrange(plot_nightbeforetst, plot_avgtst, plot_nightbeforedev, plot_avgdev,
                     labels = c("A", "B", "C", "D"),
                     ncol = 4, nrow = 1,
                     common.legend = TRUE, legend = "bottom")

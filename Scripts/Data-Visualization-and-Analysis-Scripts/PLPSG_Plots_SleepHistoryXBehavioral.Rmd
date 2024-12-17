@@ -16,132 +16,139 @@ library(ggplot2)
 source("PLPSG_ImportData.R")
 ```
 
-### sleep history now - average
+### make a function to create a plot
 ```{r}
-# Fit models for p-value calculation
-fitsleep_avg_tst <- lm(as.numeric(recovery) ~ as.numeric(AverageSleep), 
-                       subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-fitwake_avg_tst <- lm(as.numeric(recovery) ~ as.numeric(AverageSleep), 
-                      subset(PLPSG_sleep_stats_wider, condition == "wake"))
-
-# Create the plot
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = as.numeric(AverageSleep), 
-        y = recovery, 
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Average Sleep TST") +
-    ylab("recovery") +
+historyplot <- function(xval, yval, xlabel, ylabel, line1x, line1y, line2x, line2y) {  
+  # Subset the data
+  data_sleep <- subset(PLPSG_sleep_stats_wider, condition == "sleep")
+  data_wake <- subset(PLPSG_sleep_stats_wider, condition == "wake")
+  
+  # Fit models for sleep and wake groups
+  fitsleep <- lm(as.numeric(data_sleep[[yval]]) ~ as.numeric(data_sleep[[xval]]))
+  fitwake <- lm(as.numeric(data_wake[[yval]]) ~ as.numeric(data_wake[[xval]]))
+  
+  # Create the plot
+  ggplot(data = PLPSG_sleep_stats_wider, aes(x = .data[[xval]], y = .data[[yval]], color = condition)) +
+    xlab(xlabel) +
+    ylab(ylabel) +
     geom_point(size = 1) +
     geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = max(as.numeric(AverageSleep), na.rm = TRUE) - 1, y = 0.03),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitsleep_avg_tst)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    geom_label(aes(x = max(as.numeric(AverageSleep), na.rm = TRUE) - 1, y = -0.08),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitwake_avg_tst)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"), 
-                       labels = c("sleep", "wake")) +
-    guides(color = guide_legend(title = "Condition"))
-
-
-```
-
-
-
-### sleep history now - night before
-```{r}
-
-# Fit models for p-value calculation
-fitsleep_tst <- lm(as.numeric(recovery) ~ as.numeric(NightBefore_TST), 
-                   subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-fitwake_tst <- lm(as.numeric(recovery) ~ as.numeric(NightBefore_TST), 
-                  subset(PLPSG_sleep_stats_wider, condition == "wake"))
-
-# Create the plot
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = as.numeric(NightBefore_TST),
-        y = recovery,
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Night Before TST") +
-    ylab("recovery") +
-    geom_point(size = 1) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 8.5, y = 0.04), 
-               hjust = 0, size = 2, 
-               label = paste("p =", signif(summary(fitsleep_tst)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) +
-    geom_label(aes(x = 9.4, y = -0.01), 
-               hjust = 0, size = 2, 
-               label = paste("p =", signif(summary(fitwake_tst)$coef[2, 4], 5)), 
-               inherit.aes = FALSE) +
+    geom_label(aes(x = line1x, y = line1y), 
+               label = paste("p =", signif(summary(fitsleep)$coef[2, 4], 5)), 
+               inherit.aes = FALSE, 
+               hjust = 0, size = 2) +
+    geom_label(aes(x = line2x, y = line2y), 
+               label = paste("p =", signif(summary(fitwake)$coef[2, 4], 5)), 
+               inherit.aes = FALSE, 
+               hjust = 0, size = 2) +
     scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
-
-
+}
 ```
+### NOTE: 
+### night before and two night before average sleep deviation from normal sleep length - a value of -2 here means that they got an average of 2 hours less sleep the nights leading up to the experiment than they normally do, a value of +2 means that they got an average of 2 hours more sleep the nights leading up to the experiment than they normally do 
+### LAST NIGHT SLEEP deviation from normal sleep length - a value of -2 here means that they got an average of 2 hours less sleep the nights leading up to the experiment than they normally do, a value of +2 means that they got an average of 2 hours more sleep the nights leading up to the experiment than they normally do 
 
-
-### sleep history now - night before and two night before average sleep deviation from normal sleep length - a value of -2 here means that they got an average of 2 hours less sleep the nights leading up to the experiment than they normally do, a value of +2 means that they got an average of 2 hours more sleep the nights leading up to the experiment than they normally do 
+### sleep history vs block 1 (pretest) performance
 ```{r}
+plot1 = historyplot("NightBefore_TST", "block1", "Night Before TST", "Pretest", 9, 0.32, 9.5, 0.27)
+plot2 = historyplot("AverageSleep", "block1", "Average Sleep TST", "Pretest", 8.5, 0.26, 9.8, 0.34)
+plot3 = historyplot("nightbefore_sleep_deviation_from_norm", "block1", "Night Before Deviation", "Pretest", 2.7, 0.2, 2.7, 0.32)
+plot4 = historyplot("average_sleep_deviation_from_norm", "block1", "Average Sleep Deviation", "Pretest", 2.4, 0.24, 2.4, 0.3)
 
-# Fit models for p-value calculation
-fitsleep_avg <- lm(as.numeric(recovery) ~ as.numeric(average_sleep_deviation_from_norm), 
-                   subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-fitwake_avg <- lm(as.numeric(recovery) ~ as.numeric(average_sleep_deviation_from_norm), 
-                  subset(PLPSG_sleep_stats_wider, condition == "wake"))
 
-# Create the plot
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = (as.numeric(UsualSleepLengthHours) - as.numeric(AverageSleep)),
-        y = recovery,
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Average sleep deviation from Normal Sleep Length") +
-    ylab("recovery") +
-    geom_point(size = 1) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 2.3, y = 0.01),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitsleep_avg)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    geom_label(aes(x = 2.3, y = -0.07),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitwake_avg)$coef[2, 4], 5)),
-               inherit.aes = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
-
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   common.legend = TRUE, legend = "bottom")
+figure
 ```
-
-
-
-### sleep history now - LAST NIGHT SLEEP deviation from normal sleep length - a value of -2 here means that they got an average of 2 hours less sleep the nights leading up to the experiment than they normally do, a value of +2 means that they got an average of 2 hours more sleep the nights leading up to the experiment than they normally do 
+### sleep history vs learning
 ```{r}
-fitsleep <- lm(as.numeric(recovery) ~ as.numeric(nightbefore_sleep_deviation_from_norm), subset(PLPSG_sleep_stats_wider, condition == "sleep"))  
+plot1 = historyplot("NightBefore_TST", "learning", "Night Before TST", "Learning", 8.6, 0.2, 9.3, 0.14)
+plot2 = historyplot("AverageSleep", "learning", "Average Sleep TST", "Learning", 9.2, 0.23, 9.8, 0.12)
+plot3 = historyplot("nightbefore_sleep_deviation_from_norm", "learning", "Night Before Deviation", "Learning", 2.9, 0.2, 2.6, 0.08)
+plot4 = historyplot("average_sleep_deviation_from_norm", "learning", "Average Sleep Deviation", "Learning", 2.3, 0.16, 2.4, 0.05)
 
-fitwake <- lm(as.numeric(recovery) ~ as.numeric(nightbefore_sleep_deviation_from_norm), subset(PLPSG_sleep_stats_wider, condition == "wake"))
 
-ggplot(data = subset(PLPSG_sleep_stats_wider)) +
-    aes(x = (as.numeric(UsualSleepLengthHours) - as.numeric(NightBefore_TST)),
-        y = recovery,
-        color = condition,
-        na.rm = TRUE) +
-    xlab("Night before deviation from Normal Sleep Length") +
-    ylab("recovery") +
-    geom_point(size = 1) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_label(aes(x = 2.9, y = 0.03),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitsleep)$coef[2,4], 5)),
-               inherit.aes = FALSE) +
-    geom_label(aes(x = 2.9, y = -0.08),
-               hjust = 0, size = 2,
-               label = paste("p =", signif(summary(fitwake)$coef[2,4], 5)),
-               inherit.aes = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
-
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   common.legend = TRUE, legend = "bottom")
+figure
 ```
 
 
+### sleep history vs loss
+```{r}
+plot1 = historyplot("NightBefore_TST", "loss", "Night Before TST", "Loss", 8.6, 0.12, 9.3, 0)
+plot2 = historyplot("AverageSleep", "loss", "Average Sleep TST", "Loss", 9.2, 0.12, 9.8, 0)
+plot3 = historyplot("nightbefore_sleep_deviation_from_norm", "loss", "Night Before Deviation", "Loss", 2.9, 0.1, 2.8, 0)
+plot4 = historyplot("average_sleep_deviation_from_norm", "loss", "Average Sleep Deviation", "Loss", 2.3, 0.1, 2.4, 0)
+
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   common.legend = TRUE, legend = "bottom")
+figure
+```
+
+
+### sleep history vs recovery (separate line for wake and sleep)
+```{r}
+plot1 = historyplot("AverageSleep", "recovery", "Average Sleep TST", "Recovery\n(Block5-Block4)", 9.5, 0.03, 10, -0.04)
+plot2 = historyplot("NightBefore_TST", "recovery", "Night Before TST", "Recovery\n(Block5-Block4)", 8.5, 0.04, 9.4, -0.01)
+plot3 = historyplot("average_sleep_deviation_from_norm", "recovery", "Average Sleep Deviation from Normal Length", "Recovery\n(Block5-Block4)", 2.3, 0.01, 2.3, -0.07)
+plot4 = historyplot("nightbefore_sleep_deviation_from_norm", "recovery", "Night Before Deviation from Normal Length", "Recovery\n(Block5-Block4)", 2.9, 0.03, 2.9, -0.08)
+
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+```
+
+### sleep history vs maintenance (separate line for wake and sleep)
+```{r}
+plot1 = historyplot("AverageSleep", "maintenance", "Average Sleep TST", "Maintenance\n(Block6-Block5)", 8.7, 0, 9.8, -0.05)
+plot2 = historyplot("NightBefore_TST", "maintenance", "Night Before TST", "Maintenance\n(Block6-Block5)", 8.9, 0, 9.2, -0.15)
+plot3 = historyplot("average_sleep_deviation_from_norm", "maintenance", "Average Sleep Deviation from Normal Length", "Maintenance\n(Block6-Block5)", 2.3, -0.03, 2.3, 0.075)
+plot4 = historyplot("nightbefore_sleep_deviation_from_norm", "maintenance", "Night Before Deviation from Normal Length", "Maintenance\n(Block6-Block5)", 2.9, -0.04, 2.9, 0.08)
+
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+```
+
+### sleep history vs long term recovery (separate line for wake and sleep)
+```{r}
+plot1 = historyplot("AverageSleep", "longtermrecovery", "Average Sleep TST", "Long Term Recovery\n(block6-block4)", 9.3, 0, 9.8, -0.12)
+plot2 = historyplot("NightBefore_TST", "longtermrecovery", "Night Before TST", "Long Term Recovery\n(block6-block4)", 8.9, 0, 9.2, -0.15)
+plot3 = historyplot("average_sleep_deviation_from_norm", "longtermrecovery", "Average Sleep Deviation from Normal Length", "Long Term Recovery\n(block6-block4)", 2.3, 0.05, 1.8, -0.05)
+plot4 = historyplot("nightbefore_sleep_deviation_from_norm", "longtermrecovery", "Night Before Deviation from Normal Length", "Long Term Recovery\n(block6-block4)", 2.9, 0.05, 2.9, -0.03)
+
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+```
+
+
+
+### sleep history vs protective (separate line for wake and sleep)
+```{r}
+plot1 = historyplot("AverageSleep", "protective", "Average Sleep TST", "Protective\n(block6-block3)", 9.4, -0.06, 9.5, -0.15)
+plot2 = historyplot("NightBefore_TST", "protective", "Night Before TST", "Protective\n(block6-block3)", 8.9, -0.06, 9, -0.15)
+plot3 = historyplot("average_sleep_deviation_from_norm", "protective", "Average Sleep Deviation from Normal Length", "Protective\n(block6-block3)", -1, -0.10, -2.5, -0.08)
+plot4 = historyplot("nightbefore_sleep_deviation_from_norm", "protective", "Night Before Deviation from Normal Length", "Protective\n(block6-block3)", 2.9, 0.0, -2, -0.13)
+
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+```

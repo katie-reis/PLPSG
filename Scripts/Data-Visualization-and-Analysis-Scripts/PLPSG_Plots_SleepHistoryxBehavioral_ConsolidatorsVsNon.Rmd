@@ -1,0 +1,128 @@
+---
+title: "PLPSG_Plots_SleepHistoryxBehavioral_ConsolidatorsVsNon"
+author: "Katie Reis"
+date: "2024-12-17"
+output: html_document
+---
+
+### import packages
+```{r, message=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+```
+
+### import data files
+```{r}
+source("PLPSG_ImportData.R")
+```
+
+### make a function to create a plot
+```{r}
+historyplot <- function(xval, yval, xlabel, ylabel, line1x, line1y, line2x, line2y) {  
+  # Subset the data
+  data_sleep <- subset(PLPSG_sleep_stats_wider, condition == "sleep")
+  data_sleep[[xval]] <- as.numeric(data_sleep[[xval]])  # Ensure numeric
+  data_sleep[[yval]] <- as.numeric(data_sleep[[yval]])  # Ensure numeric
+  
+  data_con <- subset(data_sleep, consolidator_status == 1)
+  data_non <- subset(data_sleep, consolidator_status == 0)
+  
+  # Fit models for consolidators and non-consolidators
+  fitcon <- lm(as.formula(paste(yval, "~", xval)), data = data_con)
+  fitnon <- lm(as.formula(paste(yval, "~", xval)), data = data_non)
+  
+  # Create the plot
+  ggplot(data = data_sleep, aes(x = .data[[xval]], y = .data[[yval]], color = factor(consolidator_status))) +
+    xlab(xlabel) +
+    ylab(ylabel) +
+    geom_point(size = 1) +
+    geom_smooth(method = "lm", se = FALSE) +
+    geom_label(aes(x = line1x, y = line1y), 
+               label = paste("p =", signif(summary(fitcon)$coef[2, 4], 5)), 
+               inherit.aes = FALSE, 
+               hjust = 0, size = 2, color = "darkgreen") +
+    geom_label(aes(x = line2x, y = line2y), 
+               label = paste("p =", signif(summary(fitnon)$coef[2, 4], 5)), 
+               inherit.aes = FALSE, 
+               hjust = 0, size = 2, color = "darkorange") +
+    scale_color_manual(values = c("1" = "darkgreen", "0" = "darkorange"), 
+                       name = "Consolidator Status", 
+                       labels = c("Non-Consolidator", "Consolidator")) +
+    theme_minimal() + 
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +  # Even y-axis ticks
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 5))    # Even x-axis ticks
+}
+
+
+```
+
+
+
+###pretest
+
+```{r}
+plot1 = historyplot("NightBefore_TST", "block1", "Night Before TST", "Pretest", 8.25,0.28,6.25,0.18)
+plot2 = historyplot("AverageSleep", "block1", "Average Sleep TST", "Pretest", 8.7,0.32,5.5,0.22)
+plot3 = historyplot("nightbefore_sleep_deviation_from_norm", "block1", "Night Before Deviation", "Pretest", 1.7,0.28,2.4,0.23)
+plot4 = historyplot("average_sleep_deviation_from_norm", "block1", "Average Sleep Deviation", "Pretest", 1.5,0.3,2.1,0.24)
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
+
+```
+
+
+###learning
+
+```{r}
+plot1 = historyplot("NightBefore_TST", "learning", "Night Before TST", "learning", 8.25,0.125,6.25,0.125)
+plot2 = historyplot("AverageSleep", "learning", "Average Sleep TST", "learning", 8.7,0.22,5.5,0.075)
+plot3 = historyplot("nightbefore_sleep_deviation_from_norm", "learning", "Night Before Deviation", "learning", 1.7,0.225,2.4,0.175)
+plot4 = historyplot("average_sleep_deviation_from_norm", "learning", "Average Sleep Deviation", "learning", 1.5,0.18,2.15,0.15)
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
+
+```
+
+###loss
+
+```{r}
+plot1 = historyplot("NightBefore_TST", "loss", "Night Before TST", "Loss", 8.25,0.12,6.25,0)
+plot2 = historyplot("AverageSleep", "loss", "Average Sleep TST", "Loss", 8.7,0.12,5.5,0)
+plot3 = historyplot("nightbefore_sleep_deviation_from_norm", "loss", "Night Before Deviation", "Loss", 1.7,0.12,2.4,0.05)
+plot4 = historyplot("average_sleep_deviation_from_norm", "loss", "Average Sleep Deviation", "Loss", 0,0.15,2.1,0.1)
+
+figure = ggarrange(plot1,plot2,plot3,plot4, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
+
+```
+
+###sleep stages duration
+
+```{r}
+plot1 <- historyplot("NightBefore_TST", "N1", "Night Before TST", "N1", 8.25, 0.28, 6.25, 0.18)
+plot2 <- historyplot("AverageSleep", "N2", "Average Sleep TST", "N2", 8.7, 0.32, 5.5, 0.22)
+plot3 <- historyplot("nightbefore_sleep_deviation_from_norm", "N3", "Night Before Deviation", "N3", 1.7, 0.28, 2.4, 0.23)
+plot4 <- historyplot("average_sleep_deviation_from_norm", "R", "Average Sleep Deviation", "R", 1.5, 0.3, 2.1, 0.24)
+
+figure <- ggarrange(plot1, plot2, plot3, plot4, 
+                    ncol = 2, nrow = 2,
+                    labels = c("A", "B", "C", "D"),
+                    common.legend = TRUE, legend = "bottom")
+figure
+
+
+```

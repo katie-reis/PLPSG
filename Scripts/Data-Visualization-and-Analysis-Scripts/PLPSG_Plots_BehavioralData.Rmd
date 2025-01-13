@@ -268,6 +268,144 @@ figure <- ggarrange(plot_sleep, plot_wake,
 figure
 ```
 
+### histogram plots of learning
+```{r, message= FALSE}
+learningplot = ggplot(PLPSG_sleep_stats_wider,
+  aes(x = learning,
+      fill = condition)) +
+  ggtitle("Learning (Block 3 - Block 1)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+learningplot
+
+x1 = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Learning", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+### histogram plots of loss
+```{r, message= FALSE}
+lossplot = ggplot(PLPSG_sleep_stats_wider,
+  aes(x = loss,
+      fill = condition)) +
+  ggtitle("Loss (Block 4 - Block 3)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+lossplot
+
+x1 = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Loss", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+### histogram plots of recovery
+```{r, message= FALSE}
+recoveryplot = ggplot(PLPSG_sleep_stats_wider,
+  aes(x = recovery,
+      fill = condition)) +
+  ggtitle("Recovery (Block 5 - Block 4") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+recoveryplot
+
+x1 = PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Recovery", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+### histogram plots of maintenance
+```{r, message= FALSE}
+maintenanceplot = ggplot(PLPSG_sleep_stats_wider,
+  aes(x = maintenance,
+      fill = condition)) +
+  ggtitle("Maintenance (Block 6 - Block 5") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+maintenanceplot
+
+x1 = PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Maintenance", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+### histogram plots of learning long term recovery
+```{r, message= FALSE}
+ltrplot = ggplot(PLPSG_sleep_stats_wider,
+  aes(x = longtermrecovery,
+      fill = condition)) +
+  ggtitle("Long term recovery (Block 6 - Block 4") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+ltrplot
+
+x1 = PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Long term recovery", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+### violin plots of retention
+```{r, message= FALSE}
+retentionplot = ggplot(PLPSG_sleep_stats_wider,
+  aes(x = retention,
+      fill = condition)) +
+  ggtitle("Retention (Block 6 - Block 3") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+retentionplot
+
+x1 = PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Retention", ylim=c(4,0) , las=1 , col="indianred3", breaks=12)
+```
+
 ### violin plots of learning
 ```{r, message= FALSE}
 learningplot = ggplot(PLPSG_sleep_stats_wider,

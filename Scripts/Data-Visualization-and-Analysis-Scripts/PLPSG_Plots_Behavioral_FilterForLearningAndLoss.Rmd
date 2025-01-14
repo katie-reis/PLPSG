@@ -1,0 +1,177 @@
+---
+title: "PLPSG_Plots_Behavioral_FilterForLearningAndLoss"
+author: "Katie Reis"
+date: "2025-01-14"
+output: html_document
+---
+
+### This code looks at subjects who had Learning > 0 and Loss > 0. This is because positive recovery for these subjects means they are gaining back performance that they lost over the waking retention interval, not just continuing to improve over the course of the day
+
+```{r setup, include=FALSE}
+library(ggpubr) #needed for arranging multiple plots and making plots 
+library(ggplot2)
+library(rlang)
+library(dplyr) 
+```
+
+# Start with histograms 
+
+### Learning
+```{r}
+x1 = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Learning (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+
+```
+
+### Loss
+```{r}
+x1 = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Loss (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+
+```
+
+### Recovery
+```{r}
+x1 = PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Recovery (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+
+```
+
+### Long term recovery
+```{r}
+x1 = PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Long term recovery (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+
+```
+
+### Retention
+```{r}
+x1 = PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Retention (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+
+```
+
+
+
+# Now what if we subsample based on learning (remove some subjects so that there is the same distribution of learning for both wake and sleep groups)
+```{r}
+#first remove some subjects - Sleep (101, 113, 131, 145, 148, 112, 139, 127, 120, 122, 117) and Wake (106, 114, 157)
+exclude_subjects <- c(101, 113, 131, 145, 148, 112, 139, 127, 120, 122, 117, 106, 114, 157)
+
+SubsampleOnLearning <- PLPSG_sleep_stats_wider %>% 
+  filter(!Subject %in% exclude_subjects)
+
+```
+
+### Learning
+```{r}
+x1 = SubsampleOnLearning$learning[SubsampleOnLearning$condition == "sleep" & SubsampleOnLearning$loss > 0]
+x2 = SubsampleOnLearning$learning[SubsampleOnLearning$condition == "wake" & SubsampleOnLearning$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Learning (Subsampled and Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+
+```
+
+
+
+### Loss
+```{r}
+x1 = SubsampleOnLearning$loss[SubsampleOnLearning$condition == "sleep" & SubsampleOnLearning$loss > 0]
+x2 = SubsampleOnLearning$loss[SubsampleOnLearning$condition == "wake" & SubsampleOnLearning$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=8)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Loss (Subsampled and Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=10)
+
+```
+
+
+### Recovery
+```{r}
+x1 = SubsampleOnLearning$recovery[SubsampleOnLearning$condition == "sleep" & SubsampleOnLearning$loss > 0]
+x2 = SubsampleOnLearning$recovery[SubsampleOnLearning$condition == "wake" & SubsampleOnLearning$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Recovery (Subsampled and Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=8)
+
+```
+
+
+### Long term recovery
+```{r}
+x1 = SubsampleOnLearning$longtermrecovery[SubsampleOnLearning$condition == "sleep" & SubsampleOnLearning$loss > 0]
+x2 = SubsampleOnLearning$longtermrecovery[SubsampleOnLearning$condition == "wake" & SubsampleOnLearning$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Long term recovery (Subsampled and Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+
+```
+
+
+### Retention
+```{r}
+x1 = SubsampleOnLearning$retention[SubsampleOnLearning$condition == "sleep" & SubsampleOnLearning$loss > 0]
+x2 = SubsampleOnLearning$retention[SubsampleOnLearning$condition == "wake" & SubsampleOnLearning$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Retention (Subsampled and Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=10)
+
+```
+
+
+

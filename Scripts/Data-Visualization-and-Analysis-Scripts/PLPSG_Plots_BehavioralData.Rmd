@@ -27,8 +27,8 @@ library(dplyr)
 source("PLPSG_ImportData.R")
 
 # filter out subjects who didn't learn (subjects 134, 141, 142)
-PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, subject != '134' & subject != '141' & subject != '142')
-PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, subject != '134' & subject != '141' & subject != '142')
+PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, Subject != '134' & Subject != '141' & Subject != '142')
+PLPSG_sleep_stats_longer = subset(PLPSG_sleep_stats_longer, Subject != '134' & Subject != '141' & Subject != '142')
 
 ```
 
@@ -208,11 +208,9 @@ plot18 = create_plot(
   "Wake - loss & no recovery & no delayed recovery"
 )
 
-ggarrange(plot9,plot10,plot11,plot12,
+ggarrange(plot11,plot12,plot13,plot14,
           ncol=2,nrow=2)
-ggarrange(plot13, plot14,plot15,plot16,
-          nrow=2,ncol=2)
-ggarrange(plot17,plot18,
+ggarrange(plot15,plot16,plot17,plot18,
           nrow=2,ncol=2)
 ```
 #plot individually
@@ -231,6 +229,91 @@ plot18
 
 
 ```
+
+#distinguish based on maintenance now too
+```{r}
+
+plot19 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery > 0 & longtermrecovery > 0 & maintenance >= 0)", 
+  "Sleep - loss & recovery & LTR & maintenance"
+)
+plot20 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery > 0 & longtermrecovery > 0 & maintenance >= 0)", 
+  "Wake - loss & recovery & LTR & maintenance"
+)
+
+plot21 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery > 0 & longtermrecovery > 0 & maintenance < 0)", 
+  "Sleep - loss & recovery & LTR & no maintenance"
+)
+plot22 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery > 0 & longtermrecovery > 0 & maintenance < 0)", 
+  "Wake - loss & recovery & LTR & no maintenance"
+)
+
+plot23 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery > 0 & longtermrecovery <= 0 & maintenance >= 0)", 
+  "Sleep - loss & recovery & no LTR & maintenance"
+)
+plot24 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery > 0 & longtermrecovery <= 0 & maintenance >= 0)", 
+  "Wake - loss & recovery & no LTR & maintenance"
+)
+plot25 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery > 0 & longtermrecovery <= 0 & maintenance < 0)", 
+  "Sleep - loss & recovery & no LTR & no maintenance"
+)
+plot26 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery > 0 & longtermrecovery <= 0 & maintenance < 0)", 
+  "Wake - loss & recovery & no LTR & no maintenance"
+)
+
+plot27 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery <= 0 & longtermrecovery > 0 & maintenance >= 0)", 
+  "sleep - loss & no recovery & LTR & maintenance"
+)
+plot28 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery <= 0 & longtermrecovery > 0 & maintenance >= 0)", 
+  "Wake - loss & no recovery & LTR & maintenance"
+)
+
+plot29 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery <= 0 & longtermrecovery > 0 & maintenance < 0)", 
+  "sleep - loss & no recovery & LTR & no maintenance"
+)
+plot30 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery <= 0 & longtermrecovery > 0 & maintenance < 0)", 
+  "Wake - loss & no recovery & LTR & no maintenance"
+)
+
+plot31 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery <= 0 & longtermrecovery <= 0 & maintenance >= 0)", 
+  "sleep - loss & no recovery & no LTR & maintenance"
+)
+plot32 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery <= 0 & longtermrecovery <= 0 & maintenance >= 0)", 
+  "Wake - loss & no recovery & no LTR & maintenance"
+)
+
+plot33 = create_plot(
+  "condition == 'sleep' & loss > 0 & (recovery <= 0 & longtermrecovery <= 0 & maintenance < 0)", 
+  "sleep - loss & no recovery & no LTR & no maintenance"
+)
+plot34 = create_plot(
+  "condition == 'wake' & loss > 0 & (recovery <= 0 & longtermrecovery <= 0 & maintenance < 0)", 
+  "Wake - loss & no recovery & no LTR & no maintenance"
+)
+
+ggarrange(plot19,plot20,plot21,plot22,
+          ncol=2,nrow=2)
+ggarrange(plot23,plot24,plot25,plot26,
+          nrow=2,ncol=2)
+ggarrange(plot27,plot28,plot29,plot30,
+          ncol=2,nrow=2)
+ggarrange(plot31,plot32,plot33,plot34,
+          nrow=2,ncol=2)
+```
+
 
 ### another way to look at this same data - plot learning, loss, recovery, retention on the x axis
 ```{r}
@@ -319,7 +402,7 @@ hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Loss", ylim=c(
 recoveryplot = ggplot(PLPSG_sleep_stats_wider,
   aes(x = recovery,
       fill = condition)) +
-  ggtitle("Recovery (Block 5 - Block 4") +
+  ggtitle("Recovery (Block 5 - Block 4)") +
     xlim(-0.15,.45) +
   geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
   scale_fill_manual(values=c("deepskyblue4", "indianred3"))
@@ -342,7 +425,7 @@ hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Recovery", yli
 maintenanceplot = ggplot(PLPSG_sleep_stats_wider,
   aes(x = maintenance,
       fill = condition)) +
-  ggtitle("Maintenance (Block 6 - Block 5") +
+  ggtitle("Maintenance (Block 6 - Block 5)") +
     xlim(-0.15,.45) +
   geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
   scale_fill_manual(values=c("deepskyblue4", "indianred3"))
@@ -365,7 +448,7 @@ hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Maintenance", 
 ltrplot = ggplot(PLPSG_sleep_stats_wider,
   aes(x = longtermrecovery,
       fill = condition)) +
-  ggtitle("Long term recovery (Block 6 - Block 4") +
+  ggtitle("Long term recovery (Block 6 - Block 4)") +
     xlim(-0.15,.45) +
   geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
   scale_fill_manual(values=c("deepskyblue4", "indianred3"))
@@ -388,7 +471,7 @@ hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Long term reco
 retentionplot = ggplot(PLPSG_sleep_stats_wider,
   aes(x = retention,
       fill = condition)) +
-  ggtitle("Retention (Block 6 - Block 3") +
+  ggtitle("Retention (Block 6 - Block 3)") +
     xlim(-0.15,.45) +
   geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
   scale_fill_manual(values=c("deepskyblue4", "indianred3"))
@@ -941,3 +1024,25 @@ figure
 
 
 
+### histogram plots of learning (removing people who also don't show loss)
+```{r, message= FALSE}
+learningplot = ggplot(subset(PLPSG_sleep_stats_wider, loss > 0),
+  aes(x = learning,
+      fill = condition)) +
+  ggtitle("Learning (Block 3 - Block 1)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+learningplot
+
+x1 = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Learning (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```

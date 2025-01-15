@@ -105,19 +105,22 @@ data <- data.frame(
 )
 
 # Plot the stacked bar chart with fixed y-axis range
-ggplot(data, aes(x = Epoch, y = Count, fill = Status)) +
-  geom_bar(stat = "identity", position = "stack") +
-  scale_y_continuous(
+ggplot(data, aes(x = Epoch, y = Count, fill = Status)) + 
+  geom_bar(stat = "identity", position = "stack") + 
+  scale_y_continuous( 
     breaks = seq(0, max(data$Count) + 2, by = 1),  # Whole-number ticks
     limits = c(0, max(data$Count) + 2)             # Ensure proper range
-  ) +
-  labs(
-    title = "Consolidators vs. Non-Consolidators by Last Sleep Epoch",
-    x = "Last Sleep Epoch",
-    y = "Count",
-    fill = "Status"
-  ) +
+  ) + 
+  scale_fill_manual(values = c("Consolidators" = "deepskyblue4", 
+                               "Non-Consolidators" = "indianred3")) +  # Set custom colors
+  labs( 
+    title = "Consolidators vs. Non-Consolidators by Last Sleep Epoch", 
+    x = "Last Sleep Epoch", 
+    y = "Count", 
+    fill = "Status" 
+  ) + 
   theme_minimal()
+
 
 # Observed counts
 observed <- matrix(
@@ -529,4 +532,22 @@ sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N2" & PLPSG_sleep_stats_wider$c
 sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" & PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep")
 sum(PLPSG_sleep_stats_wider$last_sleep_epoch == "R" & PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep")
 
+```
+
+#recovery vs sws/rem — t test for those that get SWS and REM vs those that only get SWS 
+```{r}
+t.test(as.numeric(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$N3 > 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$N3 > 0 & PLPSG_sleep_stats_wider$R == 0 & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+```
+
+
+
+#maintenance vs night before/average TST - look at only sleep subjects 
+```{r}
+main_nightbefore_model = lm(maintenance ~ as.numeric(AverageSleep), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(main_nightbefore_model)
+
+main_avgsleep_model = lm(maintenance ~ as.numeric(NightBefore_TST), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(main_avgsleep_model)
 ```

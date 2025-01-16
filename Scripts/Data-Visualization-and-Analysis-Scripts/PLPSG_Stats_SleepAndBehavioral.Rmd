@@ -275,5 +275,113 @@ count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R > 0 & N3 == 0))
 count(subset(PLPSG_sleep_stats_wider, condition == "sleep" & R == 0 & N3 == 0))
 
 ```
+#calculate number of transitions between each stage for consolidators and non consolidators 
+```{r}
 
+
+
+```
+
+#calculate number of transitions between each stage for consolidators and non consolidators 
+```{r}
+# Convert the transition columns to numeric if they are not already
+PLPSG_sleep_stats_wider[transition_columns] <- lapply(
+  PLPSG_sleep_stats_wider[transition_columns],
+  function(x) as.numeric(as.character(x))
+)
+
+# Group by consolidator_status and calculate averages for the specified columns
+average_transitions <- PLPSG_sleep_stats_wider %>%
+  group_by(consolidator_status) %>%
+  summarise(across(all_of(transition_columns), mean, na.rm = TRUE)) %>%
+  pivot_longer(
+    cols = -consolidator_status,  # All columns except consolidator_status
+    names_to = "Transition_Type",  # Column to store transition types
+    values_to = "Average"          # Column to store calculated averages
+  ) %>%
+  pivot_wider(
+    names_from = consolidator_status,  # Convert consolidator_status to columns
+    values_from = Average              # Values are taken from Average column
+  )
+
+# View the result
+print(average_transitions)
+
+#look at overall averages - collapse across nonconsolidators and consolidators
+# Overall averages (ignoring consolidator_status)
+overall_averages <- PLPSG_sleep_stats_wider %>%
+  summarise(across(all_of(transition_columns), mean, na.rm = TRUE)) %>%
+  pivot_longer(
+    cols = everything(),             # All transition columns
+    names_to = "Transition_Type",    # Column to store transition types
+    values_to = "Average"            # Column to store calculated averages
+  )
+
+
+# View the overall averages table
+print("Overall Averages:")
+print(overall_averages)
+
+#are any of these differences statistically significant? - the answer is no 
+
+library(broom)
+
+# Define the columns of interest
+transition_columns <- c(
+  "N1_to_N2_transitions", "N1_to_N3_transitions", "N1_to_R_transitions", "N1_to_W_transitions",
+  "N2_to_N1_transitions", "N2_to_N3_transitions", "N2_to_R_transitions", "N2_to_W_transitions",
+  "N3_to_N1_transitions", "N3_to_N2_transitions", "N3_to_R_transitions", "N3_to_W_transitions",
+  "R_to_N1_transitions", "R_to_N2_transitions", "R_to_N3_transitions", "R_to_W_transitions",
+  "W_to_N1_transitions", "W_to_N2_transitions", "W_to_N3_transitions", "W_to_R_transitions"
+)
+
+# Perform t-tests for each transition column
+t_test_results <- transition_columns %>%
+  lapply(function(col) {
+    t_test <- t.test(
+      PLPSG_sleep_stats_wider[[col]] ~ PLPSG_sleep_stats_wider$consolidator_status,
+      na.rm = TRUE
+    )
+    tidy(t_test) %>% mutate(transition = col)  # Tidy the results and add column name
+  }) %>%
+  bind_rows()  # Combine all results into one data frame
+
+# View the results
+print(t_test_results)
+
+```
+
+
+#identify subjects who 1SD above and 1SD below mean for recovery, these are your consolidators and non-consolidators  - then compare these against various sleep metrics 
+```{r}
+sd_recovery = sd(PLPSG_sleep_stats_wider$recovery)
+mean_recovery = mean(PLPSG_sleep_stats_wider$recovery)
+one_sd_above = mean_recovery + sd_recovery
+one_sd_below = mean_recovery - sd_recovery
+
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery >= one_sd_above]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery <= one_sd_below]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery > one_sd_below & PLPSG_sleep_stats_wider$recovery < one_sd_above]
+
+#which are sleep subjects?
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery > one_sd_below & PLPSG_sleep_stats_wider$recovery < one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]
+
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+```
 

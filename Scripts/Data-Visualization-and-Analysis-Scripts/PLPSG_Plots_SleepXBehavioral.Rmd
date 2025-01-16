@@ -780,3 +780,27 @@ figure <- ggarrange(n1ton2, n1ton3, n1tor,
                     ncol = 3, nrow = 4, common.legend = TRUE)
 figure
 ```
+
+
+relationship between loss and recovery
+```{r}
+fit = lm(as.numeric(recovery) ~ as.numeric(loss), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = loss, y = recovery,
+      na.rm = TRUE) +
+  xlab("loss") + 
+  ylab("recovery") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(
+        aes(x = 0.2,  # Position near the first category
+            y = 0.15,  # Above the data
+            label = paste("p =", signif(summary(fit)$coef[2, 4], 5))),
+        inherit.aes = FALSE,
+        size = 2.5)
+
+
+
+```

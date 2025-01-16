@@ -384,4 +384,31 @@ t.test(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery >= 
 t.test(as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
        as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
 ```
+#what if we add loss as a predictor
+```{r}
+n1_model = lm(recovery ~ as.numeric(N1) * loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n1_model)
+
+n2_model = lm(recovery ~ as.numeric(N2) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n2_model)
+
+n3_model = lm(recovery ~ as.numeric(N3) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n3_model)
+
+r_model = lm(recovery ~ as.numeric(R) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(r_model)
+
+n3r_model = lm(recovery ~ as.numeric(N3andR) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(n3r_model)
+
+fit_lastepoch = aov(recovery ~ last_sleep_epoch + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(fit_lastepoch)
+
+
+tst_model = lm(recovery ~ as.numeric(TST) * loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(tst_model)
+
+fit = lm(loss ~ as.numeric(N1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(fit)
+```
 

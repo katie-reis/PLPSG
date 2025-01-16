@@ -1,0 +1,38 @@
+---
+title: "PLPSG_PlotsAndStats_TestsOfNormalcy"
+author: "Katie Reis"
+date: "2025-01-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+```
+
+#plots to show normalcy of learning data
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"]) + ggtitle("Learning for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"]) + ggtitle("Learning for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"])
+shapiro.test(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"])
+
+ks.test(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"])
+```
+
+#plots to show normalcy of loss data
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"]) + ggtitle("Loss for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"]) + ggtitle("Loss for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"])
+shapiro.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"])
+
+ks.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"])
+```

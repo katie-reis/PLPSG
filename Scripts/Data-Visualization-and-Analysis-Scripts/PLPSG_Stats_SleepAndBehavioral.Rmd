@@ -439,9 +439,6 @@ summary(model)
 
 sum(PLPSG_sleep_stats_wider$FullCycle == "FullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
 sum(PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
-PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$FullCycle == "FullCycle" & PLPSG_sleep_stats_wider$condition == "sleep"]
-sum(PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
 ```
-
 
 

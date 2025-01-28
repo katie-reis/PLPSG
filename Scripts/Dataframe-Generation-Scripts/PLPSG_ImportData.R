@@ -110,8 +110,7 @@ PLPSG_sleep_stats_wider = behavioral %>%
          N1 = "",
          N2 = "",
          N3 = "",
-         R = "",
-         perW = "",
+         R = "",,
          perN1 = "",
          perN2 = "",
          perN3 = "",
@@ -124,6 +123,7 @@ PLPSG_sleep_stats_wider = behavioral %>%
          perN2andN3 = "",
          N3andR = "",
          perN3andR = "",
+         FullCycle = "",
          last_sleep_epoch = "",
          N1_to_N2_transitions = "",
          N1_to_N3_transitions = "",
@@ -248,6 +248,9 @@ for (i in 1:length(filelist)){
   #percentage of time that subjects spent in N3 and R
   PLPSG_sleep_stats_wider$perN3andR[i] = ((N3 + R)/TST) *100
   
+  #whether the subject experienced all stages of sleep or not 
+  PLPSG_sleep_stats_wider$FullCycle[i] = ifelse(N3>0 & R>0, "FullCycle", "NoFullCycle")
+
   #determine what stage of sleep subjects wake up out of 
   if (any(file_hypno != 0)) {
     # Find the last non-wake epoch (non-zero stage)

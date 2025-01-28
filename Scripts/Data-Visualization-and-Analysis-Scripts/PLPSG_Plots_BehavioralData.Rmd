@@ -381,7 +381,7 @@ lossplot = ggplot(PLPSG_sleep_stats_wider,
       fill = condition)) +
   ggtitle("Loss (Block 4 - Block 3)") +
     xlim(-0.15,.45) +
-  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  geom_histogram(alpha = 0.5, position = "identity", bins = 29) + 
   scale_fill_manual(values=c("deepskyblue4", "indianred3"))
 
 lossplot
@@ -392,9 +392,9 @@ par(mfrow=c(2,1))
  
 #Make the plot
 par(mar=c(0,5,3,3))
-hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,6) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
 par(mar=c(5,5,0,3))
-hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Loss", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Loss", ylim=c(6,0) , las=1 , col="indianred3"  , breaks=12)
 ```
 
 ### histogram plots of recovery
@@ -415,9 +415,9 @@ par(mfrow=c(2,1))
  
 #Make the plot
 par(mar=c(0,5,3,3))
-hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,6) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
 par(mar=c(5,5,0,3))
-hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Recovery", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Recovery", ylim=c(6,0) , las=1 , col="indianred3"  , breaks=12)
 ```
 
 ### histogram plots of maintenance
@@ -438,9 +438,9 @@ par(mfrow=c(2,1))
  
 #Make the plot
 par(mar=c(0,5,3,3))
-hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,7) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
 par(mar=c(5,5,0,3))
-hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Maintenance", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Maintenance", ylim=c(7,0) , las=1 , col="indianred3"  , breaks=12)
 ```
 
 ### histogram plots of learning long term recovery
@@ -461,9 +461,9 @@ par(mfrow=c(2,1))
  
 #Make the plot
 par(mar=c(0,5,3,3))
-hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,7) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
 par(mar=c(5,5,0,3))
-hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Long term recovery", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Long term recovery", ylim=c(7,0) , las=1 , col="indianred3"  , breaks=12)
 ```
 
 ### violin plots of protection (block6 - block3)
@@ -1045,4 +1045,192 @@ par(mar=c(0,5,3,3))
 hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
 par(mar=c(5,5,0,3))
 hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Learning (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+
+### histogram plots of loss (removing people who also don't show loss)
+```{r, message= FALSE}
+lossplot = ggplot(subset(PLPSG_sleep_stats_wider, loss > 0),
+  aes(x = loss,
+      fill = condition)) +
+  ggtitle("Loss (Block 4 - Block 3)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+lossplot
+
+x1 = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=10)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Loss (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=10)
+```
+
+
+
+### histogram plots of recovery (removing people who also don't show loss)
+```{r, message= FALSE}
+recoveryplot = ggplot(subset(PLPSG_sleep_stats_wider, loss > 0),
+  aes(x = recovery,
+      fill = condition)) +
+  ggtitle("Recovery (Block 5 - Block 4)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+recoveryplot
+
+x1 = PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Recovery (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+
+### histogram plots of maintenance (removing people who also don't show loss)
+```{r, message= FALSE}
+maintenanceplot = ggplot(subset(PLPSG_sleep_stats_wider, loss > 0),
+  aes(x = maintenance,
+      fill = condition)) +
+  ggtitle("Maintenance (Block 6 - Block 5)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+maintenanceplot
+
+x1 = PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Maintenance (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+
+### histogram plots of longtermrecovery (removing people who also don't show loss)
+```{r, message= FALSE}
+ltrplot = ggplot(subset(PLPSG_sleep_stats_wider, loss > 0),
+  aes(x = longtermrecovery,
+      fill = condition)) +
+  ggtitle("Long Term Recovery (Block 6 - Block 4)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+ltrplot
+
+x1 = PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$longtermrecovery[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Long term recovery (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+
+### histogram plots of protective (removing people who also don't show loss)
+```{r, message= FALSE}
+protectiveplot = ggplot(subset(PLPSG_sleep_stats_wider, loss > 0),
+  aes(x = protective,
+      fill = condition)) +
+  ggtitle("Protective (Block 6 - Block 3)") +
+    xlim(-0.15,.45) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) + 
+  scale_fill_manual(values=c("deepskyblue4", "indianred3"))
+
+protectiveplot
+
+x1 = PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]
+x2 = PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(-0.2, 0.45), ylab="Count: sleep", xlab="", ylim=c(0,4) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(-0.2, 0.45), ylab="Count: wake", xlab="Protective (Only for subjects Loss > 0)", ylim=c(4,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+### histogram plots of block1
+```{r, message= FALSE}
+x1 = PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(0, 1), ylab="Count: sleep", xlab="", ylim=c(0,8) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(0, 1), ylab="Count: wake", xlab="Block 1 (Pretest)", ylim=c(8,0) , las=1 , col="indianred3"  , breaks=12)
+```
+
+### histogram plots of block3
+```{r, message= FALSE}
+x1 = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(0, 1), ylab="Count: sleep", xlab="", ylim=c(0,6) , xaxt="n", las=1 , col="deepskyblue4", breaks=14)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(0, 1), ylab="Count: wake", xlab="Block 3 (Posttest1)", ylim=c(6,0) , las=1 , col="indianred3"  , breaks=14)
+```
+
+### histogram plots of block4
+```{r, message= FALSE}
+x1 = PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(0, 1), ylab="Count: sleep", xlab="", ylim=c(0,6) , xaxt="n", las=1 , col="deepskyblue4", breaks=14)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(0, 1), ylab="Count: wake", xlab="Block 4 (Posttest2)", ylim=c(6,0) , las=1 , col="indianred3"  , breaks=14)
+```
+
+### histogram plots of block5
+```{r, message= FALSE}
+x1 = PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(0, 1), ylab="Count: sleep", xlab="", ylim=c(0,8) , xaxt="n", las=1 , col="deepskyblue4", breaks=16)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(0, 1), ylab="Count: wake", xlab="Block 5 (Posttest3)", ylim=c(8,0) , las=1 , col="indianred3"  , breaks=16)
+```
+
+
+
+### histogram plots of block6
+```{r, message= FALSE}
+x1 = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"]
+x2 = PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"]
+par(mfrow=c(2,1))
+ 
+#Make the plot
+par(mar=c(0,5,3,3))
+hist(x1 , main="" , xlim=c(0, 1), ylab="Count: sleep", xlab="", ylim=c(0,7) , xaxt="n", las=1 , col="deepskyblue4", breaks=12)
+par(mar=c(5,5,0,3))
+hist(x2 , main="" , xlim=c(0, 1), ylab="Count: wake", xlab="Block 6 (Posttest4)", ylim=c(7,0) , las=1 , col="indianred3"  , breaks=12)
 ```

@@ -18,6 +18,33 @@ library(tidyverse)
 source("PLPSG_ImportData.R")
 ```
 
+## no difference in age or gender distribution between groups 
+```{r}
+#age
+pander(t.test(x = PLPSG_sleep_stats_wider$Age[PLPSG_sleep_stats_wider$condition == "sleep"], 
+       y = PLPSG_sleep_stats_wider$Age[PLPSG_sleep_stats_wider$condition == "wake"]))
+sd(PLPSG_sleep_stats_wider$Age[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$Age[PLPSG_sleep_stats_wider$condition == "wake"])
+
+#gender
+# Create a contingency table for gender and condition
+gender_table <- table(PLPSG_sleep_stats_wider$Gender, PLPSG_sleep_stats_wider$condition)
+print(gender_table)
+
+# Perform Chi-Squared Test
+chi_squared_result <- chisq.test(gender_table)
+print(chi_squared_result)
+
+#handedness
+# Create a contingency table for handedness and condition
+handedness_table <- table(PLPSG_sleep_stats_wider$Handedness, PLPSG_sleep_stats_wider$condition)
+print(handedness_table)
+
+# Perform Chi-Squared Test - though I get a warning that Chi squared approx. may be incorrect
+chi_squared_result <- chisq.test(handedness_table)
+print(chi_squared_result)
+```
+
 ## Calculate means and standard deviations for sleep and wake subjects
 ```{r}
 PLPSG_means = data.frame (score = c("block1","block3","block4","block5","block6",
@@ -145,6 +172,45 @@ pander(summary(fit_learning), style = "rmarkdown")
 #only main effect of block
 ```
 
+### Analysis 2 - loss effect on PLPSG dataset
+```{r}
+#filter data to just have block 1 and block 3 (pre-test and post-test 1)
+loss_check = PLPSG_sleep_stats_longer %>% filter(block == "block3" | block == "block4") %>% mutate(block = as.factor(block), condition = as.factor(condition))
+
+#CHECKING ASSUMPTIONS:
+
+#1. identify outliers. 
+#Don't want any extreme outliers.
+outliers = loss_check %>% group_by(block) %>% identify_outliers("score")
+outliers
+#there's one outlier, but it's not extreme. good to go
+
+#2. checking normality assumption. 
+#The normality assumption can be checked by computing Shapiro-Wilk test for each combinations of factor levels. If the data is normally distributed, the p-value should be greater than 0.05 (for each cell)
+loss_check %>% group_by(block, condition) %>% shapiro_test(score)
+#p values are all greater than 0.05. good to go
+
+#3. checking the homogeneity of variance assumption. 
+#homogeneity of variance assumption of the between-subject factor (condition) can be checked using the Levene’s test. The test is performed at each level of block variable. If there is homogeneity of variances, Levene’s test will have p > 0.05.
+loss_check %>% group_by(block) %>% levene_test(score ~ condition)
+#p values are all greater than 0.05. good to go
+
+#4. check the homogeneity of covariances assumption. 
+#The homogeneity of covariances of the between-subject factor (group) can be evaluated using the Box’s M-test implemented in the rstatix package. If this test is statistically significant (i.e., p < 0.001), you do not have equal covariances, but if the test is not statistically significant (i.e., p > 0.001), you have equal covariances and you have not violated the assumption of homogeneity of covariances.
+box_m(loss_check[, "score", drop = FALSE], loss_check$condition)
+#p > 0.001. good to go
+
+#5. check the assumption of sphericity - anova doesn't work for whatever reason
+#the assumption of sphericity will be automatically checked during the computation of the ANOVA test using the R function anova_test(). The Mauchly’s test is internally used to assess the sphericity assumption. By using the function get_anova_table() to extract the ANOVA table, the Greenhouse-Geisser sphericity correction is automatically applied to factors violating the sphericity assumption.
+#res.aov <- anova_test(data = learning_check, dv = score, wid = subject, between = condition, within = block)
+#get_anova_table(res.aov)
+
+#anova another way as a result 
+fit_loss = aov(score ~ condition * block + Error(Subject/block), data = loss_check)
+pander(summary(fit_loss), style = "rmarkdown")
+#only main effect of block
+```
+
 ```{r}
 #filter data to just have block 4 and block 5 (post-test2 and post-test 3)
 recovery_check = PLPSG_sleep_stats_longer %>% filter(block == "block4" | block == "block5") %>% mutate(block = as.factor(block), condition = as.factor(condition))
@@ -182,6 +248,7 @@ fit_recovery = aov(score ~ condition * block + Error(Subject/block), data = reco
 pander(summary(fit_recovery), style = "rmarkdown")
 #only main effect of block
 ```
+
 # now for block 4 vs block 6 - longtermrecovery
 ```{r}
 #filter data to just have block 4 and block 6 (post-test2 and post-test 4)

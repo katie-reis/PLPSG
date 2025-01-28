@@ -1,0 +1,193 @@
+---
+title: "PLPSG_Stats_ConsolidatorsVsNonConsolidators"
+author: "Katie Reis"
+date: "2025-01-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr) #needed for data manipulation
+library(gridExtra) #needed for making pretty table
+library(rstatix) #needed for identifying outliers
+library(pander) #needed to render tables
+library(knitr)
+library(tidyverse)
+```
+
+```{r}
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep" ]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep" ]
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+#for sleep history can include wake 
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$consolidator_status == 1]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$consolidator_status == 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$consolidator_status == 1]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$consolidator_status == 0])))
+
+#sleep history if just look at sleep 
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"])))
+
+```
+
+#remove the folks that don't spent time in all stages
+```{r}
+
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$condition == "sleep"  & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$condition == "sleep"  & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+
+pander(t.test(x = as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$consolidator_status == 1 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]), 
+       y = as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$consolidator_status == 0 & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0])))
+```
+
+
+#identify subjects who 1SD above and 1SD below mean for recovery, these are your consolidators and non-consolidators  - then compare these against various sleep metrics 
+```{r}
+sd_recovery = sd(PLPSG_sleep_stats_wider$recovery)
+mean_recovery = mean(PLPSG_sleep_stats_wider$recovery)
+one_sd_above = mean_recovery + sd_recovery
+one_sd_below = mean_recovery - sd_recovery
+
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery >= one_sd_above]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery <= one_sd_below]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery > one_sd_below & PLPSG_sleep_stats_wider$recovery < one_sd_above]
+
+#which are sleep subjects?
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery > one_sd_below & PLPSG_sleep_stats_wider$recovery < one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]
+
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" ]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" ]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" ]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" ]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+#how many cycled through all stages
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"  & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"  & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery > one_sd_below & PLPSG_sleep_stats_wider$recovery < one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]
+
+#do again only for folks that cycled through all stages 
+t.test(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N2andN3_Count[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N2_Count[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+
+t.test(as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]),
+       as.numeric(PLPSG_sleep_stats_wider$Spindles_N3_Count[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$R > 0 & PLPSG_sleep_stats_wider$N3 > 0]))
+```
+
+
+#look at recovery as a continuous variable again
+```{r}
+n1_model = lm(as.numeric(recovery) ~ as.numeric(N1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n1_model)
+
+n2_model = lm(as.numeric(recovery) ~ as.numeric(N2), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n2_model)
+
+n3_model = lm(as.numeric(recovery) ~ as.numeric(N3), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n3_model)
+
+r_model = lm(as.numeric(recovery) ~ as.numeric(R), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(r_model)
+
+n3r_model = lm(as.numeric(recovery) ~ as.numeric(N3andR), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n3r_model)
+
+spind_model = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(spind_model)
+
+spind_model = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2_Count), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(spind_model)
+
+spind_model = lm(as.numeric(recovery) ~ as.numeric(Spindles_N3_Count), data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(spind_model)
+
+```
+

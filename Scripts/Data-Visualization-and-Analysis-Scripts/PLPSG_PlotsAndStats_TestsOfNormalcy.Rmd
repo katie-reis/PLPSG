@@ -34,5 +34,93 @@ ggarrange(plot1, plot2,
 shapiro.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"])
 shapiro.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"])
 
-ks.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"])
+ks.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake"])
 ```
+
+
+# is loss normal if we remove folks who don't show loss? - Nope
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0]) + ggtitle("Loss for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0]) + ggtitle("Loss for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0])
+shapiro.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0])
+
+ks.test(PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$loss > 0], PLPSG_sleep_stats_wider$loss[PLPSG_sleep_stats_wider$condition == "wake" & PLPSG_sleep_stats_wider$loss > 0])
+
+```
+
+
+
+#plots to show normalcy of block1
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"]) + ggtitle("Block1 for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"]) + ggtitle("Block1 for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"])
+shapiro.test(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"])
+
+ks.test(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"])
+
+```
+
+#plots to show normalcy of block3
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"]) + ggtitle("Block3 for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"]) + ggtitle("Block3 for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"])
+shapiro.test(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"])
+
+ks.test(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"])
+
+```
+
+#plots to show normalcy of block4
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"]) + ggtitle("Block4 for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"]) + ggtitle("Block4 for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"])
+shapiro.test(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"])
+
+ks.test(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"])
+
+```
+
+#plots to show normalcy of block5
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"]) + ggtitle("Block5 for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"]) + ggtitle("Block5 for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"])
+shapiro.test(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"])
+
+ks.test(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"])
+
+```
+
+#plots to show normalcy of block6
+```{r}
+plot1 = ggqqplot(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"]) + ggtitle("Block6 for Sleep Subjects")
+plot2 = ggqqplot(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"]) + ggtitle("Block6 for Wake Subjects")
+ggarrange(plot1, plot2,
+          ncol = 2, nrow=1)
+
+shapiro.test(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"])
+shapiro.test(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"])
+
+ks.test(PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"])
+
+```
+

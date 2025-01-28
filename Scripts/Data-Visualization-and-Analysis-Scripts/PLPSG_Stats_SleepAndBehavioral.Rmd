@@ -352,41 +352,10 @@ print(t_test_results)
 ```
 
 
-#identify subjects who 1SD above and 1SD below mean for recovery, these are your consolidators and non-consolidators  - then compare these against various sleep metrics 
-```{r}
-sd_recovery = sd(PLPSG_sleep_stats_wider$recovery)
-mean_recovery = mean(PLPSG_sleep_stats_wider$recovery)
-one_sd_above = mean_recovery + sd_recovery
-one_sd_below = mean_recovery - sd_recovery
 
-PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery >= one_sd_above]
-PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery <= one_sd_below]
-PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery > one_sd_below & PLPSG_sleep_stats_wider$recovery < one_sd_above]
-
-#which are sleep subjects?
-PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]
-PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]
-PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$recovery > one_sd_below & PLPSG_sleep_stats_wider$recovery < one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]
-
-
-t.test(as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
-       as.numeric(PLPSG_sleep_stats_wider$N1[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
-
-t.test(as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
-       as.numeric(PLPSG_sleep_stats_wider$N2[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
-
-t.test(as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
-       as.numeric(PLPSG_sleep_stats_wider$N3[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
-
-t.test(as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
-       as.numeric(PLPSG_sleep_stats_wider$R[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
-
-t.test(as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery >= one_sd_above & PLPSG_sleep_stats_wider$condition == "sleep"]),
-       as.numeric(PLPSG_sleep_stats_wider$N3andR[PLPSG_sleep_stats_wider$recovery <= one_sd_below & PLPSG_sleep_stats_wider$condition == "sleep"]))
-```
 #what if we add loss as a predictor
 ```{r}
-n1_model = lm(recovery ~ as.numeric(N1) * loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+n1_model = lm(recovery ~ as.numeric(N1) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 summary(n1_model)
 
 n2_model = lm(recovery ~ as.numeric(N2) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
@@ -404,11 +373,62 @@ summary(n3r_model)
 fit_lastepoch = aov(recovery ~ last_sleep_epoch + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 summary(fit_lastepoch)
 
-
-tst_model = lm(recovery ~ as.numeric(TST) * loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+tst_model = lm(recovery ~ as.numeric(TST) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 summary(tst_model)
 
-fit = lm(loss ~ as.numeric(N1), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
-summary(fit)
+```
+
+#however might only want to look at subjects who spent time in all stages 
+```{r}
+n1_model = lm(recovery ~ as.numeric(N1) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n1_model)
+
+n2_model = lm(recovery ~ as.numeric(N2) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n2_model)
+
+n3_model = lm(recovery ~ as.numeric(N3) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n3_model)
+
+r_model = lm(recovery ~ as.numeric(R) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(r_model)
+
+n3r_model = lm(recovery ~ as.numeric(N3andR) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(n3r_model)
+
+fit_lastepoch = aov(recovery ~ last_sleep_epoch + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(fit_lastepoch)
+
+
+tst_model = lm(recovery ~ as.numeric(TST) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(tst_model)
+
+spind_model = lm(recovery ~ as.numeric(Spindles_N2andN3_Count) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(spind_model)
+
+spindn2_model = lm(recovery ~ as.numeric(Spindles_N2_Count) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(spindn2_model)
+
+spindn3_model = lm(recovery ~ as.numeric(Spindles_N3_Count) + loss, data = subset(PLPSG_sleep_stats_wider, condition == "sleep" & N3 > 0 & R > 0))
+summary(spindn3_model)
+```
+
+```{r}
+PLPSG_sleep_stats_wider
+med = median(PLPSG_sleep_stats_wider$'2dprime')
+PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% mutate(twoback_MS = ifelse(PLPSG_sleep_stats_wider$'2dprime' > med, 1, 0))
+PLPSG_sleep_stats_wider$twoback_MS = as.factor(PLPSG_sleep_stats_wider$twoback_MS)
+PLPSG_sleep_stats_wider$condition = as.factor(PLPSG_sleep_stats_wider$condition)
+
+model = lm(recovery ~ learning * twoback_MS * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(model)
+
+t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"])
+```
+
+
+```{r}
+t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "wake"])
+
+
 ```
 

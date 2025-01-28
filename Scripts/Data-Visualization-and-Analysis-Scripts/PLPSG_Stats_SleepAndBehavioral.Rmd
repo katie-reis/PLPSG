@@ -425,10 +425,23 @@ summary(model)
 t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"])
 ```
 
-
+#make sure that groups matched on stanford sleepiness before block 5 - one group not more sleepy than other group 
 ```{r}
 t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "wake"])
-
-
 ```
+
+#model of time spent in N3 and R depending on whether you got a full cycle or not 
+```{r}
+PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% mutate(FullCycle = ifelse(N3>0 & R>0, "FullCycle", "NoFullCycle"))
+
+model = lm(recovery ~ as.numeric(N3) + as.numeric(R) + FullCycle + (as.numeric(N3)*as.numeric(R)) + (as.numeric(N3)*FullCycle) + (as.numeric(R)*FullCycle), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+
+sum(PLPSG_sleep_stats_wider$FullCycle == "FullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+sum(PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+PLPSG_sleep_stats_wider$Subject[PLPSG_sleep_stats_wider$FullCycle == "FullCycle" & PLPSG_sleep_stats_wider$condition == "sleep"]
+sum(PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+```
+
+
 

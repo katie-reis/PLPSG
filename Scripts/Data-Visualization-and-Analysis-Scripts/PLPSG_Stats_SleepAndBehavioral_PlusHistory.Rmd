@@ -550,4 +550,12 @@ summary(main_nightbefore_model)
 
 main_avgsleep_model = lm(maintenance ~ as.numeric(NightBefore_TST), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 summary(main_avgsleep_model)
+
+avgmodel = lm(maintenance ~ as.numeric(AverageSleep) * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgmodel)
+
+nightbeforemodel = lm(maintenance ~ as.numeric(NightBefore_TST) * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
+
 ```

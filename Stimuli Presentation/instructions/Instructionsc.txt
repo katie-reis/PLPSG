@@ -1,0 +1,9 @@
+It is crucial that you pay attention to each word 
+as you will be asked, after a short pause, to type 
+the word that you heard.  You will know when to begin 
+typing when you see "_" on the screen.
+After typing the word that you heard, press Enter to
+proceed.
+
+
+

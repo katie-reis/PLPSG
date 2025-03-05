@@ -1,0 +1,4 @@
+In this block you will receive feedback after you have typed in 
+the word that you heard.  Please make sure to note if there is a difference 
+between what you typed and what the word really is. 
+The experiment will begin as soon as you press Enter.

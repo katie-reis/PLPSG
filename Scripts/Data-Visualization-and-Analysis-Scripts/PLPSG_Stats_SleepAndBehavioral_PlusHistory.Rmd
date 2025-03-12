@@ -61,8 +61,22 @@ print(counts)
 
 ### impact of last sleep epoch on recovery 
 ```{r}
-lastepochfit = aov(recovery ~ last_sleep_epoch, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+lastepochfit = aov(recovery ~ last_sleep_epoch *N3_temporal_distance_from_waking2, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
 summary(lastepochfit)
+
+lastepochfit = aov(recovery ~ N3_temporal_distance_from_waking2, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(lastepochfit)
+
+corr <- cor.test(x=PLPSG_sleep_stats_wider$recovery, y=PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2, method = 'spearman')
+
+mediantempdist = median(na.omit(PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2))
+t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2 > mediantempdist],
+       PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2 <= mediantempdist])
+
+hist(as.numeric(PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2), breaks = 8)
+(PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking)
+plot(x = PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2,
+     y = PLPSG_sleep_stats_wider$recovery)
 
 tukey_results = TukeyHSD(lastepochfit)
 summary(tukey_results)
@@ -70,6 +84,24 @@ print(tukey_results)
 
 t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" & PLPSG_sleep_stats_wider$condition == "sleep"],
        PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$last_sleep_epoch != "N3" & PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" | PLPSG_sleep_stats_wider$last_sleep_epoch == "R" & PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$last_sleep_epoch != "N1" | PLPSG_sleep_stats_wider$last_sleep_epoch == "N2" & PLPSG_sleep_stats_wider$condition == "sleep"])
+
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N1"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N2"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N3"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "R"))
+
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N1" & PLPSG_sleep_stats_wider$FullCycle == "FullCycle"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N2" & PLPSG_sleep_stats_wider$FullCycle == "FullCycle"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" & PLPSG_sleep_stats_wider$FullCycle == "FullCycle"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "R" & PLPSG_sleep_stats_wider$FullCycle == "FullCycle"))
+
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N1" & PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N2" & PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "N3" & PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle"))
+sum(na.omit(PLPSG_sleep_stats_wider$last_sleep_epoch == "R" & PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle"))
 ```
 
 ### consolidators vs non consonsolidators with last sleep epoch 

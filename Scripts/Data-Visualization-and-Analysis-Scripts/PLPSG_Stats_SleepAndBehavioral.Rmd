@@ -429,16 +429,59 @@ t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sl
 ```{r}
 t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "sleep"], PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "wake"])
 ```
+#model of N2 and N3 spindles depending on whether you got a full cycle or not 
+```{r}
+model = lm(recovery ~ as.numeric(Spindles_N2_Count) + as.numeric(Spindles_N3_Count) + FullCycle + (as.numeric(Spindles_N2_Count)*as.numeric(Spindles_N3_Count)) + (as.numeric(Spindles_N2_Count)*FullCycle) + (as.numeric(Spindles_N3_Count)*FullCycle), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+
+```
+#model of N2 and N3 spindles depending on whether you got a full cycle or not 
+```{r}
+model = lm(recovery ~ as.numeric(R) + FullCycle + (as.numeric(R)*FullCycle), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+
+```
 
 #model of time spent in N3 and R depending on whether you got a full cycle or not 
 ```{r}
-PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% mutate(FullCycle = ifelse(N3>0 & R>0, "FullCycle", "NoFullCycle"))
-
 model = lm(recovery ~ as.numeric(N3) + as.numeric(R) + FullCycle + (as.numeric(N3)*as.numeric(R)) + (as.numeric(N3)*FullCycle) + (as.numeric(R)*FullCycle), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 summary(model)
 
 sum(PLPSG_sleep_stats_wider$FullCycle == "FullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
 sum(PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+
+mean(PLPSG_sleep_stats_wider$FullCycle == "FullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+mean(PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+
+sd(PLPSG_sleep_stats_wider$FullCycle == "FullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+sd(PLPSG_sleep_stats_wider$FullCycle == "NoFullCycle" & PLPSG_sleep_stats_wider$condition == "sleep")
+
+
+
 ```
+#remove interaction of nonfullcycle and rem 
+```{r}
+model = lm(recovery ~ as.numeric(N3) + as.numeric(R) + FullCycle + (as.numeric(N3)*as.numeric(R)) + (as.numeric(N3)*FullCycle), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+
+#remove person that got R but not N3
+```
+
+
+```{r}
+model = lm(maintenance ~ last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+
+model = lm(recovery ~ last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+
+model = lm(longtermrecovery ~ last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+
+model = lm(protective ~ last_sleep_epoch, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(model)
+```
+
+
 
 

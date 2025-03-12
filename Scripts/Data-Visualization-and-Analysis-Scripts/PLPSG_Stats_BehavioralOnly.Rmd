@@ -26,6 +26,11 @@ pander(t.test(x = PLPSG_sleep_stats_wider$Age[PLPSG_sleep_stats_wider$condition 
 sd(PLPSG_sleep_stats_wider$Age[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$Age[PLPSG_sleep_stats_wider$condition == "wake"])
 
+mean(PLPSG_sleep_stats_wider$Age)
+sd(PLPSG_sleep_stats_wider$Age)
+min(PLPSG_sleep_stats_wider$Age)
+max(PLPSG_sleep_stats_wider$Age)
+
 #gender
 # Create a contingency table for gender and condition
 gender_table <- table(PLPSG_sleep_stats_wider$Gender, PLPSG_sleep_stats_wider$condition)
@@ -497,6 +502,7 @@ pander(summary(block1block3modelWAKE))
 ```
 
 
+#age and gender
 ```{r}
 mean(PLPSG_sleep_stats_wider$Age)
 sum(PLPSG_sleep_stats_wider$Gender == 'Female' | PLPSG_sleep_stats_wider$Gender == 'female')
@@ -504,7 +510,24 @@ sum(PLPSG_sleep_stats_wider$Gender == 'Female' | PLPSG_sleep_stats_wider$Gender 
 ```
 
 
+```{r}
+t.test(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"], 
+       paired = TRUE)
+t.test(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"],
+       PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"],
+       paired = TRUE)
+
+t.test(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"])
+t.test(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"])
+t.test(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"])
 
 
+library(effsize)
 
-
+cohen.d(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"], 
+        PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"])
+```

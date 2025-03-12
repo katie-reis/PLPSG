@@ -781,3 +781,157 @@ figure <- ggarrange(n1ton2, n1ton3, n1tor,
 figure
 ```
 
+#impact of N3 and R for individuals with full cycle or not on recovery
+```{r}
+#main effect of N3
+n3plot = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(N3), y = recovery)) +
+#  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(
+#    title = "Effect of SWS Duration on Recovery",
+    x = "Time in SWS (minutes)",
+    y = "Recovery",
+    color = "FullCycle"
+  ) +
+  theme_minimal()
+
+
+#main effect of R
+rplot = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(R), y = recovery)) +
+#  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(
+#    title = "Effect of REM Duration on Recovery",
+    x = "Time in REM (minutes)",
+    y = "Recovery",
+    color = "FullCycle"
+  ) +
+  theme_minimal()
+
+
+#interaction of N3 and full cycle
+n3fullcycle = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(N3), y = recovery, color = FullCycle)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE) +
+  scale_color_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
+  labs(
+    title = "Interaction Between SWS and FullCycle on Recovery",
+    x = "Time in SWS (minutes)",
+    y = "Recovery",
+    color = "FullCycle"
+  ) +
+  theme_minimal()
+
+
+#interaction of R and full cycle
+rfullcycle = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(R), y = recovery, color = FullCycle)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE) +
+  scale_color_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
+  labs(
+    title = "Interaction Between REM and FullCycle on Recovery",
+    x = "Time in REM (minutes)",
+    y = "Recovery",
+    color = "FullCycle"
+  ) +
+  theme_minimal()
+
+#interaction N3 and R 
+n3andrplot = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(N3), y = as.numeric(R), color = recovery)) +
+  geom_point(size = 3, alpha = 0.7) +
+  scale_color_gradient(low = "yellow", high = "blue") +
+  labs(
+    title = "Interaction Between SWS and REM on Recovery",
+    x = "Time in SWS (minutes)",
+    y = "Time in REM (minutes)",
+    color = "Recovery"
+  ) +
+  theme_minimal()
+
+#main effect of fullcycle 
+fullcycleplot = ggplot(PLPSG_sleep_stats_wider, aes(x = FullCycle, y = recovery, fill = FullCycle)) +
+  geom_bar(stat = "summary", fun = "mean", position = "dodge", width = 0.6) +
+  geom_errorbar(
+    stat = "summary", 
+    fun.data = "mean_se", 
+    width = 0.2, 
+    position = position_dodge(0.6)
+  ) +
+  scale_fill_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
+  labs(
+    title = "Effect of FullCycle on Recovery",
+    x = "FullCycle Status",
+    y = "Mean Recovery ± SE",
+    fill = "FullCycle"
+  ) +
+  theme_minimal()
+
+
+fullcycleplot2 = ggplot(PLPSG_sleep_stats_wider, aes(x = FullCycle, y = recovery, fill = FullCycle)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
+  labs(
+    title = "Effect of FullCycle on Recovery",
+    x = "FullCycle Status",
+    y = "Recovery",
+    fill = "FullCycle"
+  ) +
+  theme_minimal()
+
+library(plotly)
+
+fig <- plot_ly(data = PLPSG_sleep_stats_wider, 
+               x = ~as.numeric(N3), 
+               y = ~as.numeric(R), 
+               z = ~recovery, 
+               color = ~recovery, 
+               colors = c("yellow", "blue"), 
+               type = "scatter3d", 
+               mode = "markers") %>%
+  layout(title = "3D Interaction Between N3, R, and Recovery",
+         scene = list(
+           xaxis = list(title = "N3 (minutes)"),
+           yaxis = list(title = "R (minutes)"),
+           zaxis = list(title = "Recovery")
+         ))
+
+fig
+
+
+ggarrange(n3plot, rplot,
+          nrow = 1, ncol = 2, labels = c("A", "B"))
+
+ggarrange(fullcycleplot, fullcycleplot2,
+          nrow = 1, ncol = 2, labels = c("A", "B"), common.legend = TRUE)
+
+```
+
+last sleep epoch plot for recovery
+```{r}
+ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), aes(x = last_sleep_epoch, y = recovery)) +
+  geom_bar(stat = "summary", fun = "mean", position = "dodge", width = 0.6) +
+  geom_errorbar(
+    stat = "summary", 
+    fun.data = "mean_se", 
+    width = 0.2, 
+    position = position_dodge(0.6)
+  ) +
+  labs(
+    title = "Effect of last sleep epoch on Recovery",
+    x = "Last sleep epoch",
+    y = "Mean Recovery ± SE",
+  ) +
+  theme_minimal()
+
+ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), aes(x = last_sleep_epoch, y = recovery, color = FullCycle)) +
+  geom_boxplot() +
+  geom_point() +
+  labs(
+    title = "Effect of last sleep epoch on Recovery",
+    x = "Last sleep epoch",
+    y = "Recovery"  ) +
+  theme_minimal()
+
+```
+
+

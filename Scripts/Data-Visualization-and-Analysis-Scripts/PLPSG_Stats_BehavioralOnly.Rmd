@@ -424,10 +424,22 @@ t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sl
        PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"])
 ```
 
+### look at each group individually to see if recovery sig different from 0
+```{r}
+pander(t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"], alternative = "greater"))
+pander(t.test(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"]))
+```
+
 ### t-tests comparing sleep and wake group maintenance for PLPSG (block6 - block5)
 ```{r}
 t.test(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"],
        PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"])
+```
+
+### look at each group individually to see if recovery sig different from 0
+```{r}
+pander(t.test(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "sleep"]))
+pander(t.test(PLPSG_sleep_stats_wider$maintenance[PLPSG_sleep_stats_wider$condition == "wake"]))
 ```
 
 ### t-tests comparing sleep and wake group long term recovery for PLPSG (block6 - block4)

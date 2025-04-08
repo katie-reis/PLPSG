@@ -299,33 +299,50 @@ summary(spindle_model)
 
 ### look at how prior nights of sleep impact recovery (without interaction )
 ```{r}
+nightbeforemodel = lm(recovery ~ NightBefore_TST + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforemodel)
+
 avgsleepmodel = lm(recovery ~ AverageSleep + condition, data = subset(PLPSG_sleep_stats_wider))
 summary(avgsleepmodel)
 
-nightbeforemodel = lm(recovery ~ NightBefore_TST + condition, data = subset(PLPSG_sleep_stats_wider))
-summary(nightbeforemodel)
+nightbeforedevmodel = lm(recovery ~ nightbefore_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
+summary(nightbeforedevmodel)
 
 avgsleepdevmodel = lm(recovery ~ average_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
 summary(avgsleepdevmodel)
 
-nightbeforedevmodel = lm(recovery ~ nightbefore_sleep_deviation_from_norm + condition, data = subset(PLPSG_sleep_stats_wider))
-summary(nightbeforedevmodel)
 ```
 
 
 ### look at how prior nights of sleep impact recovery (with interaction )
 ```{r}
-avgsleepmodel = lm(recovery ~ AverageSleep * condition, data = subset(PLPSG_sleep_stats_wider))
-summary(avgsleepmodel)
-
 nightbeforemodel = lm(recovery ~ NightBefore_TST * condition, data = subset(PLPSG_sleep_stats_wider))
 summary(nightbeforemodel)
 
-avgsleepdevmodel = lm(recovery ~ average_sleep_deviation_from_norm * condition, data = subset(PLPSG_sleep_stats_wider))
-summary(avgsleepdevmodel)
+avgsleepmodel = lm(recovery ~ AverageSleep * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepmodel)
 
 nightbeforedevmodel = lm(recovery ~ nightbefore_sleep_deviation_from_norm * condition, data = subset(PLPSG_sleep_stats_wider))
 summary(nightbeforedevmodel)
+
+avgsleepdevmodel = lm(recovery ~ average_sleep_deviation_from_norm * condition, data = subset(PLPSG_sleep_stats_wider))
+summary(avgsleepdevmodel)
+```
+
+#just for sleep subjects
+```{r}
+nightbeforemodel = lm(recovery ~ NightBefore_TST, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforemodel)
+
+avgsleepmodel = lm(recovery ~ AverageSleep, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepmodel)
+
+nightbeforedevmodel = lm(recovery ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodel)
+
+avgsleepdevmodel = lm(recovery ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodel)
+
 ```
 
 
@@ -591,3 +608,136 @@ summary(nightbeforemodel)
 
 
 ```
+
+
+### does night before TST/ average TST predict N3 duration and %
+```{r}
+nightbeforemodel = lm(N3 ~ NightBefore_TST, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforemodel)
+
+avgsleepmodel = lm(N3 ~ AverageSleep, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepmodel)
+
+
+nightbeforemodelper = lm(perN3 ~ NightBefore_TST, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforemodelper)
+
+avgsleepmodelper = lm(perN3 ~ AverageSleep, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepmodelper)
+
+
+```
+
+### now look at deviation from norm as opposed to TST 
+```{r}
+nightbeforedevmodel = lm(N3 ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodel)
+
+avgsleepdevmodel = lm(N3 ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodel)
+
+nightbeforedevmodelper = lm(perN3 ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodelper)
+
+avgsleepdevmodelper = lm(perN3 ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodelper)
+
+```
+
+### now look at deviation from norm predicting N1 duration and %
+```{r}
+nightbeforedevmodel = lm(N1 ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodel)
+
+nightbeforedevmodelper = lm(perN1 ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodelper)
+
+avgsleepdevmodel = lm(N1 ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodel)
+
+avgsleepdevmodelper = lm(perN1 ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodelper)
+
+```
+
+
+### now look at deviation from norm predicting N2 duration and %
+```{r}
+nightbeforedevmodel = lm(N2 ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodel)
+
+nightbeforedevmodelper = lm(perN2 ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodelper)
+
+avgsleepdevmodel = lm(N2 ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodel)
+
+avgsleepdevmodelper = lm(perN2 ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodelper)
+
+```
+
+### now look at deviation from norm predicting R duration and %
+```{r}
+nightbeforedevmodel = lm(R ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodel)
+
+nightbeforedevmodelper = lm(perR ~ nightbefore_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodelper)
+
+avgsleepdevmodel = lm(R ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodel)
+
+avgsleepdevmodelper = lm(perR ~ average_sleep_deviation_from_norm, data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodelper)
+
+```
+
+### 
+```{r}
+nightbeforemodel = lm(recovery ~ NightBefore_TST * (last_sleep_epoch == "N3"), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforemodel)
+
+avgsleepmodel = lm(recovery ~ AverageSleep * (last_sleep_epoch == "N3"), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepmodel)
+
+nightbeforedevmodel = lm(recovery ~ nightbefore_sleep_deviation_from_norm * (last_sleep_epoch == "N3"), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(nightbeforedevmodel)
+
+avgsleepdevmodel = lm(recovery ~ average_sleep_deviation_from_norm * (last_sleep_epoch == "N3"), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(avgsleepdevmodel)
+
+
+```
+
+### mediation analysis - We then wanted to test whether SWS mediates the effect of sleep restriction on cognitive performance, and this could clarify why sleep restriction leads to changes in performance (via SWS rebound or lack thereof). As a result, we conducted a mediation analysis predicting recovery from cumulative sleep restriction, with the mediator of percentage of time spent in SWS. 
+
+```{r}
+# Correlation matrix
+vars <- c("NightBefore_TST", "AverageSleep", "nightbefore_sleep_deviation_from_norm", "average_sleep_deviation_from_norm", "Pretest", "Posttest1", "Posttest2")
+cor_matrix <- cor(df[vars], use = "pairwise.complete.obs")
+print(cor_matrix)
+
+# Optional: visualize
+library(corrplot)
+corrplot(cor_matrix, method = "number")
+
+# Install if not already
+install.packages("mediation")
+library(mediation)
+
+# Step 1: Model for mediator (SWS)
+mediator_model <- lm(N3 ~ average_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+
+# Step 2: Model for outcome
+outcome_model <- lm(recovery ~ N3 + average_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+
+# Step 3: Mediation analysis
+med <- mediate(mediator_model, outcome_model, treat = "average_sleep_deviation_from_norm", mediator = "N3", boot = TRUE)
+summary(med)
+
+
+```
+
+
+

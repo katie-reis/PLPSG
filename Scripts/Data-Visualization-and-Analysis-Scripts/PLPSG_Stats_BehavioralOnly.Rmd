@@ -543,3 +543,27 @@ library(effsize)
 cohen.d(PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "sleep"], 
         PLPSG_sleep_stats_wider$learning[PLPSG_sleep_stats_wider$condition == "wake"])
 ```
+
+
+```{r}
+#retention
+t.test(PLPSG_sleep_stats_wider$block1[PLPSG_sleep_stats_wider$condition == "wake"],
+       PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$retention[PLPSG_sleep_stats_wider$condition == "wake"])
+
+#protective
+t.test(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"],
+       PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$protective[PLPSG_sleep_stats_wider$condition == "wake"])
+
+
+t.test(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "sleep"])
+
+t.test(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"],
+       PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"])
+```

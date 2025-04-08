@@ -710,32 +710,48 @@ summary(avgsleepdevmodel)
 
 ```
 
-### mediation analysis - We then wanted to test whether SWS mediates the effect of sleep restriction on cognitive performance, and this could clarify why sleep restriction leads to changes in performance (via SWS rebound or lack thereof). As a result, we conducted a mediation analysis predicting recovery from cumulative sleep restriction, with the mediator of percentage of time spent in SWS. 
+### mediation analysis - We then wanted to test whether SWS mediates the effect of sleep restriction on cognitive performance, and this could clarify why sleep restriction leads to changes in performance (via SWS rebound or lack thereof). As a result, we conducted a mediation analysis predicting recovery from cumulative sleep restriction, with the mediator of percentage of time spent in SWS. -- this isn't working
 
 ```{r}
-# Correlation matrix
-vars <- c("NightBefore_TST", "AverageSleep", "nightbefore_sleep_deviation_from_norm", "average_sleep_deviation_from_norm", "Pretest", "Posttest1", "Posttest2")
-cor_matrix <- cor(df[vars], use = "pairwise.complete.obs")
-print(cor_matrix)
-
-# Optional: visualize
-library(corrplot)
-corrplot(cor_matrix, method = "number")
-
 # Install if not already
 install.packages("mediation")
 library(mediation)
 
 # Step 1: Model for mediator (SWS)
-mediator_model <- lm(N3 ~ average_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+mediator_model <- lm(as.numeric(N3) ~ as.numeric(average_sleep_deviation_from_norm), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 
 # Step 2: Model for outcome
-outcome_model <- lm(recovery ~ N3 + average_sleep_deviation_from_norm, data = PLPSG_sleep_stats_wider)
+outcome_model <- lm(as.numeric(recovery) ~ as.numeric(N3) + as.numeric(average_sleep_deviation_from_norm), data = subset(PLPSG_sleep_stats_wider, condition == "sleep"))
 
 # Step 3: Mediation analysis
-med <- mediate(mediator_model, outcome_model, treat = "average_sleep_deviation_from_norm", mediator = "N3", boot = TRUE)
+med <- mediate(mediator_model, outcome_model, treat = as.numeric(average_sleep_deviation_from_norm), mediator = as.numeric(N3), boot = TRUE)
 summary(med)
 
+
+```
+### We also performed a mixed-effects model to account for the repeated measures (pretest, posttest1, posttest2, posttest3, posttest4) within subjects and the nested structure of the data. This would allow us to isolate how performance changes across time and whether sleep history moderates that trajectory. In this model, we include random intercepts for subjects, and fixed effects for condition (sleep/wake), sleep metrics (NightBefore_TST, Cumulative Restriction), Time (pretest, posttest1, posttest2, posttest3, posttest4), and interactions (condition x time, sleep metrics x time).
+```{r}
+install.packages("lme4")
+install.packages("lmerTest")  # for p-values
+install.packages("emmeans")   # optional: for estimated marginal means
+
+library(lme4)
+library(lmerTest)
+
+PLPSG_sleep_stats_longer$block <- factor(PLPSG_sleep_stats_longer$block)
+PLPSG_sleep_stats_longer$Condition <- factor(PLPSG_sleep_stats_longer$condition)
+
+model <- lmer(
+  score ~ condition * block +
+    NightBefore_TST * block +
+    AverageSleep * block +
+    nightbefore_sleep_deviation_from_norm * block +
+    average_sleep_deviation_from_norm * block +
+    (1 | Subject),
+  data = PLPSG_sleep_stats_longer
+)
+
+summary(model)
 
 ```
 

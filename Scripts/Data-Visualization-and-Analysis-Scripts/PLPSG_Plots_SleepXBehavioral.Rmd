@@ -933,8 +933,11 @@ ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), aes(x = last_sleep
   theme_minimal()
 
 #N3 vs not n3
+library(extrafont)
+loadfonts(device = "win")
+
 ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), aes(x = (last_sleep_epoch != "N3"), y = recovery)) +
-  geom_bar(stat = "summary", fun = "mean", position = "dodge", width = 0.6) +
+  geom_bar(stat = "summary", fun = "mean", position = "dodge", width = 0.6, color = "lightgrey") +
   geom_errorbar(
     stat = "summary", 
     fun.data = "mean_se", 
@@ -947,7 +950,11 @@ ggplot(subset(PLPSG_sleep_stats_wider, condition == "sleep"), aes(x = (last_slee
     y = "Mean Recovery ± SE",
   ) +
   theme_minimal() + 
-  scale_x_discrete(label = c("SWS", "Other"))
+  scale_x_discrete(label = c("SWS", "Other")) + 
+  theme(axis.title = element_text(size = 16),
+        axis.text = element_text(size = 13),
+        text = element_text(family = "serif"))
+  
 
 ```
 

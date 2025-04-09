@@ -754,6 +754,59 @@ model <- lmer(
 summary(model)
 
 ```
+### are sleep and wake subjects matched on their sleep debt?
+```{r}
+PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm = as.numeric(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm)
+PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm = as.numeric(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm)
+t.test(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+
+```
+
+### are stanford sleepiness scale results comparable across groups 
+```{r}
+t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "wake"])
+```
+
+#and if SSS impacts performance
+```{r}
+baseline = aov(block1 ~ SS_BeforeBlock1 *condition, data = subset( PLPSG_sleep_stats_wider))
+summary(baseline)
+
+learningfit = aov(learning ~ SS_BeforeBlock1 *condition, data = subset( PLPSG_sleep_stats_wider))
+summary(learningfit)
+
+lossfit = aov(loss ~ SS_BeforeBlock4 *condition, data = subset( PLPSG_sleep_stats_wider))
+summary(lossfit)
+
+recoveryfit = aov(recovery ~ SS_BeforeBlock5  *condition, data = subset( PLPSG_sleep_stats_wider))
+summary(recoveryfit)
+
+maintenancefit = aov(maintenance ~ SS_BeforeBlock6  *condition, data = subset( PLPSG_sleep_stats_wider))
+summary(maintenancefit)
+
+ggplot(data = subset(PLPSG_sleep_stats_wider)) + 
+  aes(x = SS_BeforeBlock1, y = learning, color = condition,
+      na.rm = TRUE) +
+  xlab("SS Before Block 1") + 
+  ylab("learning") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
 
 
 

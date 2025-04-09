@@ -61,6 +61,9 @@ figure = ggarrange(plot1,plot2,plot3,plot4,
                    common.legend = TRUE, legend = "bottom")
 figure
 ```
+
+
+
 ### sleep history vs learning
 ```{r}
 plot1 = historyplot("NightBefore_TST", "learning", "Night Before TST", "Learning", 8.6, 0.2, 9.3, 0.14)
@@ -151,4 +154,122 @@ figure = ggarrange(plot1,plot2,plot3,plot4,
                    labels = c("A", "B", "C", "D"),
                    common.legend = TRUE, legend = "bottom")
 figure
+```
+
+### make a differnt function to create a plot without the p values
+```{r}
+historyplot2 <- function(xval, yval, xlabel, ylabel) {  
+  # Subset the data
+  data_sleep <- subset(PLPSG_sleep_stats_wider, condition == "sleep")
+  data_wake <- subset(PLPSG_sleep_stats_wider, condition == "wake")
+  
+  
+  # Create the plot
+  ggplot(data = PLPSG_sleep_stats_wider, aes(x = .data[[xval]], y = .data[[yval]], color = condition)) +
+    xlab(xlabel) +
+    ylab(ylabel) +
+    geom_point(size = 1) +
+    geom_smooth(method = "lm", se = FALSE) +
+    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
+}
+
+
+```
+
+#plots for recovery x sleep history metrics
+```{r}
+plot1 = historyplot2("AverageSleep", "recovery", "Average Sleep TST", "Recovery\n(Posttest3-Posttest2)")
+plot2 = historyplot2("NightBefore_TST", "recovery", "Night Before TST", "Recovery\n(Posttest3-Posttest2)")
+plot3 = historyplot2("average_sleep_deviation_from_norm", "recovery", "Cumulative Restriction", "Recovery\n(Posttest3-Posttest2)")
+plot4 = historyplot2("nightbefore_sleep_deviation_from_norm", "recovery", "Immediate Restriction", "Recovery\n(Posttest3-Posttest2)")
+
+
+figure = ggarrange(plot2,plot1,plot4,plot3, 
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
+```
+### make a different function for just sleep subjects
+```{r}
+historyplot3 <- function(xval, yval, xlabel, ylabel, line1x, line1y) {  
+    data_sleep <- subset(PLPSG_sleep_stats_wider, condition == "sleep")
+
+    fitsleep <- lm(as.numeric(data_sleep[[yval]]) ~ as.numeric(data_sleep[[xval]]))
+
+  
+  # Create the plot
+  ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep"), aes(x = as.numeric(.data[[xval]]), y = as.numeric(.data[[yval]]))) +
+    xlab(xlabel) +
+    ylab(ylabel) +
+    geom_point(size = 1) +
+    geom_smooth(method = "lm", se = FALSE) + 
+    geom_label(aes(x = line1x, y = line1y), 
+               label = paste("p =", signif(summary(fitsleep)$coef[2, 4], 5)), 
+               inherit.aes = FALSE, 
+               hjust = 0, size = 3) 
+} 
+
+
+```
+
+#plots for N1 x sleep history metrics
+```{r}
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N1", "Immediate Restriction", "N1 Duration (mins)",1.8,15)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "N1", "Cumulative Restriction", "N1 Duration (mins)",1.8,15)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN1", "Immediate Restriction", "N1 (% of TST)",1.8,18)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perN1", "Cumulative Restriction", "N1 (% of TST)",1.8,20)
+
+figure = ggarrange(plot1, plot2, plot3, plot4,
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
+```
+
+#plots for N2 x sleep history metrics
+```{r}
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N2", "Immediate Restriction", "N2 Duration (mins)",2.2,28)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "N2", "Cumulative Restriction", "N2 Duration (mins)",1.8,26)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN2", "Immediate Restriction", "N2 (% of TST)",2.2,55)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perN2", "Cumulative Restriction", "N2 (% of TST)",1.8,32)
+
+figure = ggarrange(plot1, plot2, plot3, plot4,
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
+```
+
+#plots for N3 x sleep history metrics
+```{r}
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N3", "Immediate Restriction", "SWS Duration (mins)",2.2,27)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "N3", "Cumulative Restriction", "SWS Duration (mins)",1.8,35)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN3", "Immediate Restriction", "SWS (% of TST)",2.2,35)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perN3", "Cumulative Restriction", "SWS (% of TST)",1.8,26)
+
+figure = ggarrange(plot1, plot2, plot3, plot4,
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
+```
+
+#plots for R x sleep history metrics
+```{r}
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "R", "Immediate Restriction", "REM Duration (mins)",2.2,17)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "R", "Cumulative Restriction", "REM Duration (mins)",1.8,15)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perR", "Immediate Restriction", "REM (% of TST)",2.2,12)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perR", "Cumulative Restriction", "REM (% of TST)",1.8,18)
+
+figure = ggarrange(plot1, plot2, plot3, plot4,
+                   ncol = 2, nrow = 2,
+                   labels = c("A", "B", "C", "D"),
+                   common.legend = TRUE, legend = "bottom")
+figure
+
 ```

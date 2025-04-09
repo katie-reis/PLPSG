@@ -42,6 +42,26 @@ ggboxplot(PLPSG_sleep_stats_longer,
   scale_color_manual(values = c("sleep" = "deepskyblue4", "wake" = "indianred3"))
 
 ```
+### visualize with a lineplot the PLPSG behavioral data all tests
+```{r}
+ggplot(PLPSG_sleep_stats_longer, aes(x = block, y = score, color = condition, group = condition)) +
+  stat_summary(fun = mean, geom = "line", size = 0.5, position = position_dodge(width = 0.7)) +
+  stat_summary(fun = mean, geom = "point", size = 1.5, position = position_dodge(width = 0.7)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.15, position = position_dodge(width = 0.7)) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.7, jitter.width = 0.35, jitter.height = 0), 
+             alpha = 0.6, size = 1) +
+  scale_color_manual(values = c("sleep" = "deepskyblue4", "wake" = "indianred3")) +
+  theme_minimal() +
+  scale_x_discrete(label = c("Pretest", "Posttest1", "Posttest2", "Posttest3", "Posttest4")) + 
+  ylab("Proportion Correct") +
+  xlab("Test") +
+  theme(axis.title = element_text(size = 16),
+        axis.text = element_text(size = 12),
+        text = element_text(family = "serif"),
+        legend.title = element_text(size=14),
+        legend.text = element_text(size=12))
+
+```
 
 ### line plot of PLPSG performance across tests (sleep vs wake)
 ```{r}
@@ -946,6 +966,8 @@ ggline(temp, x="block",y="score",
              position=position_jitterdodge(jitter.width = 0.3, dodge.width = 0.7)) 
 
 ```
+
+
 ```{r}
 
 temp = PLPSG_sleep_stats_wider 
@@ -1277,3 +1299,6 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
         size = 2.5)
 
 ```
+
+
+### recovery for sleep subjects

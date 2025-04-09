@@ -170,7 +170,8 @@ historyplot2 <- function(xval, yval, xlabel, ylabel) {
     ylab(ylabel) +
     geom_point(size = 1) +
     geom_smooth(method = "lm", se = FALSE) +
-    scale_color_manual(values = c("sleep" = "blue", "wake" = "red"))
+    scale_color_manual(values = c("sleep" = "blue", "wake" = "red")) + 
+    theme(text = element_text(family = "serif"))
 }
 
 
@@ -208,7 +209,8 @@ historyplot3 <- function(xval, yval, xlabel, ylabel, line1x, line1y) {
     geom_label(aes(x = line1x, y = line1y), 
                label = paste("p =", signif(summary(fitsleep)$coef[2, 4], 5)), 
                inherit.aes = FALSE, 
-               hjust = 0, size = 3) 
+               hjust = 0, size = 3) + 
+    theme(text = element_text(family = "serif"))
 } 
 
 
@@ -216,10 +218,10 @@ historyplot3 <- function(xval, yval, xlabel, ylabel, line1x, line1y) {
 
 #plots for N1 x sleep history metrics
 ```{r}
-plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N1", "Immediate Restriction", "N1 Duration (mins)",1.8,15)
-plot2 = historyplot3("average_sleep_deviation_from_norm", "N1", "Cumulative Restriction", "N1 Duration (mins)",1.8,15)
-plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN1", "Immediate Restriction", "N1 (% of TST)",1.8,18)
-plot4 = historyplot3("average_sleep_deviation_from_norm", "perN1", "Cumulative Restriction", "N1 (% of TST)",1.8,20)
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N1", "Immediate Restriction", "N1 Duration (mins)",1.8,12)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "N1", "Cumulative Restriction", "N1 Duration (mins)",1.8,13)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN1", "Immediate Restriction", "N1 (% of TST)",1.8,16)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perN1", "Cumulative Restriction", "N1 (% of TST)",1.8,17)
 
 figure = ggarrange(plot1, plot2, plot3, plot4,
                    ncol = 2, nrow = 2,

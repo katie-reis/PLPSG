@@ -779,6 +779,20 @@ t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition
 
 t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "sleep"],
        PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "wake"])
+
+#SDs
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "wake"])
+
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "wake"])
+
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "wake"])
+
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "wake"])
+
 ```
 
 #and if SSS impacts performance
@@ -809,4 +823,10 @@ ggplot(data = subset(PLPSG_sleep_stats_wider)) +
 ```
 
 
+### sd of last sleep epoch effect on recovery
+```{r}
+sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch == "N3"])
+sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep" & PLPSG_sleep_stats_wider$last_sleep_epoch != "N3"])
+
+```
 

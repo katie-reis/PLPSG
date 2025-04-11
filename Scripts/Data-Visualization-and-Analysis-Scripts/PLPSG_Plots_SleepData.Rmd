@@ -518,8 +518,25 @@ ggplot(PLPSG_sleep_stats_wider_longertemp, aes(y = Subject, x = time)) +
   labs(y = "Subject", x = "Time spent asleep (minutes)", fill = "Sleep Stage") +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 90)) +
-  #theme(axis.text.y = element_text(angle = 30, hjust = 1)) +
-  scale_fill_manual(values = c("N1" = "lightgoldenrod2", "N2" = "darkseagreen3", "N3" = "deepskyblue4", "R" = "coral2"))
+  scale_fill_manual(
+    values = c("N1" = "lightgoldenrod2", 
+               "N2" = "darkseagreen3", 
+               "N3" = "deepskyblue4", 
+               "R"  = "coral2"),
+    labels = c("N1" = "N1", "N2" = "N2", "N3" = "SWS", "R" = "REM")
+  ) +
+  guides(fill = guide_legend(
+    override.aes = list(order = 1),
+    reverse = TRUE
+  )) +
+  theme(
+    axis.title = element_text(size = 15),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 10),
+    text = element_text(family = "serif")
+  )
+
+
 ```
 
 ### how much time spent in each stage - stacked plot - do percentages now 

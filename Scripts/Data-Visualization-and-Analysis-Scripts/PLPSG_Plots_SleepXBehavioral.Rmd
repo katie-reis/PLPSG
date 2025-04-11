@@ -470,6 +470,72 @@ figure <- ggarrange(n2andn3_plot, n2_plot, n3_plot,
 figure
 
 ```
+### just N2 spindles alone 
+```{r}
+fitn2 = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2_Count), y = recovery,
+      na.rm = TRUE) + 
+  xlab("Count of N2 Spindles") + 
+  ylab("Recovery") +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(aes(x =490, y = 0.035), 
+               hjust = 0, size = 3.5, 
+               label = paste("p =", signif(summary(fitn2)$coef[2, 4], 5)), 
+               inherit.aes = FALSE) + 
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12))
+
+```
+
+### just N3 spindles alone 
+```{r}
+fitn3 = lm(as.numeric(recovery) ~ as.numeric(Spindles_N3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N3_Count), y = recovery,
+      na.rm = TRUE) + 
+  xlab("Count of SWS Spindles") + 
+  ylab("Recovery") +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(aes(x =500, y = 0.04), 
+               hjust = 0, size = 3.5, 
+               label = paste("p =", signif(summary(fitn3)$coef[2, 4], 5)), 
+               inherit.aes = FALSE) + 
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12))
+
+```
+
+
+### N2 and N3 spindles together
+```{r}
+fitn2andn3 = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = as.numeric(Spindles_N2andN3_Count), y = recovery,
+      na.rm = TRUE) + 
+  xlab("Total Spindle Count (N2 and SWS)") + 
+  ylab("Recovery") +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_label(aes(x =640, y = 0.04), 
+               hjust = 0, size = 3.5, 
+               label = paste("p =", signif(summary(fitn2andn3)$coef[2, 4], 5)), 
+               inherit.aes = FALSE) + 
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12))
+
+```
+
+        
+        
 ### just N2 and N3 spindles by itself -- we will call this the total spindle count 
 ```{r}
 fitspindle = lm(as.numeric(recovery) ~ as.numeric(Spindles_N2andN3_Count), subset(PLPSG_sleep_stats_wider, condition == "sleep"))
@@ -860,11 +926,15 @@ fullcycleplot = ggplot(PLPSG_sleep_stats_wider, aes(x = FullCycle, y = recovery,
   scale_fill_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
   labs(
     title = "Effect of FullCycle on Recovery",
-    x = "FullCycle Status",
-    y = "Mean Recovery ± SE",
-    fill = "FullCycle"
+    x = "Cycled Through All Stages of Sleep",
+    y = "Mean Recovery ± SE"
   ) +
-  theme_minimal()
+  theme_minimal() + 
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        legend.position = "none") + 
+  scale_x_discrete(labels = c("Yes", "No"))
 
 
 fullcycleplot2 = ggplot(PLPSG_sleep_stats_wider, aes(x = FullCycle, y = recovery, fill = FullCycle)) +
@@ -872,11 +942,15 @@ fullcycleplot2 = ggplot(PLPSG_sleep_stats_wider, aes(x = FullCycle, y = recovery
   scale_fill_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
   labs(
     title = "Effect of FullCycle on Recovery",
-    x = "FullCycle Status",
-    y = "Recovery",
-    fill = "FullCycle"
+    x = "Cycled Through All Stages of Sleep",
+    y = "Recovery"
   ) +
-  theme_minimal()
+  theme_minimal() + 
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        legend.position = "none") + 
+  scale_x_discrete(labels = c("Yes", "No"))
 
 library(plotly)
 
@@ -902,7 +976,46 @@ ggarrange(n3plot, rplot,
           nrow = 1, ncol = 2, labels = c("A", "B"))
 
 ggarrange(fullcycleplot, fullcycleplot2,
-          nrow = 1, ncol = 2, labels = c("A", "B"), common.legend = TRUE)
+          nrow = 1, ncol = 2, labels = c("A", "B"), common.legend = FALSE)
+
+```
+
+#interactions without individual data points 
+```{r}
+#interaction of N3 and full cycle
+ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(N3), y = recovery, color = FullCycle)) +
+  geom_smooth(method = "lm", se = TRUE) +
+  scale_color_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
+  labs(
+    title = "Interaction Between SWS and FullCycle on Recovery",
+    x = "Time in SWS (minutes)",
+    y = "Recovery",
+    color = "FullCycle"
+  ) +
+  theme_minimal() + 
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 11))
+
+
+#interaction of R and full cycle
+ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(R), y = recovery, color = FullCycle)) +
+  geom_smooth(method = "lm", se = TRUE) +
+  scale_color_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
+  labs(
+    title = "Interaction Between REM and FullCycle on Recovery",
+    x = "Time in REM (minutes)",
+    y = "Recovery",
+    color = "FullCycle"
+  ) +
+  theme_minimal() + 
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 11))
 
 ```
 

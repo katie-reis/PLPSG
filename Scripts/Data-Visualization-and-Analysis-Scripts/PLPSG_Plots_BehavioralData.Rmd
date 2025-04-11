@@ -59,7 +59,13 @@ ggplot(PLPSG_sleep_stats_longer, aes(x = block, y = score, color = condition, gr
         axis.text = element_text(size = 12),
         text = element_text(family = "serif"),
         legend.title = element_text(size=14),
-        legend.text = element_text(size=12))
+        legend.text = element_text(size=12)) + 
+  scale_color_manual(
+  name = "Condition",  # This sets the legend title
+  values = c("sleep" = "deepskyblue4", "wake" = "indianred3"),
+  labels = c("sleep" = "nap", "wake" = "wake")  # This renames the legend entries
+)
+
 
 ```
 

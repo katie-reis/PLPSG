@@ -925,13 +925,12 @@ fullcycleplot = ggplot(PLPSG_sleep_stats_wider, aes(x = FullCycle, y = recovery,
   ) +
   scale_fill_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
   labs(
-    title = "Effect of FullCycle on Recovery",
     x = "Cycled Through All Stages of Sleep",
     y = "Mean Recovery ± SE"
   ) +
   theme_minimal() + 
   theme(text = element_text(family = "serif"),
-        axis.title = element_text(size = 15),
+        axis.title = element_text(size = 14),
         axis.text = element_text(size = 12),
         legend.position = "none") + 
   scale_x_discrete(labels = c("Yes", "No"))
@@ -941,13 +940,12 @@ fullcycleplot2 = ggplot(PLPSG_sleep_stats_wider, aes(x = FullCycle, y = recovery
   geom_boxplot() +
   scale_fill_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
   labs(
-    title = "Effect of FullCycle on Recovery",
     x = "Cycled Through All Stages of Sleep",
     y = "Recovery"
   ) +
   theme_minimal() + 
   theme(text = element_text(family = "serif"),
-        axis.title = element_text(size = 15),
+        axis.title = element_text(size = 14),
         axis.text = element_text(size = 12),
         legend.position = "none") + 
   scale_x_discrete(labels = c("Yes", "No"))

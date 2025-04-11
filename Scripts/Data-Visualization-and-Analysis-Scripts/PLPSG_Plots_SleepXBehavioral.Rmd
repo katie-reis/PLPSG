@@ -879,31 +879,45 @@ rplot = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(R), y = recovery)) +
 n3fullcycle = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(N3), y = recovery, color = FullCycle)) +
   geom_point(size = 3, alpha = 0.7) +
   geom_smooth(method = "lm", se = TRUE) +
-  scale_color_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
+  scale_color_manual(name = "Full Cycle",  # legend title
+    values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3"),
+    labels = c("FullCycle" = "Yes", "NoFullCycle" = "No")) +
   labs(
-    title = "Interaction Between SWS and FullCycle on Recovery",
     x = "Time in SWS (minutes)",
-    y = "Recovery",
-    color = "FullCycle"
-  ) +
-  theme_minimal()
+    y = "Recovery"  ) +
+  theme_minimal() +
+  theme(text = element_text(family = "serif"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        legend.title = element_text(size = 13),
+        legend.text = element_text(size = 11))
 
 
 #interaction of R and full cycle
-rfullcycle = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(R), y = recovery, color = FullCycle)) +
+ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(R), y = recovery, color = FullCycle)) +
   geom_point(size = 3, alpha = 0.7) +
   geom_smooth(method = "lm", se = TRUE) +
-  scale_color_manual(values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3")) +
-  labs(
-    title = "Interaction Between REM and FullCycle on Recovery",
-    x = "Time in REM (minutes)",
-    y = "Recovery",
-    color = "FullCycle"
+  scale_color_manual(
+    name = "Full Cycle",  # legend title
+    values = c("FullCycle" = "darkseagreen4", "NoFullCycle" = "rosybrown3"),
+    labels = c("FullCycle" = "Yes", "NoFullCycle" = "No")  # legend text
   ) +
-  theme_minimal()
+  labs(
+    x = "Time in REM (minutes)",
+    y = "Recovery"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "serif"),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 11)
+  )
+
 
 #interaction N3 and R 
-n3andrplot = ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(N3), y = as.numeric(R), color = recovery)) +
+ggplot(PLPSG_sleep_stats_wider, aes(x = as.numeric(N3), y = as.numeric(R), color = recovery)) +
   geom_point(size = 3, alpha = 0.7) +
   scale_color_gradient(low = "yellow", high = "blue") +
   labs(

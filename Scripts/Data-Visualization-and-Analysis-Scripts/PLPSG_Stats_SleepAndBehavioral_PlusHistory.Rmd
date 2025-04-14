@@ -830,3 +830,29 @@ sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"
 
 ```
 
+### how nap and wake differ on sleep history measures 
+```{r}
+t.test(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+
+t.test(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"],
+       PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+
+
+
+```
+

@@ -41,8 +41,8 @@ sleeplogs = sleeplogs %>% mutate(Subject = as.character(Subject)) %>%
 sleephistory = sleepquestionnaire %>% left_join(usualsleeplengths, by="Subject") %>% left_join(sleeplogs, by = "Subject")
 
 sleephistory = sleephistory %>%
-  mutate(average_sleep_deviation_from_norm = as.numeric(UsualSleepLengthHours) - as.numeric(AverageSleep),
-         nightbefore_sleep_deviation_from_norm = as.numeric(UsualSleepLengthHours) - as.numeric(NightBefore_TST))
+  mutate(average_sleep_deviation_from_norm = as.numeric(AverageSleep) - as.numeric(UsualSleepLengthHours),
+         nightbefore_sleep_deviation_from_norm = as.numeric(NightBefore_TST) - as.numeric(UsualSleepLengthHours))
 
 #stanford sleepiness scale responses
 stanfordsleepiness = read.csv("StanfordSleepiness.csv")
@@ -125,6 +125,11 @@ PLPSG_sleep_stats_wider = behavioral %>%
          perN3andR = "",
          FullCycle = "",
          last_sleep_epoch = "",
+         last_sleep_row = "",
+         last_sleep_stage = "",
+         last_N3_row = "",
+         N3_temporal_distance_from_waking1 = "",
+         N3_temporal_distance_from_waking2 = "",
          N1_to_N2_transitions = "",
          N1_to_N3_transitions = "",
          N1_to_R_transitions = "",
@@ -272,6 +277,19 @@ for (i in 1:length(filelist)){
     PLPSG_sleep_stats_wider$last_sleep_epoch[i] <- NA
   }
   
+  if(any(file_hypno == 3)) {
+   # last_sleep_row2 <- max(which(file_hypno != 0))
+    PLPSG_sleep_stats_wider$last_sleep_row[i] <- max(which(file_hypno != 0))
+    PLPSG_sleep_stats_wider$last_sleep_stage[i] <- file_hypno[last_sleep_row]
+   # last_N3_row2 = max(which(file_hypno == 3))
+    PLPSG_sleep_stats_wider$last_N3_row[i] <- as.numeric(max(which(file_hypno == 3)))
+  #  N3_temporal_distance_from_waking2 = (as.numeric(last_sleep_row2) - as.numeric(last_N3_row2)) / 60
+   # PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking1[i] <- as.numeric(last_sleep_row) - as.numeric(last_N3_row)
+   # PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2[i] <- as.numeric(last_sleep_row) - as.numeric(last_N3_row) / 60
+  } else {
+    PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2[i] <- NA
+  }
+  
   # Initialize variables for transition counts
   N1_to_N2_transitions <- 0
   N1_to_N3_transitions <- 0
@@ -393,6 +411,10 @@ PLPSG_sleep_stats_wider = PLPSG_sleep_stats_wider %>% mutate(above_median =
                                                                         (block1 >= median_wake & condition == "wake"), 
                                                                       "yes", "no"))
 
+
+###
+#PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking1 = as.numeric(PLPSG_sleep_stats_wider$last_sleep_row) - as.numeric(PLPSG_sleep_stats_wider$last_N3_row)
+#PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking2 = as.numeric(PLPSG_sleep_stats_wider$N3_temporal_distance_from_waking1) / 60
 
 # filter out subjects who didn't learn (subjects 134, 141, 142)
 PLPSG_sleep_stats_wider = subset(PLPSG_sleep_stats_wider, Subject != '134' & Subject != '141' & Subject != '142')

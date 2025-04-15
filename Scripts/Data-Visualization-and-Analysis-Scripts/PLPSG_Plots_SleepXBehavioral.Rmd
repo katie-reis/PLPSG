@@ -481,13 +481,13 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   ylab("Recovery") +
   geom_point(size = 2) +
   geom_smooth(method = "lm", se = FALSE) +
-  geom_label(aes(x =490, y = 0.035), 
-               hjust = 0, size = 3.5, 
-               label = paste("p =", signif(summary(fitn2)$coef[2, 4], 5)), 
+  geom_label(aes(x =500, y = 0.035), 
+               hjust = 0, size = 4.5, 
+               label = paste("p =", round(summary(fitn2)$coef[2, 4], 2)), 
                inherit.aes = FALSE) + 
   theme(text = element_text(family = "serif"),
-        axis.title = element_text(size = 15),
-        axis.text = element_text(size = 12))
+        axis.title = element_text(size = 17),
+        axis.text = element_text(size = 14))
 
 ```
 
@@ -502,13 +502,13 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   ylab("Recovery") +
   geom_point(size = 2) +
   geom_smooth(method = "lm", se = FALSE) +
-  geom_label(aes(x =500, y = 0.04), 
-               hjust = 0, size = 3.5, 
-               label = paste("p =", signif(summary(fitn3)$coef[2, 4], 5)), 
+  geom_label(aes(x =540, y = 0.04), 
+               hjust = 0, size = 4.5, 
+               label = paste("p =", round(summary(fitn3)$coef[2, 4], 2)), 
                inherit.aes = FALSE) + 
   theme(text = element_text(family = "serif"),
-        axis.title = element_text(size = 15),
-        axis.text = element_text(size = 12))
+        axis.title = element_text(size = 17),
+        axis.text = element_text(size = 14))
 
 ```
 
@@ -524,13 +524,13 @@ ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) +
   ylab("Recovery") +
   geom_point(size = 2) +
   geom_smooth(method = "lm", se = FALSE) +
-  geom_label(aes(x =640, y = 0.04), 
-               hjust = 0, size = 3.5, 
-               label = paste("p =", signif(summary(fitn2andn3)$coef[2, 4], 5)), 
+  geom_label(aes(x =660, y = 0.04), 
+               hjust = 0, size = 4.5, 
+               label = paste("p =", round(summary(fitn2andn3)$coef[2, 4], 2)), 
                inherit.aes = FALSE) + 
   theme(text = element_text(family = "serif"),
-        axis.title = element_text(size = 15),
-        axis.text = element_text(size = 12))
+        axis.title = element_text(size = 17),
+        axis.text = element_text(size = 14))
 
 ```
 

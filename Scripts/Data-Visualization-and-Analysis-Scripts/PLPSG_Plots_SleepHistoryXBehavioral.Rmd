@@ -181,7 +181,7 @@ historyplot2 <- function(xval, yval, xlabel, ylabel) {
 
 #plots for recovery x sleep history metrics
 ```{r}
-plot1 = historyplot2("AverageSleep", "recovery", "Average Sleep TST", "Recovery\n(Posttest3-Posttest2)")
+plot1 = historyplot2("AverageSleep", "recovery", "Average TST", "Recovery\n(Posttest3-Posttest2)")
 plot2 = historyplot2("NightBefore_TST", "recovery", "Night Before TST", "Recovery\n(Posttest3-Posttest2)")
 plot3 = historyplot2("average_sleep_deviation_from_norm", "recovery", "Cumulative Restriction", "Recovery\n(Posttest3-Posttest2)")
 plot4 = historyplot2("nightbefore_sleep_deviation_from_norm", "recovery", "Immediate Restriction", "Recovery\n(Posttest3-Posttest2)")
@@ -221,10 +221,10 @@ historyplot3 <- function(xval, yval, xlabel, ylabel, line1x, line1y) {
 
 #plots for N1 x sleep history metrics
 ```{r}
-plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N1", "Immediate Restriction", "N1 Duration (mins)",2.3,12)
-plot2 = historyplot3("average_sleep_deviation_from_norm", "N1", "Cumulative Restriction", "N1 Duration (mins)",2.0,13)
-plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN1", "Immediate Restriction", "N1 (% of TST)",2.3,15)
-plot4 = historyplot3("average_sleep_deviation_from_norm", "perN1", "Cumulative Restriction", "N1 (% of TST)",2.0,17)
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N1", "Immediate Restriction", "N1 Duration (mins)",-2.75,11.5)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "N1", "Cumulative Restriction", "N1 Duration (mins)",-2.5,13)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN1", "Immediate Restriction", "N1 (% of TST)",-2.75,14)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perN1", "Cumulative Restriction", "N1 (% of TST)",-2.5,17)
 
 figure = ggarrange(plot1, plot2, plot3, plot4,
                    ncol = 2, nrow = 2,
@@ -236,10 +236,10 @@ figure
 
 #plots for N2 x sleep history metrics
 ```{r}
-plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N2", "Immediate Restriction", "N2 Duration (mins)",2.3,26)
-plot2 = historyplot3("average_sleep_deviation_from_norm", "N2", "Cumulative Restriction", "N2 Duration (mins)",2.0,24)
-plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN2", "Immediate Restriction", "N2 (% of TST)",2.3,38)
-plot4 = historyplot3("average_sleep_deviation_from_norm", "perN2", "Cumulative Restriction", "N2 (% of TST)",2.0,30)
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N2", "Immediate Restriction", "N2 Duration (mins)",-2.85,26)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "N2", "Cumulative Restriction", "N2 Duration (mins)",-2.5,24)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN2", "Immediate Restriction", "N2 (% of TST)",-2.85,38)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perN2", "Cumulative Restriction", "N2 (% of TST)",-2.5,30)
 
 figure = ggarrange(plot1, plot2, plot3, plot4,
                    ncol = 2, nrow = 2,
@@ -251,10 +251,10 @@ figure
 
 #plots for N3 x sleep history metrics
 ```{r}
-plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N3", "Immediate Restriction", "SWS Duration (mins)",2.3,29)
-plot2 = historyplot3("average_sleep_deviation_from_norm", "N3", "Cumulative Restriction", "SWS Duration (mins)",2.0,37)
-plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN3", "Immediate Restriction", "SWS (% of TST)",2.3,38)
-plot4 = historyplot3("average_sleep_deviation_from_norm", "perN3", "Cumulative Restriction", "SWS (% of TST)",2.0,47)
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "N3", "Immediate Restriction", "SWS Duration (mins)",-2.75,29)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "N3", "Cumulative Restriction", "SWS Duration (mins)",-2.5,37)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perN3", "Immediate Restriction", "SWS (% of TST)",-2.75,38)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perN3", "Cumulative Restriction", "SWS (% of TST)",-2.5,47)
 
 figure = ggarrange(plot1, plot2, plot3, plot4,
                    ncol = 2, nrow = 2,
@@ -266,10 +266,10 @@ figure
 
 #plots for R x sleep history metrics
 ```{r}
-plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "R", "Immediate Restriction", "REM Duration (mins)",2.4,8)
-plot2 = historyplot3("average_sleep_deviation_from_norm", "R", "Cumulative Restriction", "REM Duration (mins)",2.1,5)
-plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perR", "Immediate Restriction", "REM (% of TST)",2.3,10)
-plot4 = historyplot3("average_sleep_deviation_from_norm", "perR", "Cumulative Restriction", "REM (% of TST)",2.1,8)
+plot1 = historyplot3("nightbefore_sleep_deviation_from_norm", "R", "Immediate Restriction", "REM Duration (mins)",-2.75,8)
+plot2 = historyplot3("average_sleep_deviation_from_norm", "R", "Cumulative Restriction", "REM Duration (mins)",-2.5,6)
+plot3 = historyplot3("nightbefore_sleep_deviation_from_norm", "perR", "Immediate Restriction", "REM (% of TST)",-2.75,10)
+plot4 = historyplot3("average_sleep_deviation_from_norm", "perR", "Cumulative Restriction", "REM (% of TST)",-2.5,8)
 
 figure = ggarrange(plot1, plot2, plot3, plot4,
                    ncol = 2, nrow = 2,
@@ -290,7 +290,7 @@ plot1 = ggplot(PLPSG_sleep_stats_wider, aes(y=NightBefore_TST, x=condition)) +
         axis.title = element_text(size = 11),
         axis.text = element_text(size = 11)) +
   xlab("Condition") +
-  ylab("Night Before TST")
+  ylab("Night Before TST") + scale_x_discrete(labels = c("nap", "wake"))
 
 
 plot2 = ggplot(PLPSG_sleep_stats_wider, aes(y=AverageSleep, x=condition)) + 
@@ -301,7 +301,7 @@ plot2 = ggplot(PLPSG_sleep_stats_wider, aes(y=AverageSleep, x=condition)) +
         axis.title = element_text(size = 11),
         axis.text = element_text(size = 11)) +
   xlab("Condition") +
-  ylab("Average TST")
+  ylab("Average TST") + scale_x_discrete(labels = c("nap", "wake"))
 
 plot3 = ggplot(PLPSG_sleep_stats_wider, aes(y=nightbefore_sleep_deviation_from_norm, x=condition)) + 
   geom_violin(width = 0.8) + 
@@ -311,7 +311,7 @@ plot3 = ggplot(PLPSG_sleep_stats_wider, aes(y=nightbefore_sleep_deviation_from_n
         axis.title = element_text(size = 11),
         axis.text = element_text(size = 11)) +
   xlab("Condition") +
-  ylab("Immediate Restriction")
+  ylab("Immediate Restriction") + scale_x_discrete(labels = c("nap", "wake"))
 
 plot4 = ggplot(PLPSG_sleep_stats_wider, aes(y=average_sleep_deviation_from_norm, x=condition)) + 
   geom_violin(width = 0.8) + 
@@ -321,7 +321,7 @@ plot4 = ggplot(PLPSG_sleep_stats_wider, aes(y=average_sleep_deviation_from_norm,
         axis.title = element_text(size = 11),
         axis.text = element_text(size = 11)) +
   xlab("Condition") +
-  ylab("Cumulative Restriction")
+  ylab("Cumulative Restriction") + scale_x_discrete(labels = c("nap", "wake"))
 
 figure = ggarrange(plot1, plot2, plot3, plot4,
                    ncol = 2, nrow = 2,

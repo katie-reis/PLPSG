@@ -752,7 +752,6 @@ model <- lmer(
 )
 
 summary(model)
-
 ```
 ### are sleep and wake subjects matched on their sleep debt?
 ```{r}

@@ -567,3 +567,65 @@ t.test(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "slee
 t.test(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"],
        PLPSG_sleep_stats_wider$block6[PLPSG_sleep_stats_wider$condition == "wake"])
 ```
+
+```{r}
+library("plotrix")
+
+mean(PLPSG_sleep_stats_wider$block3)
+sd(PLPSG_sleep_stats_wider$block3)
+print(std.error(PLPSG_sleep_stats_wider$block3))
+
+mean(PLPSG_sleep_stats_wider$block4)
+sd(PLPSG_sleep_stats_wider$block4)
+print(std.error(PLPSG_sleep_stats_wider$block4))
+
+mean(PLPSG_sleep_stats_wider$block5)
+sd(PLPSG_sleep_stats_wider$block5)
+print(std.error(PLPSG_sleep_stats_wider$block5))
+
+mean(PLPSG_sleep_stats_wider$block6)
+sd(PLPSG_sleep_stats_wider$block6)
+print(std.error(PLPSG_sleep_stats_wider$block6))
+
+#just for nap
+mean(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"])
+print(std.error(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+mean(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"])
+print(std.error(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+mean(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"])
+print(std.error(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+# just for wake 
+mean(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$block3[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+mean(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$block4[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+mean(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$block5[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+#recovery 
+mean(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"])
+sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"])
+print(std.error(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "sleep"]))
+
+mean(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"])
+sd(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$recovery[PLPSG_sleep_stats_wider$condition == "wake"]))
+
+#loss 
+mean(PLPSG_sleep_stats_wider$loss)
+
+```
+
+
+

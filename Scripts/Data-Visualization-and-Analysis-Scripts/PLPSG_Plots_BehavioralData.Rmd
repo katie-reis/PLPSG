@@ -53,7 +53,7 @@ ggplot(PLPSG_sleep_stats_longer, aes(x = block, y = score, color = condition, gr
   scale_color_manual(values = c("sleep" = "deepskyblue4", "wake" = "indianred3")) +
   theme_minimal() +
   scale_x_discrete(label = c("Pretest", "Posttest1", "Posttest2", "Posttest3", "Posttest4")) + 
-  ylab("Proportion Correct") +
+  ylab("Percent Correct") +
   xlab("Test") +
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),

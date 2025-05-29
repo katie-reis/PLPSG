@@ -805,11 +805,23 @@ summary(learningfit)
 lossfit = aov(loss ~ SS_BeforeBlock4 *condition, data = subset( PLPSG_sleep_stats_wider))
 summary(lossfit)
 
+#this might not be the best way of handling this though let's check out a regression - this is what we end up using for dissertation
+model <- lm(loss ~ SS_BeforeBlock4 * condition, data = PLPSG_sleep_stats_wider)
+summary(model)
+
+model <- lm(loss ~ SS_BeforeBlock4 + condition, data = PLPSG_sleep_stats_wider)
+summary(model)
+
+
 recoveryfit = aov(recovery ~ SS_BeforeBlock5  *condition, data = subset( PLPSG_sleep_stats_wider))
 summary(recoveryfit)
 
+#also used for dissertation - lm not aov
 maintenancefit = aov(maintenance ~ SS_BeforeBlock6  *condition, data = subset( PLPSG_sleep_stats_wider))
 summary(maintenancefit)
+
+model <- lm(maintenance ~ SS_BeforeBlock6 * condition, data = PLPSG_sleep_stats_wider)
+summary(model)
 
 ggplot(data = subset(PLPSG_sleep_stats_wider)) + 
   aes(x = SS_BeforeBlock1, y = learning, color = condition,
@@ -819,8 +831,48 @@ ggplot(data = subset(PLPSG_sleep_stats_wider)) +
   theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE)
-```
 
+ggplot(data = subset(PLPSG_sleep_stats_wider)) + 
+  aes(x = SS_BeforeBlock4, y = loss, color = condition,
+      na.rm = TRUE) +
+  xlab("SS Before Block 4") + 
+  ylab("loss") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+fit = lm(loss ~ condition, data = PLPSG_sleep_stats_wider)
+summary(fit)
+```
+#is there a diff in sleep architecture 
+```{r}
+fit = aov(N1 ~ SS_BeforeBlock4, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(fit)
+
+fit = aov(N2 ~ SS_BeforeBlock4, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(fit)
+
+fit = aov(N3 ~ SS_BeforeBlock4, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(fit)
+
+
+fit = aov(R ~ SS_BeforeBlock4, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(fit)
+
+
+fit = aov(TST ~ SS_BeforeBlock4, data = subset( PLPSG_sleep_stats_wider, condition == "sleep"))
+summary(fit)
+
+ggplot(data = subset(PLPSG_sleep_stats_wider, condition == "sleep")) + 
+  aes(x = SS_BeforeBlock4, y = as.numeric(TST),
+      na.rm = TRUE) +
+  xlab("SS Before Block 4") + 
+  ylab("TST") +
+  theme(axis.title.x = element_text(size=9), axis.title.y = element_text(size=9)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+```
 
 ### sd of last sleep epoch effect on recovery
 ```{r}
@@ -854,4 +906,3 @@ sd(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_w
 
 
 ```
-

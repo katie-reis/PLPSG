@@ -9,6 +9,7 @@ output: html_document
 ```{r, message=FALSE}
 library(pander)
 library(dplyr)
+library("plotrix")
 ```
 
 ### import data files
@@ -779,19 +780,26 @@ t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition
 t.test(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "sleep"],
        PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "wake"])
 
-#SDs
+#SDs and SEs
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock1[PLPSG_sleep_stats_wider$condition == "wake"]))
 
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock4[PLPSG_sleep_stats_wider$condition == "wake"]))
 
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock5[PLPSG_sleep_stats_wider$condition == "wake"]))
 
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "wake"])
-
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$SS_BeforeBlock6[PLPSG_sleep_stats_wider$condition == "wake"]))
 ```
 
 #and if SSS impacts performance
@@ -887,21 +895,30 @@ t.test(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition
        PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "wake"])
 sd(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "wake"])
+#se
+print(std.error(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$NightBefore_TST[PLPSG_sleep_stats_wider$condition == "wake"]))
 
 t.test(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "sleep"],
        PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "wake"])
 sd(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$AverageSleep[PLPSG_sleep_stats_wider$condition == "wake"]))
 
 t.test(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"],
        PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
 sd(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$nightbefore_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"]))
 
 t.test(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"],
        PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
 sd(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"])
 sd(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"])
+print(std.error(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "sleep"]))
+print(std.error(PLPSG_sleep_stats_wider$average_sleep_deviation_from_norm[PLPSG_sleep_stats_wider$condition == "wake"]))
 
 
 
